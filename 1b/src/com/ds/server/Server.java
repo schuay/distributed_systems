@@ -26,8 +26,9 @@ public class Server {
 			return;
 		}
 
+		int id = 0;
 		ExecutorService executorService = Executors.newCachedThreadPool();
-		executorService.submit(new ServerThread(serverSocket.accept()));
+		executorService.submit(new ServerThread(id++, serverSocket.accept()));
 
 		try {
 			executorService.shutdown();
