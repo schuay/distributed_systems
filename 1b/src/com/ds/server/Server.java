@@ -2,6 +2,9 @@ package com.ds.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -10,8 +13,10 @@ public class Server implements Runnable {
 
 	private static volatile boolean listening = true;
 	private static ServerSocket serverSocket = null;
+	private static List<Socket> sockets = new ArrayList<Socket>();
+	private static ExecutorService executorService = Executors.newCachedThreadPool();
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		ParsedArgs parsedArgs = null;
 		try {
 			parsedArgs = new ParsedArgs(args);
@@ -38,29 +43,40 @@ public class Server implements Runnable {
 		 */
 
 		int id = 0;
-		ExecutorService executorService = Executors.newCachedThreadPool();
 		while (listening) {
 			try {
-				executorService.submit(new ServerThread(id++, serverSocket.accept()));
+				Socket socket = serverSocket.accept();
+				sockets.add(socket);
+				executorService.submit(new ServerThread(id++, socket));
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 			}
 		}
 
-		/* Shutdown gracefully. */
+		shutdown();
+	}
+
+	/* Shutdown gracefully. First,
+	 * stop accepting new client exceptions. Next, close all open client sockets to terminate
+	 * their tasks. Finally, wait for all tasks to complete.
+	 */
+	private static void shutdown() throws IOException {
+		executorService.shutdownNow();
+
+		for (Socket socket : sockets) {
+			if (socket.isClosed()) {
+				continue;
+			}
+			socket.close();
+		}
 
 		try {
-			executorService.shutdown();
 			executorService.awaitTermination(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
 
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		}
+		serverSocket.close();
 	}
 
 	/* Prevent other classes from creating a Server instance. */
