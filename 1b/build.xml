@@ -8,13 +8,13 @@
     <property name="server.name" value="com.ds.Server"/><!-- Server's full class name (including the package) -->
     <property name="server.host" value="localhost"/><!-- Server's host -->
     <property name="client.name" value="com.ds.Client"/><!-- Client's full class name (including the package) -->
-    <property name="server.port" value="10000 + 115 * 10"/><!-- Server's TCP port -->
-    <property name="client1.port" value="10000 + 115 * 10 + 1"/><!-- 1st Client's UDP port -->
-    <property name="client2.port" value="10000 + 115 * 10 + 2"/><!-- 2nd Client's UDP port -->
-    <property name="client3.port" value="10000 + 115 * 10 + 3"/><!-- 3rd Client's UDP port -->
-    <property name="client4.port" value="10000 + 115 * 10 + 4"/><!-- 4th Client's UDP port -->
-    <property name="client5.port" value="10000 + 115 * 10 + 5"/><!-- 5th Client's UDP port -->
-    <property name="client6.port" value="10000 + 115 * 10 + 6"/><!-- 6th Client's UDP port -->
+    <property name="server.port" value="11150"/><!-- Server's TCP port -->
+    <property name="client1.port" value="11151"/><!-- 1st Client's UDP port -->
+    <property name="client2.port" value="11152"/><!-- 2nd Client's UDP port -->
+    <property name="client3.port" value="11153"/><!-- 3rd Client's UDP port -->
+    <property name="client4.port" value="11154"/><!-- 4th Client's UDP port -->
+    <property name="client5.port" value="11155"/><!-- 5th Client's UDP port -->
+    <property name="client6.port" value="11156"/><!-- 6th Client's UDP port -->
 
     <path id="project.classpath">
         <pathelement location="${build.dir}"/>
