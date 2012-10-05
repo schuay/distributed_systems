@@ -1,8 +1,11 @@
 package com.ds.server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 public class Server {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		ParsedArgs parsedArgs = null;
 		try {
 			parsedArgs = new ParsedArgs(args);
@@ -11,6 +14,16 @@ public class Server {
 			System.err.printf("Usage: java %s <tcpPort>%n", Server.class.getName());
 			return;
 		}
+
+		ServerSocket serverSocket = null;
+		try {
+			serverSocket = new ServerSocket(parsedArgs.getTcpPort());
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			return;
+		}
+
+		serverSocket.close();
 	}
 }
 
