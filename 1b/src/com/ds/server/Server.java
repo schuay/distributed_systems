@@ -2,6 +2,9 @@ package com.ds.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
@@ -21,6 +24,16 @@ public class Server {
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 			return;
+		}
+
+		ExecutorService executorService = Executors.newCachedThreadPool();
+		executorService.submit(new ServerThread(serverSocket.accept()));
+
+		try {
+			executorService.shutdown();
+			executorService.awaitTermination(5, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			System.err.println(e.getMessage());
 		}
 
 		serverSocket.close();
