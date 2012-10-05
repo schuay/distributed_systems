@@ -1,8 +1,19 @@
 package com.ds.client;
 
-public class Client {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-	public static void main(String[] args) {
+public class Client {
+	private static PrintWriter out = null;
+	private static BufferedReader in = null;
+
+	private static final String INDENT = "> ";
+
+	public static void main(String[] args) throws IOException {
 		ParsedArgs parsedArgs = null;
 		try {
 			parsedArgs = new ParsedArgs(args);
@@ -15,6 +26,42 @@ public class Client {
 					Client.class.getName());
 			return;
 		}
+
+		Socket socket = null;
+
+		try {
+			socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
+			out = new PrintWriter(socket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		} catch (UnknownHostException e) {
+			System.err.println(e.getMessage());
+			return;
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			return;
+		}
+
+		System.out.println("Connection successful.");
+
+		inputLoop();
+
+		out.close();
+		in.close();
+		socket.close();
+	}
+
+	private static void inputLoop() throws IOException {
+		BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+		String userInput;
+
+		System.out.print(INDENT);
+
+		while ((userInput = stdin.readLine()) != null) {
+			out.println(userInput);
+			System.out.print(INDENT);
+		}
+
+		stdin.close();
 	}
 }
 
