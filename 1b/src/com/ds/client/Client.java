@@ -1,4 +1,4 @@
-package com.ds;
+package com.ds.client;
 
 public class Client {
 
@@ -20,8 +20,8 @@ public class Client {
 
 class ParsedArgs {
 	private final String host;
-	private int tcpPort;
-	private int udpPort;
+	private final int tcpPort;
+	private final int udpPort;
 
 	public ParsedArgs(String[] args) {
 		if (args.length != 3) {

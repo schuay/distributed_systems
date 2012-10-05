@@ -5,9 +5,9 @@
     <property name="build.dir" value="build"/>
 
     <!-- You need to update these properties!-->
-    <property name="server.name" value="com.ds.Server"/><!-- Server's full class name (including the package) -->
+    <property name="server.name" value="com.ds.server.Server"/><!-- Server's full class name (including the package) -->
     <property name="server.host" value="localhost"/><!-- Server's host -->
-    <property name="client.name" value="com.ds.Client"/><!-- Client's full class name (including the package) -->
+    <property name="client.name" value="com.ds.client.Client"/><!-- Client's full class name (including the package) -->
     <property name="server.port" value="11150"/><!-- Server's TCP port -->
     <property name="client1.port" value="11151"/><!-- 1st Client's UDP port -->
     <property name="client2.port" value="11152"/><!-- 2nd Client's UDP port -->
