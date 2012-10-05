@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import com.ds.Command;
+import com.ds.common.Command;
 
 public class ServerThread implements Runnable {
 
