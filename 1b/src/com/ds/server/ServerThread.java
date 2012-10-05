@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import com.ds.Command;
+
 public class ServerThread implements Runnable {
 
 	private final Socket socket;
@@ -22,9 +24,32 @@ public class ServerThread implements Runnable {
 		try {
 			PrintWriter out = new PrintWriter(socket.getOutputStream());
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String userInput;
 
-			System.out.printf("ServerThread %d received '%s'%n", id, in.readLine());
-			out.println("Hello World");
+			boolean quit = false;
+			Command command;
+			while (!quit && (userInput = in.readLine()) != null) {
+				try {
+					command = Command.parse(userInput);
+				} catch (IllegalArgumentException e) {
+					System.err.printf("Invalid command '%s'%n", userInput);
+					continue;
+				}
+
+				System.out.printf("Received command: %s%n", command);
+
+				switch (command.getId()) {
+				case LOGIN:
+				case LOGOUT:
+				case LIST:
+				case CREATE:
+				case BID:
+					break;
+				case END:
+					quit = true;
+					break;
+				}
+			}
 
 			out.close();
 			socket.close();
