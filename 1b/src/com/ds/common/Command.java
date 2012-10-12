@@ -63,8 +63,8 @@ class CommandLogin extends Command {
 			throw new IllegalArgumentException();
 		}
 
-		final String user = st.nextToken();
-		final int udpPort = Integer.parseInt(st.nextToken());
+		String user = st.nextToken();
+		int udpPort = Integer.parseInt(st.nextToken());
 
 		return new CommandLogin(user, udpPort);
 	}
@@ -81,8 +81,8 @@ class CommandCreate extends Command {
 			throw new IllegalArgumentException();
 		}
 
-		final int duration = Integer.parseInt(st.nextToken());
-		final String description = st.nextToken();
+		int duration = Integer.parseInt(st.nextToken());
+		String description = st.nextToken();
 
 		return new CommandCreate(duration, description);
 	}
@@ -99,8 +99,8 @@ class CommandBid extends Command {
 			throw new IllegalArgumentException();
 		}
 
-		final int auctionId = Integer.parseInt(st.nextToken());
-		final int amount = Integer.parseInt(st.nextToken());
+		int auctionId = Integer.parseInt(st.nextToken());
+		int amount = Integer.parseInt(st.nextToken());
 
 		return new CommandBid(auctionId, amount);
 	}
