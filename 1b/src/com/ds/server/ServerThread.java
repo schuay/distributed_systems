@@ -9,25 +9,25 @@ import com.ds.common.Command;
 public class ServerThread implements Runnable {
 
 	private final Socket socket;
+	private final ObjectInputStream in;
 	private final int id;
 	private final ServerData serverData;
 	private State state = new StateConnected(this);
 	private boolean quit = false;
 
-	public ServerThread(int id, Socket socket, ServerData serverData) {
+	public ServerThread(int id, Socket socket, ServerData serverData) throws IOException {
 		this.id = id;
 		this.socket = socket;
 		this.serverData = serverData;
+
+		in = new ObjectInputStream(socket.getInputStream());
 
 		System.out.printf("ServerThread %d created%n", id);
 	}
 
 	@Override
 	public void run() {
-		ObjectInputStream in = null;
 		try {
-			in = new ObjectInputStream(socket.getInputStream());
-
 			Command command;
 			while (!quit && (command = (Command)in.readObject()) != null) {
 				System.out.printf("Received command: %s%n", command);
