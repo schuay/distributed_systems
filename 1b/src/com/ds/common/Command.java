@@ -13,6 +13,7 @@ public class Command {
 	}
 
 	private final Cmd id;
+	private final String command;
 
 	public static Command parse(String line) {
 		StringTokenizer st = new StringTokenizer(line);
@@ -23,17 +24,17 @@ public class Command {
 		try {
 			String token = st.nextToken().toLowerCase();
 			if (token.equals("!logout")) {
-				return new Command(Cmd.LOGOUT);
+				return new Command(Cmd.LOGOUT, line);
 			} else if (token.equals("!list")) {
-				return new Command(Cmd.LIST);
+				return new Command(Cmd.LIST, line);
 			} else if (token.equals("!end")) {
-				return new Command(Cmd.END);
+				return new Command(Cmd.END, line);
 			} else if (token.equals("!login")) {
-				return CommandLogin.parse(st);
+				return new CommandLogin(st, line);
 			} else if (token.equals("!create")) {
-				return CommandCreate.parse(st);
+				return new CommandCreate(st, line);
 			} else if (token.equals("!bid")) {
-				return CommandBid.parse(st);
+				return new CommandBid(st, line);
 			}
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(e);
@@ -42,12 +43,17 @@ public class Command {
 		throw new IllegalArgumentException();
 	}
 
-	protected Command(Cmd id) {
+	protected Command(Cmd id, String cmd) {
 		this.id = id;
+		this.command = cmd;
 	}
 
 	public Cmd getId() {
 		return id;
+	}
+
+	public String getCommand() {
+		return command;
 	}
 
 	@Override
@@ -58,54 +64,51 @@ public class Command {
 
 class CommandLogin extends Command {
 
-	protected static Command parse(StringTokenizer st) {
+	private final String user;
+	private final int udpPort;
+
+	protected CommandLogin(StringTokenizer st, String line) {
+		super(Cmd.LOGIN, line);
+
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
 		}
 
-		String user = st.nextToken();
-		int udpPort = Integer.parseInt(st.nextToken());
-
-		return new CommandLogin(user, udpPort);
-	}
-
-	protected CommandLogin(String user, int udpPort) {
-		super(Cmd.LOGIN);
+		this.user = st.nextToken();
+		this.udpPort = Integer.parseInt(st.nextToken());
 	}
 }
 
 class CommandCreate extends Command {
 
-	protected static Command parse(StringTokenizer st) {
+	private final int duration;
+	private final String description;
+
+	protected CommandCreate(StringTokenizer st, String line) {
+		super(Cmd.CREATE, line);
+
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
 		}
 
-		int duration = Integer.parseInt(st.nextToken());
-		String description = st.nextToken();
-
-		return new CommandCreate(duration, description);
-	}
-
-	protected CommandCreate(int duration, String description) {
-		super(Cmd.CREATE);
+		this.duration = Integer.parseInt(st.nextToken());
+		this.description = st.nextToken();
 	}
 }
 
 class CommandBid extends Command {
 
-	protected static Command parse(StringTokenizer st) {
+	private final int auctionId;
+	private final int amount;
+
+	protected CommandBid(StringTokenizer st, String line) {
+		super(Cmd.BID, line);
+
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
 		}
 
-		int auctionId = Integer.parseInt(st.nextToken());
-		int amount = Integer.parseInt(st.nextToken());
-
-		return new CommandBid(auctionId, amount);
-	}
-
-	protected CommandBid(int auctionId, int amount) {
-		super(Cmd.BID);
+		this.auctionId = Integer.parseInt(st.nextToken());
+		this.amount = Integer.parseInt(st.nextToken());
 	}
 }

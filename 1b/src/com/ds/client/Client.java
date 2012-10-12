@@ -7,14 +7,17 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.ds.common.Command;
+
 public class Client {
 	private static PrintWriter out = null;
 	private static BufferedReader in = null;
 
 	private static final String INDENT = "> ";
 
+	private static ParsedArgs parsedArgs;
+
 	public static void main(String[] args) throws IOException {
-		ParsedArgs parsedArgs = null;
 		try {
 			parsedArgs = new ParsedArgs(args);
 			System.out.printf("Host: %s TCP Port: %d UDP Port: %d%n",
@@ -56,8 +59,23 @@ public class Client {
 
 		System.out.print(INDENT);
 
+		Command command;
 		while ((userInput = stdin.readLine()) != null) {
-			out.println(userInput);
+
+			/* Hackish special case for login command: append UDP port. */
+			if (userInput.startsWith("!login")) {
+				userInput = userInput.concat(String.format(" %d", parsedArgs.getUdpPort()));
+			}
+
+			/* Parse and send the command, then handle return code. */
+			try {
+				command = Command.parse(userInput);
+				out.println(command.getCommand());
+				System.out.printf("Server response: %s%n", in.readLine());
+			} catch (IllegalArgumentException e) {
+				System.err.println("Invalid command ignored");
+				continue;
+			}
 			System.out.print(INDENT);
 		}
 
