@@ -1,9 +1,7 @@
 package com.ds.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import com.ds.common.Command;
@@ -21,21 +19,13 @@ public class ServerThread implements Runnable {
 
 	@Override
 	public void run() {
+		ObjectInputStream in = null;
 		try {
-			PrintWriter out = new PrintWriter(socket.getOutputStream());
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String userInput;
+			in = new ObjectInputStream(socket.getInputStream());
 
 			boolean quit = false;
 			Command command;
-			while (!quit && (userInput = in.readLine()) != null) {
-				try {
-					command = Command.parse(userInput);
-				} catch (IllegalArgumentException e) {
-					System.err.printf("Invalid command '%s'%n", userInput);
-					continue;
-				}
-
+			while (!quit && (command = (Command)in.readObject()) != null) {
 				System.out.printf("Received command: %s%n", command);
 
 				switch (command.getId()) {
@@ -50,11 +40,15 @@ public class ServerThread implements Runnable {
 					break;
 				}
 			}
-
-			out.close();
-			socket.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
+		} finally {
+			try {
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
