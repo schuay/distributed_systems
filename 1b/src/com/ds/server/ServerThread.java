@@ -2,14 +2,15 @@ package com.ds.server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.ds.common.Command;
 
 public class ServerThread implements Runnable {
 
-	private final Socket socket;
 	private final ObjectInputStream in;
+	private final ObjectOutputStream out;
 	private final int id;
 	private final ServerData serverData;
 	private State state = new StateConnected(this);
@@ -17,10 +18,10 @@ public class ServerThread implements Runnable {
 
 	public ServerThread(int id, Socket socket, ServerData serverData) throws IOException {
 		this.id = id;
-		this.socket = socket;
 		this.serverData = serverData;
 
 		in = new ObjectInputStream(socket.getInputStream());
+		out = new ObjectOutputStream(socket.getOutputStream());
 
 		System.out.printf("ServerThread %d created%n", id);
 	}
