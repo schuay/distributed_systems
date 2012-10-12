@@ -6,7 +6,16 @@ public class UserListModel {
 
 	private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
 
-	public void addUser(User user) {
+	/* TODO: atomic check + add, check + remove operations. */
+	public void add(User user) {
 		users.put(user.getName(), user);
+	}
+
+	public boolean contains(User user) {
+		return users.containsKey(user.getName());
+	}
+
+	public void remove(User user) {
+		users.remove(user.getName());
 	}
 }

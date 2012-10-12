@@ -11,6 +11,8 @@ public class ServerThread implements Runnable {
 	private final Socket socket;
 	private final int id;
 	private final ServerData serverData;
+	private State state = new StateConnected(this);
+	private boolean quit = false;
 
 	public ServerThread(int id, Socket socket, ServerData serverData) {
 		this.id = id;
@@ -26,22 +28,10 @@ public class ServerThread implements Runnable {
 		try {
 			in = new ObjectInputStream(socket.getInputStream());
 
-			boolean quit = false;
 			Command command;
 			while (!quit && (command = (Command)in.readObject()) != null) {
 				System.out.printf("Received command: %s%n", command);
-
-				switch (command.getId()) {
-				case LOGIN:
-				case LOGOUT:
-				case LIST:
-				case CREATE:
-				case BID:
-					break;
-				case END:
-					quit = true;
-					break;
-				}
+				state.processCommand(command);
 			}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
@@ -55,4 +45,15 @@ public class ServerThread implements Runnable {
 		}
 	}
 
+	public void setQuit() {
+		quit = true;
+	}
+
+	public UserListModel getUserList() {
+		return serverData.getUserList();
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
 }
