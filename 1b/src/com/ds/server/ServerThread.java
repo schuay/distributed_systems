@@ -38,8 +38,7 @@ public class ServerThread implements Runnable {
 			System.err.println(e.getMessage());
 		} finally {
 			try {
-				if (in != null)
-					in.close();
+				in.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -32,10 +32,16 @@ public class Client {
 		ObjectOutputStream out = null;
 		try {
 			socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
+
+			Thread responseThread = new Thread(new ResponseThread(socket));
+			responseThread.start();
+
 			out = new ObjectOutputStream(socket.getOutputStream());
 			System.out.println("Connection successful.");
 
 			inputLoop(parsedArgs, out);
+
+			responseThread.join();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		} finally {
