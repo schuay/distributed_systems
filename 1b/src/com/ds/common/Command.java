@@ -1,8 +1,12 @@
 package com.ds.common;
 
+import java.io.Serializable;
 import java.util.StringTokenizer;
 
-public class Command {
+public class Command implements Serializable {
+
+	private static final long serialVersionUID = 4698051331006702570L;
+
 	public enum Cmd {
 		LOGIN,
 		LOGOUT,
@@ -64,6 +68,7 @@ public class Command {
 
 class CommandLogin extends Command {
 
+	private static final long serialVersionUID = 8266776473396356465L;
 	private final String user;
 	private final int udpPort;
 
@@ -81,6 +86,7 @@ class CommandLogin extends Command {
 
 class CommandCreate extends Command {
 
+	private static final long serialVersionUID = -1971848687816624645L;
 	private final int duration;
 	private final String description;
 
@@ -98,6 +104,7 @@ class CommandCreate extends Command {
 
 class CommandBid extends Command {
 
+	private static final long serialVersionUID = 3662230444450063848L;
 	private final int auctionId;
 	private final int amount;
 
