@@ -34,7 +34,7 @@ public class Client {
 			out = new ObjectOutputStream(socket.getOutputStream());
 			System.out.println("Connection successful.");
 
-			inputLoop(out);
+			inputLoop(parsedArgs, out);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		} finally {
@@ -45,7 +45,7 @@ public class Client {
 		}
 	}
 
-	private static void inputLoop(ObjectOutputStream out) throws IOException {
+	private static void inputLoop(ParsedArgs args, ObjectOutputStream out) throws IOException {
 		BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
 		/* Initial indentation. */
@@ -57,7 +57,7 @@ public class Client {
 
 			/* Parse and send the command. */
 			try {
-				command = Command.parse(userInput);
+				command = Command.parse(args, userInput);
 				out.writeObject(command);
 
 				System.out.print(INDENT);

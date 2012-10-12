@@ -3,6 +3,8 @@ package com.ds.common;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
+import com.ds.client.ParsedArgs;
+
 public class Command implements Serializable {
 
 	private static final long serialVersionUID = 4698051331006702570L;
@@ -18,7 +20,7 @@ public class Command implements Serializable {
 
 	private final Cmd id;
 
-	public static Command parse(String line) {
+	public static Command parse(ParsedArgs args, String line) {
 		StringTokenizer st = new StringTokenizer(line);
 		if (!st.hasMoreTokens()) {
 			throw new IllegalArgumentException();
@@ -33,7 +35,7 @@ public class Command implements Serializable {
 			} else if (token.equals("!end")) {
 				return new Command(Cmd.END);
 			} else if (token.equals("!login")) {
-				return new CommandLogin(st);
+				return new CommandLogin(st, args);
 			} else if (token.equals("!create")) {
 				return new CommandCreate(st);
 			} else if (token.equals("!bid")) {
@@ -66,15 +68,15 @@ class CommandLogin extends Command {
 	private final String user;
 	private final int udpPort;
 
-	protected CommandLogin(StringTokenizer st) {
+	protected CommandLogin(StringTokenizer st, ParsedArgs args) {
 		super(Cmd.LOGIN);
 
-		if (st.countTokens() < 2) {
+		if (st.countTokens() < 1) {
 			throw new IllegalArgumentException();
 		}
 
 		this.user = st.nextToken();
-		this.udpPort = Integer.parseInt(st.nextToken());
+		this.udpPort = args.getUdpPort();
 	}
 }
 

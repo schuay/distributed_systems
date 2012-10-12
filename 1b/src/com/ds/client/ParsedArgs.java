@@ -1,6 +1,6 @@
 package com.ds.client;
 
-class ParsedArgs {
+public class ParsedArgs {
 	private final String host;
 	private final int tcpPort;
 	private final int udpPort;
