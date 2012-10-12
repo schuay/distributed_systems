@@ -17,7 +17,6 @@ public class Command implements Serializable {
 	}
 
 	private final Cmd id;
-	private final String command;
 
 	public static Command parse(String line) {
 		StringTokenizer st = new StringTokenizer(line);
@@ -28,17 +27,17 @@ public class Command implements Serializable {
 		try {
 			String token = st.nextToken().toLowerCase();
 			if (token.equals("!logout")) {
-				return new Command(Cmd.LOGOUT, line);
+				return new Command(Cmd.LOGOUT);
 			} else if (token.equals("!list")) {
-				return new Command(Cmd.LIST, line);
+				return new Command(Cmd.LIST);
 			} else if (token.equals("!end")) {
-				return new Command(Cmd.END, line);
+				return new Command(Cmd.END);
 			} else if (token.equals("!login")) {
-				return new CommandLogin(st, line);
+				return new CommandLogin(st);
 			} else if (token.equals("!create")) {
-				return new CommandCreate(st, line);
+				return new CommandCreate(st);
 			} else if (token.equals("!bid")) {
-				return new CommandBid(st, line);
+				return new CommandBid(st);
 			}
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(e);
@@ -47,17 +46,12 @@ public class Command implements Serializable {
 		throw new IllegalArgumentException();
 	}
 
-	protected Command(Cmd id, String cmd) {
+	protected Command(Cmd id) {
 		this.id = id;
-		this.command = cmd;
 	}
 
 	public Cmd getId() {
 		return id;
-	}
-
-	public String getCommand() {
-		return command;
 	}
 
 	@Override
@@ -72,8 +66,8 @@ class CommandLogin extends Command {
 	private final String user;
 	private final int udpPort;
 
-	protected CommandLogin(StringTokenizer st, String line) {
-		super(Cmd.LOGIN, line);
+	protected CommandLogin(StringTokenizer st) {
+		super(Cmd.LOGIN);
 
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
@@ -90,8 +84,8 @@ class CommandCreate extends Command {
 	private final int duration;
 	private final String description;
 
-	protected CommandCreate(StringTokenizer st, String line) {
-		super(Cmd.CREATE, line);
+	protected CommandCreate(StringTokenizer st) {
+		super(Cmd.CREATE);
 
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
@@ -108,8 +102,8 @@ class CommandBid extends Command {
 	private final int auctionId;
 	private final int amount;
 
-	protected CommandBid(StringTokenizer st, String line) {
-		super(Cmd.BID, line);
+	protected CommandBid(StringTokenizer st) {
+		super(Cmd.BID);
 
 		if (st.countTokens() < 2) {
 			throw new IllegalArgumentException();
