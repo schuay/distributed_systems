@@ -2,8 +2,8 @@ package com.ds.server;
 
 public class ServerData {
 
-	private final UserListModel userList = new UserListModel();
-	public UserListModel getUserList() {
+	private final UserList userList = new UserList();
+	public UserList getUserList() {
 		return userList;
 	}
 

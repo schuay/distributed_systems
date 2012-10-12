@@ -2,7 +2,7 @@ package com.ds.server;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UserListModel {
+public class UserList {
 
 	private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
 

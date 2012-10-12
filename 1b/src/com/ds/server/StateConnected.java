@@ -18,7 +18,7 @@ public class StateConnected implements State {
 		switch (command.getId()) {
 		case LOGIN:
 			CommandLogin commandLogin = (CommandLogin)command;
-			UserListModel userList = serverThread.getUserList();
+			UserList userList = serverThread.getUserList();
 			User user = new User(commandLogin.getUser());
 			if (userList.contains(user)) {
 				serverThread.sendResponse(new Response(Rsp.ERROR));

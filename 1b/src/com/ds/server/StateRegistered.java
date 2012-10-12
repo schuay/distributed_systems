@@ -34,7 +34,7 @@ public class StateRegistered implements State {
 	}
 
 	private void logout() {
-		UserListModel userList = serverThread.getUserList();
+		UserList userList = serverThread.getUserList();
 		if (!userList.contains(user)) {
 			serverThread.sendResponse(new Response(Rsp.ERROR));
 			System.out.printf("User %s logout failed: not logged in%n", user.getName());

@@ -51,7 +51,7 @@ public class ServerThread implements Runnable {
 		quit = true;
 	}
 
-	public UserListModel getUserList() {
+	public UserList getUserList() {
 		return serverData.getUserList();
 	}
 
