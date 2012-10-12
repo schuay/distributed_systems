@@ -16,6 +16,8 @@ public class Server implements Runnable {
 	private static List<Socket> sockets = new ArrayList<Socket>();
 	private static ExecutorService executorService = Executors.newCachedThreadPool();
 
+	private static final ServerData serverData = new ServerData();
+
 	public static void main(String[] args) throws IOException {
 		ParsedArgs parsedArgs = null;
 		try {
@@ -47,7 +49,7 @@ public class Server implements Runnable {
 			try {
 				Socket socket = serverSocket.accept();
 				sockets.add(socket);
-				executorService.submit(new ServerThread(id++, socket));
+				executorService.submit(new ServerThread(id++, socket, serverData));
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 			}

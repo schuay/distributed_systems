@@ -10,10 +10,13 @@ public class ServerThread implements Runnable {
 
 	private final Socket socket;
 	private final int id;
+	private final ServerData serverData;
 
-	public ServerThread(int id, Socket socket) {
+	public ServerThread(int id, Socket socket, ServerData serverData) {
 		this.id = id;
 		this.socket = socket;
+		this.serverData = serverData;
+
 		System.out.printf("ServerThread %d created%n", id);
 	}
 
