@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.ds.common.Command;
+import com.ds.common.Command.Cmd;
 
 public class Client {
 
@@ -54,11 +55,14 @@ public class Client {
 		String userInput;
 		Command command;
 		while ((userInput = stdin.readLine()) != null) {
-
 			/* Parse and send the command. */
 			try {
 				command = Command.parse(args, userInput);
 				out.writeObject(command);
+
+				if (command.getId() == Cmd.END) {
+					break;
+				}
 
 				System.out.print(INDENT);
 			} catch (IllegalArgumentException e) {

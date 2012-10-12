@@ -43,6 +43,8 @@ public class ServerThread implements Runnable {
 				e.printStackTrace();
 			}
 		}
+
+		System.out.printf("ServerThread %d shutting down%n", id);
 	}
 
 	public void setQuit() {
