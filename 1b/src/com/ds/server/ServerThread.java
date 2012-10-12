@@ -59,4 +59,13 @@ public class ServerThread implements Runnable {
 	public void setState(State state) {
 		this.state = state;
 	}
+
+	public void sendResponse(Object object) {
+		try {
+			out.writeObject(object);
+		} catch (IOException e) {
+			setQuit();
+			e.printStackTrace();
+		}
+	}
 }

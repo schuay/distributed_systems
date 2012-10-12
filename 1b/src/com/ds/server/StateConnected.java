@@ -2,6 +2,8 @@ package com.ds.server;
 
 import com.ds.common.Command;
 import com.ds.common.CommandLogin;
+import com.ds.common.Response;
+import com.ds.common.Response.Rsp;
 
 public class StateConnected implements State {
 
@@ -19,11 +21,13 @@ public class StateConnected implements State {
 			UserListModel userList = serverThread.getUserList();
 			User user = new User(commandLogin.getUser());
 			if (userList.contains(user)) {
+				serverThread.sendResponse(new Response(Rsp.ERROR));
 				System.out.printf("User %s login failed: already logged in%n", user.getName());
 				return;
 			}
 			userList.add(user);
 			serverThread.setState(new StateRegistered(serverThread, user));
+			serverThread.sendResponse(new Response(Rsp.OK));
 			System.out.printf("User %s logged in%n", user.getName());
 			break;
 		case LIST:
