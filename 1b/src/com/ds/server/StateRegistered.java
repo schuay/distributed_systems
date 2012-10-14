@@ -3,7 +3,7 @@ package com.ds.server;
 import java.util.Calendar;
 import java.util.Date;
 
-import com.ds.common.AuctionListResponse;
+import com.ds.common.ResponseAuctionList;
 import com.ds.common.Command;
 import com.ds.common.CommandCreate;
 import com.ds.common.Response;
@@ -23,7 +23,7 @@ public class StateRegistered implements State {
 	public void processCommand(Command command) {
 		switch (command.getId()) {
 		case LIST:
-			serverThread.sendResponse(new AuctionListResponse(serverThread.getAuctionList()));
+			serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
 			break;
 		case LOGOUT:
 			logout();

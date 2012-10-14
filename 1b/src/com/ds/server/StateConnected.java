@@ -1,6 +1,6 @@
 package com.ds.server;
 
-import com.ds.common.AuctionListResponse;
+import com.ds.common.ResponseAuctionList;
 import com.ds.common.Command;
 import com.ds.common.CommandLogin;
 import com.ds.common.Response;
@@ -32,7 +32,7 @@ public class StateConnected implements State {
 			System.out.printf("User %s logged in%n", user.getName());
 			break;
 		case LIST:
-			serverThread.sendResponse(new AuctionListResponse(serverThread.getAuctionList()));
+			serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
 			break;
 		case END:
 			serverThread.setQuit();
