@@ -36,12 +36,18 @@ public class Client {
 			Thread responseThread = new Thread(new ResponseThread(socket));
 			responseThread.start();
 
+			NotificationThread nt = new NotificationThread(parsedArgs.getUdpPort());
+			Thread notificationThread = new Thread(nt);
+			notificationThread.start();
+
 			out = new ObjectOutputStream(socket.getOutputStream());
 			System.out.println("Connection successful.");
 
 			inputLoop(parsedArgs, out);
 
+			nt.setQuit();
 			responseThread.join();
+			notificationThread.join();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		} finally {

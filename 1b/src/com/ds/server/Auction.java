@@ -8,7 +8,7 @@ public class Auction {
 	private final User owner;
 	private final Date end;
 	private int highestBid = 0;
-	private User highestBidder = new User("none");
+	private User highestBidder = User.NONE;
 
 	public Auction(int id, String description, User owner, Date end) {
 		this.id = id;
@@ -29,6 +29,14 @@ public class Auction {
 	public String toString() {
 		return String.format("%d. '%s' %s %s %d %s",
 				id, description, owner.getName(), end,
-				highestBid, highestBidder.getName());
+				highestBid, getHighestBidder().getName());
+	}
+
+	public User getHighestBidder() {
+		return highestBidder;
+	}
+
+	public User getOwner() {
+		return owner;
 	}
 }
