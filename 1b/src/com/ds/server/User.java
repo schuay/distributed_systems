@@ -1,5 +1,8 @@
 package com.ds.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
 	private final String name;
@@ -13,10 +16,29 @@ public class User {
 	}
 	public void setLoggedIn(boolean loggedIn) {
 		this.loggedIn = loggedIn;
+		if (loggedIn) {
+			processNotifications();
+		}
 	}
+
+	private final List<String> notifications = new ArrayList<>();
 
 	public User(String name) {
 		this.name = name;
+	}
+
+	public void postNotification(String message) {
+		notifications.add(message);
+		if (loggedIn) {
+			processNotifications();
+		}
+	}
+
+	private void processNotifications() {
+		for (String msg : notifications) {
+
+		}
+		notifications.clear();
 	}
 
 }

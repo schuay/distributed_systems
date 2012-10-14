@@ -37,4 +37,12 @@ public class UserList {
 		user.setLoggedIn(false);
 		return true;
 	}
+
+	public synchronized void postNotification(User user, String message) {
+		if (!users.containsKey(user.getName())) {
+			return;
+		}
+
+		users.get(user.getName()).postNotification(message);
+	}
 }
