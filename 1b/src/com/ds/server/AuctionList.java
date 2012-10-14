@@ -56,4 +56,8 @@ public class AuctionList {
 			list.expire(id);
 		}
 	}
+
+	public void cancelTimers() {
+		timer.cancel();
+	}
 }

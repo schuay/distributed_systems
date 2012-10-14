@@ -59,7 +59,8 @@ public class Server implements Runnable {
 	}
 
 	/* Shutdown gracefully. First,
-	 * stop accepting new client exceptions. Next, close all open client sockets to terminate
+	 * stop accepting new client exceptions. Then, cancel timers to stop the timer thread.
+	 * Next, close all open client sockets to terminate
 	 * their tasks. Finally, wait for all tasks to complete.
 	 */
 	private static void shutdown() throws IOException {
@@ -71,6 +72,8 @@ public class Server implements Runnable {
 			}
 			socket.close();
 		}
+
+		serverData.getAuctionList().cancelTimers();
 
 		try {
 			executorService.awaitTermination(5, TimeUnit.SECONDS);
