@@ -24,6 +24,11 @@ public class CommandCreate extends Command {
 		}
 
 		this.duration = Integer.parseInt(st.nextToken());
-		this.description = st.nextToken();
+
+		StringBuilder sb = new StringBuilder();
+		while (st.hasMoreTokens()) {
+			sb.append(String.format("%s ", st.nextToken()));
+		}
+		this.description = sb.toString();
 	}
 }
