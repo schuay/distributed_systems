@@ -7,4 +7,8 @@ public class ServerData {
 		return userList;
 	}
 
+	private final AuctionList auctionList = new AuctionList();
+	public AuctionList getAuctionList() {
+		return auctionList;
+	}
 }

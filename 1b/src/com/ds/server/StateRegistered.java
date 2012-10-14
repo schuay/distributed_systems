@@ -1,5 +1,6 @@
 package com.ds.server;
 
+import com.ds.common.AuctionListResponse;
 import com.ds.common.Command;
 import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
@@ -17,6 +18,9 @@ public class StateRegistered implements State {
 	@Override
 	public void processCommand(Command command) {
 		switch (command.getId()) {
+		case LIST:
+			serverThread.sendResponse(new AuctionListResponse(serverThread.getAuctionList()));
+			break;
 		case LOGOUT:
 			logout();
 			break;

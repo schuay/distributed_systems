@@ -19,4 +19,13 @@ public class AuctionList {
 	public List<Auction> getAuctions() {
 		return Collections.unmodifiableList(new ArrayList<Auction>(auctions.values()));
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Auction auction : auctions.values()) {
+			sb.append(String.format("%s%n", auction.toString()));
+		}
+		return sb.toString();
+	}
 }
