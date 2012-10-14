@@ -1,7 +1,9 @@
 package com.ds.server;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -89,6 +91,16 @@ public class Server implements Runnable {
 
 		serverSocket.close();
 		datagramSocket.close();
+	}
+
+	public static void sendUdp(InetAddress address, int port, String message) {
+		byte[] bytes = message.getBytes();
+		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
+		try {
+			datagramSocket.send(packet);
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
 	}
 
 	/* Prevent other classes from creating a Server instance. */

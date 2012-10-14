@@ -21,7 +21,7 @@ public class StateConnected implements State {
 			CommandLogin commandLogin = (CommandLogin)command;
 			UserList userList = serverThread.getUserList();
 			User user = new User(commandLogin.getUser());
-			if (!userList.login(user)) {
+			if (!userList.login(user, serverThread.getAddress(), commandLogin.getUdpPort())) {
 				serverThread.sendResponse(new Response(Rsp.ERROR));
 				System.out.printf("User %s login failed: already logged in%n", user.getName());
 				return;

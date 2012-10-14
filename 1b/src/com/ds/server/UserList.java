@@ -1,5 +1,6 @@
 package com.ds.server;
 
+import java.net.InetAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserList {
@@ -10,7 +11,7 @@ public class UserList {
 	 * Logs in the specified user.
 	 * @return true if login was successful, false otherwise.
 	 */
-	public synchronized boolean login(User user) {
+	public synchronized boolean login(User user, InetAddress address, int port) {
 		if (!users.containsKey(user.getName())) {
 			users.put(user.getName(), user);
 			return true;
@@ -21,7 +22,7 @@ public class UserList {
 			return false;
 		}
 
-		user.setLoggedIn(true);
+		user.login(address, port);
 		return true;
 	}
 
@@ -34,7 +35,7 @@ public class UserList {
 			return false;
 		}
 
-		user.setLoggedIn(false);
+		user.logout();
 		return true;
 	}
 

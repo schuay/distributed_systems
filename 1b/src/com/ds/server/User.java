@@ -1,5 +1,6 @@
 package com.ds.server;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,14 +15,10 @@ public class User {
 	public boolean isLoggedIn() {
 		return loggedIn;
 	}
-	public void setLoggedIn(boolean loggedIn) {
-		this.loggedIn = loggedIn;
-		if (loggedIn) {
-			processNotifications();
-		}
-	}
 
 	private final List<String> notifications = new ArrayList<>();
+	private int port;
+	private InetAddress address;
 
 	public User(String name) {
 		this.name = name;
@@ -36,9 +33,19 @@ public class User {
 
 	private void processNotifications() {
 		for (String msg : notifications) {
-
+			Server.sendUdp(address, port, msg);
 		}
 		notifications.clear();
 	}
 
+	public void login(InetAddress address, int port) {
+		this.address = address;
+		this.port = port;
+		this.loggedIn = true;
+		processNotifications();
+	}
+
+	public void logout() {
+		this.loggedIn = false;
+	}
 }

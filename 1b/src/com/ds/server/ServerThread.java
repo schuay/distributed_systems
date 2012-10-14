@@ -3,6 +3,7 @@ package com.ds.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 
 import com.ds.common.Command;
@@ -15,10 +16,13 @@ public class ServerThread implements Runnable {
 	private final ServerData serverData;
 	private State state = new StateConnected(this);
 	private boolean quit = false;
+	private final InetAddress address;
 
 	public ServerThread(int id, Socket socket, ServerData serverData) throws IOException {
 		this.id = id;
 		this.serverData = serverData;
+
+		this.address = socket.getInetAddress();
 
 		in = new ObjectInputStream(socket.getInputStream());
 		out = new ObjectOutputStream(socket.getOutputStream());
@@ -57,6 +61,10 @@ public class ServerThread implements Runnable {
 
 	public AuctionList getAuctionList() {
 		return serverData.getAuctionList();
+	}
+
+	public InetAddress getAddress() {
+		return address;
 	}
 
 	public void setState(State state) {
