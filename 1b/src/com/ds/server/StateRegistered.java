@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.ds.common.Command;
+import com.ds.common.CommandBid;
 import com.ds.common.CommandCreate;
 import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
@@ -40,6 +41,11 @@ public class StateRegistered implements State {
 			serverThread.sendResponse(new ResponseAuctionCreated(id));
 			break;
 		case BID:
+			CommandBid commandBid = (CommandBid)command;
+			auctionList = serverThread.getAuctionList();
+
+			auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
+			serverThread.sendResponse(new Response(Rsp.OK));
 			break;
 		case END:
 			logout();

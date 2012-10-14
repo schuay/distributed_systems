@@ -7,8 +7,8 @@ public class Auction {
 	private final String description;
 	private final User owner;
 	private final Date end;
-	private final int highestBid = 0;
-	private final String highestBidder = "none";
+	private int highestBid = 0;
+	private User highestBidder = new User("none");
 
 	public Auction(int id, String description, User owner, Date end) {
 		this.id = id;
@@ -17,9 +17,18 @@ public class Auction {
 		this.end = end;
 	}
 
+	public void bid(User bidder, int amount) {
+		if (amount <= highestBid) {
+			return;
+		}
+		highestBid = amount;
+		highestBidder = bidder;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%d. '%s' %s %s %d %s",
-				id, description, owner.getName(), end, highestBid, highestBidder);
+				id, description, owner.getName(), end,
+				highestBid, highestBidder.getName());
 	}
 }

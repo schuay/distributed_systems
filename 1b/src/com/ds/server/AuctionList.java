@@ -14,6 +14,14 @@ public class AuctionList {
 		return auctionId;
 	}
 
+	public synchronized void bid(int id, User bidder, int amount) {
+		if (!auctions.containsKey(id)) {
+			System.err.println("No such auction");
+			return;
+		}
+		auctions.get(id).bid(bidder, amount);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
