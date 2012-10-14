@@ -28,8 +28,8 @@ public class AuctionList {
 		auctions.get(id).bid(bidder, amount);
 	}
 
-	private void expire(int id) {
-
+	private synchronized void expire(int id) {
+		auctions.remove(id);
 	}
 
 	@Override
