@@ -1,6 +1,7 @@
 package com.ds.server;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class Server implements Runnable {
 
 	private static volatile boolean listening = true;
 	private static ServerSocket serverSocket = null;
+	private static DatagramSocket datagramSocket = null;
 	private static List<Socket> sockets = new ArrayList<Socket>();
 	private static ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -30,7 +32,11 @@ public class Server implements Runnable {
 
 		try {
 			serverSocket = new ServerSocket(parsedArgs.getTcpPort());
+			datagramSocket = new DatagramSocket();
 		} catch (IOException e) {
+			if (serverSocket != null)
+				serverSocket.close();
+
 			System.err.println(e.getMessage());
 			return;
 		}
@@ -82,6 +88,7 @@ public class Server implements Runnable {
 		}
 
 		serverSocket.close();
+		datagramSocket.close();
 	}
 
 	/* Prevent other classes from creating a Server instance. */
