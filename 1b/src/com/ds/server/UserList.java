@@ -6,16 +6,35 @@ public class UserList {
 
 	private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
 
-	/* TODO: atomic check + add, check + remove operations. */
-	public void add(User user) {
-		users.put(user.getName(), user);
+	/**
+	 * Logs in the specified user.
+	 * @return true if login was successful, false otherwise.
+	 */
+	public synchronized boolean login(User user) {
+		if (!users.containsKey(user.getName())) {
+			users.put(user.getName(), user);
+			return true;
+		}
+
+		user = users.get(user.getName());
+		if (user.isLoggedIn()) {
+			return false;
+		}
+
+		user.setLoggedIn(true);
+		return true;
 	}
 
-	public boolean contains(User user) {
-		return users.containsKey(user.getName());
-	}
+	/**
+	 * Logs out the specified user.
+	 * @return true if logout was successful, false otherwise.
+	 */
+	public synchronized boolean logout(User user) {
+		if (!users.containsKey(user.getName())) {
+			return false;
+		}
 
-	public void remove(User user) {
-		users.remove(user.getName());
+		user.setLoggedIn(false);
+		return true;
 	}
 }

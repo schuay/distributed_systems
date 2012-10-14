@@ -7,6 +7,14 @@ public class User {
 		return name;
 	}
 
+	private boolean loggedIn = true;
+	public boolean isLoggedIn() {
+		return loggedIn;
+	}
+	public void setLoggedIn(boolean loggedIn) {
+		this.loggedIn = loggedIn;
+	}
+
 	public User(String name) {
 		this.name = name;
 	}
