@@ -5,12 +5,12 @@ import java.util.Date;
 public class Auction {
 	private final int id;
 	private final String description;
-	private final String owner;
+	private final User owner;
 	private final Date end;
 	private final int highestBid = 0;
 	private final String highestBidder = "none";
 
-	public Auction(int id, String description, String owner, Date end) {
+	public Auction(int id, String description, User owner, Date end) {
 		this.id = id;
 		this.description = description;
 		this.owner = owner;
@@ -20,6 +20,6 @@ public class Auction {
 	@Override
 	public String toString() {
 		return String.format("%d. '%s' %s %s %d %s",
-				id, description, owner, end, highestBid, highestBidder);
+				id, description, owner.getName(), end, highestBid, highestBidder);
 	}
 }

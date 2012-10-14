@@ -1,7 +1,11 @@
 package com.ds.server;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import com.ds.common.AuctionListResponse;
 import com.ds.common.Command;
+import com.ds.common.CommandCreate;
 import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
 
@@ -25,6 +29,15 @@ public class StateRegistered implements State {
 			logout();
 			break;
 		case CREATE:
+			CommandCreate commandCreate = (CommandCreate)command;
+			AuctionList auctionList = serverThread.getAuctionList();
+
+			Calendar now = Calendar.getInstance();
+			now.setTime(new Date());
+			now.add(Calendar.SECOND, commandCreate.getDuration());
+
+			auctionList.add(commandCreate.getDescription(), user, now.getTime());
+			serverThread.sendResponse(new Response(Rsp.OK));
 			break;
 		case BID:
 			break;

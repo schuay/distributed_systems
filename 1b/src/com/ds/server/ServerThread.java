@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Date;
 
 import com.ds.common.Command;
 
@@ -25,10 +24,6 @@ public class ServerThread implements Runnable {
 		out = new ObjectOutputStream(socket.getOutputStream());
 
 		System.out.printf("ServerThread %d created%n", id);
-
-		/* TODO: Remove Mocks. */
-		serverData.getAuctionList().add("Apple I", "wozniak", new Date());
-		serverData.getAuctionList().add("My left shoe", "me", new Date());
 	}
 
 	@Override
