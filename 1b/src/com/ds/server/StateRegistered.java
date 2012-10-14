@@ -3,11 +3,11 @@ package com.ds.server;
 import java.util.Calendar;
 import java.util.Date;
 
-import com.ds.common.ResponseAuctionList;
 import com.ds.common.Command;
 import com.ds.common.CommandCreate;
 import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
+import com.ds.common.ResponseAuctionList;
 
 public class StateRegistered implements State {
 
@@ -36,8 +36,8 @@ public class StateRegistered implements State {
 			now.setTime(new Date());
 			now.add(Calendar.SECOND, commandCreate.getDuration());
 
-			auctionList.add(commandCreate.getDescription(), user, now.getTime());
-			serverThread.sendResponse(new Response(Rsp.OK));
+			int id = auctionList.add(commandCreate.getDescription(), user, now.getTime());
+			serverThread.sendResponse(new ResponseAuctionCreated(id));
 			break;
 		case BID:
 			break;
