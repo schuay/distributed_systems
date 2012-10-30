@@ -21,6 +21,9 @@ public class Auction {
         if (amount <= highestBid) {
             return;
         }
+        if (bidder != highestBidder) {
+            highestBidder.postNotification(String.format("You have been overbid on auction %d", id));
+        }
         highestBid = amount;
         highestBidder = bidder;
     }
