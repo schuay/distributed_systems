@@ -18,7 +18,7 @@ public class User {
 		return loggedIn;
 	}
 
-	private final List<String> notifications = new ArrayList<>();
+	private final List<String> notifications = new ArrayList<String>();
 	private int port;
 	private InetAddress address;
 
