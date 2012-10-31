@@ -30,8 +30,7 @@ public class AuctionList {
 
     private synchronized void expire(int id) {
         Auction auction = auctions.get(id);
-        auction.getHighestBidder().postNotification("The auction has ended. You won!");
-        auction.getOwner().postNotification("The auction has ended.");
+        auction.expire();
         auctions.remove(id);
     }
 

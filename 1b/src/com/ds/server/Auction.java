@@ -22,7 +22,7 @@ public class Auction {
             return;
         }
         if (bidder != highestBidder) {
-            highestBidder.postNotification(String.format("You have been overbid on auction %d", id));
+            highestBidder.postNotification(String.format("!new-bid %s", description));
         }
         highestBid = amount;
         highestBidder = bidder;
@@ -41,5 +41,12 @@ public class Auction {
 
     public User getOwner() {
         return owner;
+    }
+
+    public void expire() {
+        String n = String.format("!auction-ended %s %d %s",
+                highestBidder.getName(), highestBid, description);
+        highestBidder.postNotification(n);
+        owner.postNotification(n);
     }
 }
