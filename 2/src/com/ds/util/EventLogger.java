@@ -4,6 +4,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import com.ds.event.Event;
+import com.ds.interfaces.EventListener;
 
 public class EventLogger implements EventListener {
 

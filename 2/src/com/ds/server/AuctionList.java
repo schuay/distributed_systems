@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
-import com.ds.util.EventListener;
+import com.ds.interfaces.EventListener;
 
 public class AuctionList implements EventListener {
 

@@ -1,7 +1,7 @@
 package com.ds.server;
 
 import com.ds.event.Event;
-import com.ds.util.EventListener;
+import com.ds.interfaces.EventListener;
 
 /**
  * Forwards events to an event processor.
