@@ -12,7 +12,7 @@ import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
 import com.ds.util.EventListener;
 
-public class AuctionList {
+public class AuctionList implements EventListener {
 
     private final ConcurrentHashMap<Integer, Auction> auctions = new ConcurrentHashMap<Integer, Auction>();
     private final Timer timer = new Timer();
@@ -23,7 +23,9 @@ public class AuctionList {
         int auctionId = id++;
 
         notifyListeners(new AuctionEvent(AuctionEvent.AUCTION_STARTED, auctionId));
-        auctions.put(auctionId, new Auction(auctionId, description, owner, end));
+        Auction auction = new Auction(auctionId, description, owner, end);
+        auction.addOnEventListener(this);
+        auctions.put(auctionId, auction);
         timer.schedule(new AuctionTimerTask(this, auctionId), end);
 
         return auctionId;
@@ -39,6 +41,7 @@ public class AuctionList {
 
     private synchronized void expire(int auctionId) {
         notifyListeners(new AuctionEvent(AuctionEvent.AUCTION_ENDED, auctionId));
+        auctions.get(auctionId).end();
         auctions.remove(auctionId);
     }
 
@@ -73,6 +76,11 @@ public class AuctionList {
                 listener.onEvent(event);
             }
         }
+    }
+
+    @Override
+    public void onEvent(Event event) {
+        notifyListeners(event);
     }
 
     /**
