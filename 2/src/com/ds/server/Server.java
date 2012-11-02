@@ -168,6 +168,8 @@ public class Server implements Runnable {
 
         public Data() {
             auctionList.addOnEventListener(eventLogger);
+
+            /* TODO: Add an EventForwarder for the analytics and billing servers. */
         }
 
         public UserList getUserList() {
