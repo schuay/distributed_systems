@@ -3,6 +3,7 @@
 
     <property name="src.dir" value="src"/>
     <property name="build.dir" value="build"/>
+    <property name="libs.dir" value="lib"/>
 
     <!-- You need to update these properties!-->
     <property name="server.name" value="com.ds.server.Server"/><!-- Server's full class name (including the package) -->
@@ -20,6 +21,9 @@
 
     <path id="project.classpath">
         <pathelement location="${build.dir}"/>
+        <fileset dir="${libs.dir}">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
     <target name="compile" description="Compile project.">

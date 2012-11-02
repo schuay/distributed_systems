@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
+import com.ds.util.EventListener;
 
 public class AuctionList {
 
@@ -52,13 +53,6 @@ public class AuctionList {
 
     public void cancelTimers() {
         timer.cancel();
-    }
-
-    /**
-     * Listeners are notified of all auction related events.
-     */
-    public interface EventListener {
-        void onEvent(Event event);
     }
 
     public void addOnEventListener(EventListener listener) {
