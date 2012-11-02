@@ -16,13 +16,13 @@ public class ServerThread implements Runnable {
 
     private final int id;
 
-    private final ServerData serverData;
+    private final Server.Data serverData;
 
     private State state = new StateConnected(this);
 
     private boolean quit = false;
 
-    public ServerThread(int id, Socket socket, ServerData serverData) throws IOException {
+    public ServerThread(int id, Socket socket, Server.Data serverData) throws IOException {
         this.id = id;
         this.serverData = serverData;
 

@@ -13,24 +13,28 @@ import java.util.concurrent.TimeUnit;
 public class Server implements Runnable {
 
     private static volatile boolean listening = true;
-
     private static ServerSocket serverSocket = null;
-
     private static List<Socket> sockets = new ArrayList<Socket>();
-
     private static ExecutorService executorService = Executors.newCachedThreadPool();
-
-    private static final ServerData serverData = new ServerData();
+    private static final Data serverData = new Data();
 
     public static void main(String[] args) throws IOException {
+
+        /* Handle command-line arguments. */
+
         ParsedArgs parsedArgs = null;
         try {
             parsedArgs = new ParsedArgs(args);
             System.out.printf("TCP Port: %d%n", parsedArgs.getTcpPort());
+            System.out.printf("Analytics Binding Name: %s%n", parsedArgs.getAnalyticsBindingName());
+            System.out.printf("Billing Binding Name: %s%n", parsedArgs.getBillingBindingName());
         } catch (IllegalArgumentException e) {
-            System.err.printf("Usage: java %s <tcpPort>%n", Server.class.getName());
+            System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name>%n",
+                    Server.class.getName());
             return;
         }
+
+        /* Open the server socket. */
 
         try {
             serverSocket = new ServerSocket(parsedArgs.getTcpPort());
@@ -39,6 +43,8 @@ public class Server implements Runnable {
             System.err.println(e.getMessage());
             return;
         }
+
+        /* Begin listening for the user to trigger shutdown (by pressing 'Enter'). */
 
         Thread thread = new Thread(new Server());
         thread.start();
@@ -65,9 +71,9 @@ public class Server implements Runnable {
     }
 
     /*
-     * Shutdown gracefully. First, stop accepting new client communications.
-     * Then, cancel timers to stop the timer thread. Next, close all open client
-     * sockets to terminate their tasks. Finally, wait for all tasks to
+     * Shutdown gracefully. Stop accepting new client communications;
+     * Cancel timers to stop the timer thread; Close all open client
+     * sockets to terminate their tasks; and wait for all tasks to
      * complete.
      */
     private static void shutdown() throws IOException {
@@ -146,6 +152,24 @@ public class Server implements Runnable {
 
         public String getBillingBindingName() {
             return billingBindingName;
+        }
+    }
+
+    /**
+     * Encapsulates all server data.
+     */
+    public static class Data {
+
+        private final UserList userList = new UserList();
+
+        public UserList getUserList() {
+            return userList;
+        }
+
+        private final AuctionList auctionList = new AuctionList();
+
+        public AuctionList getAuctionList() {
+            return auctionList;
         }
     }
 }
