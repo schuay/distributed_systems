@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.ds.util.EventLogger;
+
 public class Server implements Runnable {
 
     private static volatile boolean listening = true;
@@ -161,12 +163,16 @@ public class Server implements Runnable {
     public static class Data {
 
         private final UserList userList = new UserList();
+        private final AuctionList auctionList = new AuctionList();
+        private final EventLogger eventLogger = new EventLogger();
+
+        public Data() {
+            auctionList.addOnEventListener(eventLogger);
+        }
 
         public UserList getUserList() {
             return userList;
         }
-
-        private final AuctionList auctionList = new AuctionList();
 
         public AuctionList getAuctionList() {
             return auctionList;
