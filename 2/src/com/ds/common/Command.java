@@ -4,8 +4,6 @@ package com.ds.common;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import com.ds.client.ParsedArgs;
-
 public class Command implements Serializable {
 
     private static final long serialVersionUID = 4698051331006702570L;
@@ -16,7 +14,7 @@ public class Command implements Serializable {
 
     private final Cmd id;
 
-    public static Command parse(ParsedArgs args, String line) {
+    public static Command parse(String line) {
         StringTokenizer st = new StringTokenizer(line);
         if (!st.hasMoreTokens()) {
             throw new IllegalArgumentException();
@@ -31,7 +29,7 @@ public class Command implements Serializable {
             } else if (token.equals("!end")) {
                 return new Command(Cmd.END);
             } else if (token.equals("!login")) {
-                return new CommandLogin(st, args);
+                return new CommandLogin(st);
             } else if (token.equals("!create")) {
                 return new CommandCreate(st);
             } else if (token.equals("!bid")) {

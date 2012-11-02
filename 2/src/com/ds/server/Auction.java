@@ -4,16 +4,12 @@ package com.ds.server;
 import java.util.Date;
 
 public class Auction {
+
     private final int id;
-
     private final String description;
-
     private final User owner;
-
     private final Date end;
-
     private int highestBid = 0;
-
     private User highestBidder = User.NONE;
 
     public Auction(int id, String description, User owner, Date end) {
