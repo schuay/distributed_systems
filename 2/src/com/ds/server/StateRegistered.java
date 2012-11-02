@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 import java.util.Calendar;
@@ -13,60 +14,61 @@ import com.ds.common.ResponseAuctionList;
 
 public class StateRegistered implements State {
 
-	private final ServerThread serverThread;
-	private final User user;
+    private final ServerThread serverThread;
 
-	public StateRegistered(ServerThread serverThread, User user) {
-		this.serverThread = serverThread;
-		this.user = user;
-	}
+    private final User user;
 
-	@Override
-	public void processCommand(Command command) {
-		switch (command.getId()) {
-		case LIST:
-			serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
-			break;
-		case LOGOUT:
-			logout();
-			break;
-		case CREATE:
-			CommandCreate commandCreate = (CommandCreate)command;
-			AuctionList auctionList = serverThread.getAuctionList();
+    public StateRegistered(ServerThread serverThread, User user) {
+        this.serverThread = serverThread;
+        this.user = user;
+    }
 
-			Calendar now = Calendar.getInstance();
-			now.setTime(new Date());
-			now.add(Calendar.SECOND, commandCreate.getDuration());
+    @Override
+    public void processCommand(Command command) {
+        switch (command.getId()) {
+            case LIST:
+                serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
+                break;
+            case LOGOUT:
+                logout();
+                break;
+            case CREATE:
+                CommandCreate commandCreate = (CommandCreate)command;
+                AuctionList auctionList = serverThread.getAuctionList();
 
-			int id = auctionList.add(commandCreate.getDescription(), user, now.getTime());
-			serverThread.sendResponse(new ResponseAuctionCreated(id));
-			break;
-		case BID:
-			CommandBid commandBid = (CommandBid)command;
-			auctionList = serverThread.getAuctionList();
+                Calendar now = Calendar.getInstance();
+                now.setTime(new Date());
+                now.add(Calendar.SECOND, commandCreate.getDuration());
 
-			auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
-			serverThread.sendResponse(new Response(Rsp.OK));
-			break;
-		case END:
-			logout();
-			serverThread.setQuit();
-			break;
-		default:
-			System.err.printf("Invalid command %s in registered state%n", command);
-		}
-	}
+                int id = auctionList.add(commandCreate.getDescription(), user, now.getTime());
+                serverThread.sendResponse(new ResponseAuctionCreated(id));
+                break;
+            case BID:
+                CommandBid commandBid = (CommandBid)command;
+                auctionList = serverThread.getAuctionList();
 
-	private void logout() {
-		UserList userList = serverThread.getUserList();
-		if (!userList.logout(user)) {
-			serverThread.sendResponse(new Response(Rsp.ERROR));
-			System.out.printf("User %s logout failed: not logged in%n", user.getName());
-			return;
-		}
-		serverThread.setState(new StateConnected(serverThread));
-		serverThread.sendResponse(new Response(Rsp.OK));
-		System.out.printf("User %s logged out%n", user.getName());
-	}
+                auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
+                serverThread.sendResponse(new Response(Rsp.OK));
+                break;
+            case END:
+                logout();
+                serverThread.setQuit();
+                break;
+            default:
+                System.err.printf("Invalid command %s in registered state%n", command);
+        }
+    }
+
+    private void logout() {
+        UserList userList = serverThread.getUserList();
+        if (!userList.logout(user)) {
+            serverThread.sendResponse(new Response(Rsp.ERROR));
+            System.out.printf("User %s logout failed: not logged in%n", user.getName());
+            return;
+        }
+        serverThread.setState(new StateConnected(serverThread));
+        serverThread.sendResponse(new Response(Rsp.OK));
+        System.out.printf("User %s logged out%n", user.getName());
+    }
 
 }

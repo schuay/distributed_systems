@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 import java.util.Date;
@@ -8,7 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuctionList {
 
     private final ConcurrentHashMap<Integer, Auction> auctions = new ConcurrentHashMap<Integer, Auction>();
+
     private final Timer timer = new Timer();
+
     private int id = 0;
 
     public synchronized int add(String description, User owner, Date end) {
@@ -44,6 +47,7 @@ public class AuctionList {
     private static class AuctionTimerTask extends TimerTask {
 
         private final int id;
+
         private final AuctionList list;
 
         public AuctionTimerTask(AuctionList list, int id) {

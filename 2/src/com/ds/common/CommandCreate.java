@@ -1,34 +1,37 @@
+
 package com.ds.common;
 
 import java.util.StringTokenizer;
 
 public class CommandCreate extends Command {
 
-	private static final long serialVersionUID = -1971848687816624645L;
+    private static final long serialVersionUID = -1971848687816624645L;
 
-	private final int duration;
-	public int getDuration() {
-		return duration;
-	}
+    private final int duration;
 
-	private final String description;
-	public String getDescription() {
-		return description;
-	}
+    public int getDuration() {
+        return duration;
+    }
 
-	protected CommandCreate(StringTokenizer st) {
-		super(Cmd.CREATE);
+    private final String description;
 
-		if (st.countTokens() < 2) {
-			throw new IllegalArgumentException();
-		}
+    public String getDescription() {
+        return description;
+    }
 
-		this.duration = Integer.parseInt(st.nextToken());
+    protected CommandCreate(StringTokenizer st) {
+        super(Cmd.CREATE);
 
-		StringBuilder sb = new StringBuilder();
-		while (st.hasMoreTokens()) {
-			sb.append(String.format("%s ", st.nextToken()));
-		}
-		this.description = sb.toString();
-	}
+        if (st.countTokens() < 2) {
+            throw new IllegalArgumentException();
+        }
+
+        this.duration = Integer.parseInt(st.nextToken());
+
+        StringBuilder sb = new StringBuilder();
+        while (st.hasMoreTokens()) {
+            sb.append(String.format("%s ", st.nextToken()));
+        }
+        this.description = sb.toString();
+    }
 }

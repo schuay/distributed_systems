@@ -1,3 +1,4 @@
+
 package com.ds.common;
 
 import java.util.StringTokenizer;
@@ -6,26 +7,28 @@ import com.ds.client.ParsedArgs;
 
 public class CommandLogin extends Command {
 
-	private static final long serialVersionUID = 8266776473396356465L;
+    private static final long serialVersionUID = 8266776473396356465L;
 
-	private final String user;
-	public String getUser() {
-		return user;
-	}
+    private final String user;
 
-	private final int udpPort;
-	public int getUdpPort() {
-		return udpPort;
-	}
+    public String getUser() {
+        return user;
+    }
 
-	protected CommandLogin(StringTokenizer st, ParsedArgs args) {
-		super(Cmd.LOGIN);
+    private final int udpPort;
 
-		if (st.countTokens() < 1) {
-			throw new IllegalArgumentException();
-		}
+    public int getUdpPort() {
+        return udpPort;
+    }
 
-		this.user = st.nextToken();
-		this.udpPort = args.getUdpPort();
-	}
+    protected CommandLogin(StringTokenizer st, ParsedArgs args) {
+        super(Cmd.LOGIN);
+
+        if (st.countTokens() < 1) {
+            throw new IllegalArgumentException();
+        }
+
+        this.user = st.nextToken();
+        this.udpPort = args.getUdpPort();
+    }
 }

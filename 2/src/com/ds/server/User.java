@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 public class User {
@@ -5,11 +6,13 @@ public class User {
     public static final User NONE = new User("none");
 
     private final String name;
+
     public String getName() {
         return name;
     }
 
     private boolean loggedIn = false;
+
     public boolean isLoggedIn() {
         return loggedIn;
     }

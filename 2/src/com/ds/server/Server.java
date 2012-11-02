@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 import java.io.IOException;
@@ -12,8 +13,11 @@ import java.util.concurrent.TimeUnit;
 public class Server implements Runnable {
 
     private static volatile boolean listening = true;
+
     private static ServerSocket serverSocket = null;
+
     private static List<Socket> sockets = new ArrayList<Socket>();
+
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     private static final ServerData serverData = new ServerData();
@@ -41,8 +45,9 @@ public class Server implements Runnable {
 
         System.out.println("Server started, press Enter to initiate shutdown.");
 
-        /* Initialization is done. We will now accept new connections until server shutdown
-         * is triggered.
+        /*
+         * Initialization is done. We will now accept new connections until
+         * server shutdown is triggered.
          */
 
         int id = 0;
@@ -59,10 +64,11 @@ public class Server implements Runnable {
         shutdown();
     }
 
-    /* Shutdown gracefully. First,
-     * stop accepting new client communications. Then, cancel timers to stop the timer thread.
-     * Next, close all open client sockets to terminate
-     * their tasks. Finally, wait for all tasks to complete.
+    /*
+     * Shutdown gracefully. First, stop accepting new client communications.
+     * Then, cancel timers to stop the timer thread. Next, close all open client
+     * sockets to terminate their tasks. Finally, wait for all tasks to
+     * complete.
      */
     private static void shutdown() throws IOException {
         serverSocket.close();
@@ -86,7 +92,8 @@ public class Server implements Runnable {
     }
 
     /* Prevent other classes from creating a Server instance. */
-    private Server() { }
+    private Server() {
+    }
 
     /**
      * Waits for the user to press Enter, and then triggers shutdown.

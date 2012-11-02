@@ -1,3 +1,4 @@
+
 package com.ds.client;
 
 import java.io.BufferedReader;
@@ -18,13 +19,11 @@ public class Client {
         ParsedArgs parsedArgs;
         try {
             parsedArgs = new ParsedArgs(args);
-            System.out.printf("Host: %s TCP Port: %d UDP Port: %d%n",
-                    parsedArgs.getHost(),
-                    parsedArgs.getTcpPort(),
-                    parsedArgs.getUdpPort());
+            System.out.printf("Host: %s TCP Port: %d UDP Port: %d%n", parsedArgs.getHost(),
+                    parsedArgs.getTcpPort(), parsedArgs.getUdpPort());
         } catch (IllegalArgumentException e) {
-            System.err.printf("Usage: java %s <host> <tcpPort> <udpPort>%n",
-                    Client.class.getName());
+            System.err
+                    .printf("Usage: java %s <host> <tcpPort> <udpPort>%n", Client.class.getName());
             return;
         }
 

@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +13,7 @@ public class UserList {
 
     /**
      * Logs in the specified user.
+     * 
      * @return true if login was successful, false otherwise.
      */
     public synchronized boolean login(User user) {
@@ -30,6 +32,7 @@ public class UserList {
 
     /**
      * Logs out the specified user.
+     * 
      * @return true if logout was successful, false otherwise.
      */
     public synchronized boolean logout(User user) {

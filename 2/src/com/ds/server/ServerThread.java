@@ -1,3 +1,4 @@
+
 package com.ds.server;
 
 import java.io.IOException;
@@ -10,10 +11,15 @@ import com.ds.common.Command;
 public class ServerThread implements Runnable {
 
     private final ObjectInputStream in;
+
     private final ObjectOutputStream out;
+
     private final int id;
+
     private final ServerData serverData;
+
     private State state = new StateConnected(this);
+
     private boolean quit = false;
 
     public ServerThread(int id, Socket socket, ServerData serverData) throws IOException {

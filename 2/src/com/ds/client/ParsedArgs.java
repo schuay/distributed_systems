@@ -1,34 +1,37 @@
+
 package com.ds.client;
 
 public class ParsedArgs {
-	private final String host;
-	private final int tcpPort;
-	private final int udpPort;
+    private final String host;
 
-	public ParsedArgs(String[] args) {
-		if (args.length != 3) {
-			throw new IllegalArgumentException();
-		}
+    private final int tcpPort;
 
-		host = args[0];
+    private final int udpPort;
 
-		try {
-			tcpPort = Integer.parseInt(args[1]);
-			udpPort = Integer.parseInt(args[2]);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException();
-		}
-	}
+    public ParsedArgs(String[] args) {
+        if (args.length != 3) {
+            throw new IllegalArgumentException();
+        }
 
-	public String getHost() {
-		return host;
-	}
+        host = args[0];
 
-	public int getTcpPort() {
-		return tcpPort;
-	}
+        try {
+            tcpPort = Integer.parseInt(args[1]);
+            udpPort = Integer.parseInt(args[2]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException();
+        }
+    }
 
-	public int getUdpPort() {
-		return udpPort;
-	}
+    public String getHost() {
+        return host;
+    }
+
+    public int getTcpPort() {
+        return tcpPort;
+    }
+
+    public int getUdpPort() {
+        return udpPort;
+    }
 }

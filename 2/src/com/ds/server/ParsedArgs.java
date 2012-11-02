@@ -1,8 +1,11 @@
+
 package com.ds.server;
 
 class ParsedArgs {
     private final int tcpPort;
+
     private final String analyticsBindingName;
+
     private final String billingBindingName;
 
     public ParsedArgs(String[] args) {
