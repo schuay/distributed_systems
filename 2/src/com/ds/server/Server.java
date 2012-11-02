@@ -1,7 +1,6 @@
 package com.ds.server;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ public class Server implements Runnable {
 
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
-    private static DatagramSocket datagramSocket = null;
     private static List<Socket> sockets = new ArrayList<Socket>();
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -32,11 +30,8 @@ public class Server implements Runnable {
 
         try {
             serverSocket = new ServerSocket(parsedArgs.getTcpPort());
-            datagramSocket = new DatagramSocket();
         } catch (IOException e) {
-            if (serverSocket != null)
-                serverSocket.close();
-
+            serverSocket.close();
             System.err.println(e.getMessage());
             return;
         }
@@ -46,7 +41,7 @@ public class Server implements Runnable {
 
         System.out.println("Server started, press Enter to initiate shutdown.");
 
-        /* Initialization is done. We will not accept new connections until server shutdown
+        /* Initialization is done. We will now accept new connections until server shutdown
          * is triggered.
          */
 
@@ -65,11 +60,13 @@ public class Server implements Runnable {
     }
 
     /* Shutdown gracefully. First,
-     * stop accepting new client exceptions. Then, cancel timers to stop the timer thread.
+     * stop accepting new client communications. Then, cancel timers to stop the timer thread.
      * Next, close all open client sockets to terminate
      * their tasks. Finally, wait for all tasks to complete.
      */
     private static void shutdown() throws IOException {
+        serverSocket.close();
+
         executorService.shutdownNow();
 
         for (Socket socket : sockets) {
@@ -86,9 +83,6 @@ public class Server implements Runnable {
         } catch (InterruptedException e) {
             System.err.println(e.getMessage());
         }
-
-        serverSocket.close();
-        datagramSocket.close();
     }
 
     /* Prevent other classes from creating a Server instance. */

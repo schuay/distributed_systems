@@ -7,6 +7,7 @@ import com.ds.common.Command;
 import com.ds.common.CommandBid;
 import com.ds.common.CommandCreate;
 import com.ds.common.Response;
+import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.Response.Rsp;
 import com.ds.common.ResponseAuctionList;
 

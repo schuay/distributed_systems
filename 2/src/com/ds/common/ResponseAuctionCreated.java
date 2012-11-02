@@ -1,6 +1,5 @@
-package com.ds.server;
+package com.ds.common;
 
-import com.ds.common.Response;
 
 public class ResponseAuctionCreated extends Response {
 
