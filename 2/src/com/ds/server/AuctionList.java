@@ -21,16 +21,16 @@ public class AuctionList {
         return auctionId;
     }
 
-    public synchronized void bid(int id, User bidder, int amount) {
-        if (!auctions.containsKey(id)) {
+    public synchronized void bid(int auctionId, User bidder, int amount) {
+        if (!auctions.containsKey(auctionId)) {
             System.err.println("No such auction");
             return;
         }
-        auctions.get(id).bid(bidder, amount);
+        auctions.get(auctionId).bid(bidder, amount);
     }
 
-    private synchronized void expire(int id) {
-        auctions.remove(id);
+    private synchronized void expire(int auctionId) {
+        auctions.remove(auctionId);
     }
 
     @Override
