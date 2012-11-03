@@ -9,6 +9,7 @@ import java.net.Socket;
 
 import com.ds.common.Command;
 import com.ds.common.Command.Cmd;
+import com.ds.loggers.Log;
 
 public class Client {
 
@@ -21,11 +22,10 @@ public class Client {
         ParsedArgs parsedArgs;
         try {
             parsedArgs = new ParsedArgs(args);
-            System.out.printf("Host: %s TCP Port: %d UDP Port: %d%n", parsedArgs.getHost(),
+            Log.i("Host: %s TCP Port: %d UDP Port: %d", parsedArgs.getHost(),
                     parsedArgs.getTcpPort(), parsedArgs.getUdpPort());
         } catch (IllegalArgumentException e) {
-            System.err
-            .printf("Usage: java %s <host> <tcpPort> <udpPort>%n", Client.class.getName());
+            System.err.printf("Usage: java %s <host> <tcpPort> <udpPort>%n", Client.class.getName());
             return;
         }
 
@@ -42,13 +42,13 @@ public class Client {
             responseThread.start();
 
             out = new ObjectOutputStream(socket.getOutputStream());
-            System.out.println("Connection successful.");
+            Log.i("Connection successful.");
 
             inputLoop(parsedArgs, out);
 
             responseThread.join();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            Log.e(e.getMessage());
         } finally {
             if (out != null)
                 out.close();
@@ -80,7 +80,7 @@ public class Client {
 
                 System.out.print(INDENT);
             } catch (IllegalArgumentException e) {
-                System.err.println("Invalid command ignored");
+                Log.e("Invalid command ignored");
             }
         }
 

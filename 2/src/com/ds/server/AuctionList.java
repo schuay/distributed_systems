@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
 import com.ds.interfaces.EventListener;
+import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
 
 public class AuctionList implements EventListener {
@@ -34,7 +35,7 @@ public class AuctionList implements EventListener {
 
     public synchronized void bid(int auctionId, User bidder, int amount) {
         if (!auctions.containsKey(auctionId)) {
-            System.err.println("No such auction");
+            Log.e("No such auction");
             return;
         }
         auctions.get(auctionId).bid(bidder, amount);

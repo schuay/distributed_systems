@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.ds.loggers.EventLogger;
+import com.ds.loggers.Log;
 
 public class Server implements Runnable {
 
@@ -27,9 +28,9 @@ public class Server implements Runnable {
         ParsedArgs parsedArgs = null;
         try {
             parsedArgs = new ParsedArgs(args);
-            System.out.printf("TCP Port: %d%n", parsedArgs.getTcpPort());
-            System.out.printf("Analytics Binding Name: %s%n", parsedArgs.getAnalyticsBindingName());
-            System.out.printf("Billing Binding Name: %s%n", parsedArgs.getBillingBindingName());
+            Log.i("TCP Port: %d", parsedArgs.getTcpPort());
+            Log.i("Analytics Binding Name: %s", parsedArgs.getAnalyticsBindingName());
+            Log.i("Billing Binding Name: %s", parsedArgs.getBillingBindingName());
         } catch (IllegalArgumentException e) {
             System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name>%n",
                     Server.class.getName());
@@ -42,7 +43,7 @@ public class Server implements Runnable {
             serverSocket = new ServerSocket(parsedArgs.getTcpPort());
         } catch (IOException e) {
             serverSocket.close();
-            System.err.println(e.getMessage());
+            Log.e(e.getMessage());
             return;
         }
 
@@ -65,7 +66,7 @@ public class Server implements Runnable {
                 sockets.add(socket);
                 executorService.submit(new ServerThread(id++, socket, serverData));
             } catch (IOException e) {
-                System.err.println(e.getMessage());
+                Log.e(e.getMessage());
             }
         }
 
@@ -95,7 +96,7 @@ public class Server implements Runnable {
         try {
             executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            System.err.println(e.getMessage());
+            Log.e(e.getMessage());
         }
     }
 
@@ -116,7 +117,7 @@ public class Server implements Runnable {
             listening = false;
             serverSocket.close();
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            Log.e(e.getMessage());
         }
     }
 

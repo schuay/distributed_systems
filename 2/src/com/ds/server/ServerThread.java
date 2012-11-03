@@ -16,6 +16,7 @@ import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
 import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.ResponseAuctionList;
+import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
 
 public class ServerThread implements Runnable {
@@ -34,7 +35,7 @@ public class ServerThread implements Runnable {
         in = new ObjectInputStream(socket.getInputStream());
         out = new ObjectOutputStream(socket.getOutputStream());
 
-        System.out.printf("ServerThread %d created%n", id);
+        Log.i("ServerThread %d created", id);
     }
 
     @Override
@@ -42,11 +43,11 @@ public class ServerThread implements Runnable {
         try {
             Command command;
             while (!quit && (command = (Command)in.readObject()) != null) {
-                System.out.printf("Received command: %s%n", command);
+                Log.i("Received command: %s", command);
                 state.processCommand(command);
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            Log.e(e.getMessage());
         } finally {
             try {
                 in.close();
@@ -55,7 +56,7 @@ public class ServerThread implements Runnable {
             }
         }
 
-        System.out.printf("ServerThread %d shutting down%n", id);
+        Log.i("ServerThread %d shutting down", id);
     }
 
     /* The following methods are accessors for use by State classes. */
@@ -113,12 +114,12 @@ public class ServerThread implements Runnable {
                     User user = userList.login(commandLogin.getUser());
                     if (user == null) {
                         serverThread.sendResponse(new Response(Rsp.ERROR));
-                        System.out.printf("User %s login failed: already logged in%n", commandLogin.getUser());
+                        Log.e("User %s login failed: already logged in", commandLogin.getUser());
                         return;
                     }
                     serverThread.setState(new StateRegistered(serverThread, user));
                     serverThread.sendResponse(new Response(Rsp.OK));
-                    System.out.printf("User %s logged in%n", user.getName());
+                    Log.i("User %s logged in", user.getName());
                     break;
                 case LIST:
                     serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
@@ -127,7 +128,7 @@ public class ServerThread implements Runnable {
                     serverThread.setQuit();
                     break;
                 default:
-                    System.err.printf("Invalid command %s in connected state%n", command);
+                    Log.e("Invalid command %s in connected state", command);
             }
         }
 
@@ -179,7 +180,7 @@ public class ServerThread implements Runnable {
                     serverThread.setQuit();
                     break;
                 default:
-                    System.err.printf("Invalid command %s in registered state%n", command);
+                    Log.e("Invalid command %s in registered state", command);
             }
         }
 
@@ -187,12 +188,12 @@ public class ServerThread implements Runnable {
             UserList userList = serverThread.getUserList();
             if (!userList.logout(user)) {
                 serverThread.sendResponse(new Response(Rsp.ERROR));
-                System.out.printf("User %s logout failed: not logged in%n", user.getName());
+                Log.e("User %s logout failed: not logged in", user.getName());
                 return;
             }
             serverThread.setState(new StateConnected(serverThread));
             serverThread.sendResponse(new Response(Rsp.OK));
-            System.out.printf("User %s logged out%n", user.getName());
+            Log.i("User %s logged out", user.getName());
         }
 
     }
