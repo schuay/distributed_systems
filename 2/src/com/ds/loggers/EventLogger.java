@@ -11,6 +11,7 @@ public class EventLogger implements EventListener {
     private final Logger logger = Logger.getLogger(EventLogger.class);
 
     public EventLogger() {
+        BasicConfigurator.resetConfiguration();
         BasicConfigurator.configure();
         logger.info(String.format("%s initialized", EventLogger.class.getName()));
     }

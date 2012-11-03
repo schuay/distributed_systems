@@ -1,5 +1,6 @@
 package com.ds.loggers;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 /**
@@ -10,6 +11,8 @@ public class Log {
     private static final Logger logger = Logger.getLogger(Log.class);
 
     static {
+        BasicConfigurator.resetConfiguration();
+        BasicConfigurator.configure();
         logger.info(String.format("%s initialized", EventLogger.class.getName()));
     }
 
