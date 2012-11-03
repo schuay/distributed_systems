@@ -1,4 +1,4 @@
-package com.ds.util;
+package com.ds.loggers;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;

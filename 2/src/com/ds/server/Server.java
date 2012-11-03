@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.ds.util.EventLogger;
+import com.ds.loggers.EventLogger;
 
 public class Server implements Runnable {
 
