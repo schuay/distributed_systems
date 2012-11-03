@@ -3,9 +3,9 @@ package com.ds.server;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-/* The handling of users is unfortunate. First, methods of user are exposed
- * outside of UserList that shouldn't be exposed, and UserList methods take User arguments,
- * but then need to ignore them and look them up again by name to avoid altering incorrect instances.
+/**
+ * A list of all users known to the system.
+ * Users are kept in this list even if they log out.
  */
 public class UserList {
 
@@ -36,11 +36,43 @@ public class UserList {
      * @return true if logout was successful, false otherwise.
      */
     public synchronized boolean logout(User user) {
-        if (!users.containsKey(user.getName())) {
+        if (!user.isLoggedIn()) {
             return false;
         }
 
-        users.get(user.getName()).logout();
+        user.logout();
         return true;
+    }
+
+
+    /**
+     * Represents a system user.
+     */
+    public static class User {
+
+        public static final User NONE = new User("none");
+
+        private final String name;
+        public String getName() {
+            return name;
+        }
+
+        private boolean loggedIn = false;
+        public boolean isLoggedIn() {
+            return loggedIn;
+        }
+
+        /* Prevent construction by all classes except UserList. */
+        private User(String name) {
+            this.name = name;
+        }
+
+        private void login() {
+            this.loggedIn = true;
+        }
+
+        private void logout() {
+            this.loggedIn = false;
+        }
     }
 }

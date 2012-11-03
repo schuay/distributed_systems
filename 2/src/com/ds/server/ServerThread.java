@@ -16,6 +16,7 @@ import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
 import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.ResponseAuctionList;
+import com.ds.server.UserList.User;
 
 public class ServerThread implements Runnable {
 
