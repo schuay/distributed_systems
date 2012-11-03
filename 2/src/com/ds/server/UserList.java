@@ -14,20 +14,20 @@ public class UserList {
     /**
      * Logs in the specified user.
      * 
-     * @return true if login was successful, false otherwise.
+     * @return true The user if login was successful, null otherwise.
      */
-    public synchronized boolean login(User user) {
-        if (!users.containsKey(user.getName())) {
-            users.put(user.getName(), user);
+    public synchronized User login(String userName) {
+        if (!users.containsKey(userName)) {
+            users.put(userName, new User(userName));
         }
 
-        user = users.get(user.getName());
+        User user = users.get(userName);
         if (user.isLoggedIn()) {
-            return false;
+            return null;
         }
 
         user.login();
-        return true;
+        return user;
     }
 
     /**

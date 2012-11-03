@@ -109,10 +109,10 @@ public class ServerThread implements Runnable {
                 case LOGIN:
                     CommandLogin commandLogin = (CommandLogin)command;
                     UserList userList = serverThread.getUserList();
-                    User user = new User(commandLogin.getUser());
-                    if (!userList.login(user)) {
+                    User user = userList.login(commandLogin.getUser());
+                    if (user == null) {
                         serverThread.sendResponse(new Response(Rsp.ERROR));
-                        System.out.printf("User %s login failed: already logged in%n", user.getName());
+                        System.out.printf("User %s login failed: already logged in%n", commandLogin.getUser());
                         return;
                     }
                     serverThread.setState(new StateRegistered(serverThread, user));
