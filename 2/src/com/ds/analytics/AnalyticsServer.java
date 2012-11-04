@@ -2,6 +2,8 @@ package com.ds.analytics;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 import com.ds.event.Event;
 import com.ds.interfaces.EventProcessor;
@@ -9,24 +11,11 @@ import com.ds.loggers.Log;
 
 public class AnalyticsServer implements Analytics {
 
-    private final HashMap<String, Subscription> subscriptions =
-            new HashMap<String, Subscription>();
+    private final Subscriptions subs = new Subscriptions();
 
     @Override
     public String subscribe(String regex, EventProcessor callback) throws RemoteException {
-        Subscription subscription;
-        String id;
-
-        synchronized (subscriptions) {
-            /* Just to be safe, check for collisions. */
-            do {
-                subscription = new Subscription(regex, callback);
-                id = subscription.getUuid().toString();
-            } while (subscriptions.containsKey(id));
-
-            subscriptions.put(id, subscription);
-        }
-
+        String id = subs.add(regex, callback);
         Log.d("New subscription added; ID: %s, Pattern: %s", id, regex);
         return id;
     }
@@ -43,17 +32,84 @@ public class AnalyticsServer implements Analytics {
 
     @Override
     public void unsubscribe(String subscriptionID) throws RemoteException {
-        Subscription result;
-
-        synchronized (subscriptionID) {
-            result = subscriptions.remove(subscriptionID);
-        }
-
-        if (result != null) {
-            Log.d("Removed subscribtion; ID: %s", subscriptionID);
-        } else {
-            Log.d("Received unsubscription request for nonexistent ID: %s", subscriptionID);
-        }
+        subs.remove(subscriptionID);
     }
 
+    /**
+     * Stores a collection of subscriptions.
+     * Subscriptions are handled in a callback-centric way internally; meaning
+     * that one callback only has a single Subscription object, even if that
+     * callback has multiple associated subscriptions (= filter regex). This is
+     * done to send events only once, even if they match multiple subscriptions of
+     * one callback.
+     */
+    private static class Subscriptions {
+
+        /* This table can store the same subscription object multiple times, once
+         * for each subscription id. */
+        private final HashMap<String, Subscription> subsByID =
+                new HashMap<String, Subscription>();
+
+        private final HashMap<EventProcessor, Subscription> subsByCallback =
+                new HashMap<EventProcessor, Subscription>();
+
+        public synchronized String add(String regex, EventProcessor callback) {
+            Subscription sub = subsByCallback.get(callback);
+            if (sub == null) {
+                sub = new Subscription(callback);
+                subsByCallback.put(callback, sub);
+            }
+
+            String id = sub.add(regex);
+            subsByID.put(id, sub);
+
+            return id;
+        }
+
+        public synchronized void remove(String id) {
+            Subscription sub = subsByID.get(id);
+            if (sub == null) {
+                return;
+            }
+
+            sub.remove(id);
+            subsByID.remove(id);
+
+            if (sub.isEmpty()) {
+                subsByCallback.remove(sub.getCallback());
+            }
+        }
+
+        /**
+         * A subscription object manages all subscriptions for a single client.
+         */
+        private static class Subscription {
+
+            private final HashMap<String, Pattern> patterns;
+            private final EventProcessor callback;
+
+            public Subscription(EventProcessor callback) {
+                this.patterns = new HashMap<String, Pattern>();
+                this.callback = callback;
+            }
+
+            public String add(String regex) {
+                String id = UUID.randomUUID().toString();
+                patterns.put(id, Pattern.compile(regex));
+                return id;
+            }
+
+            public void remove(String id) {
+                patterns.remove(id);
+            }
+
+            public boolean isEmpty() {
+                return patterns.isEmpty();
+            }
+
+            public EventProcessor getCallback() {
+                return callback;
+            }
+        }
+    }
 }
