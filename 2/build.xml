@@ -14,7 +14,7 @@
     <property name="client2.port" value="11152"/><!-- 2nd Client's UDP port -->
     <property name="client3.port" value="11153"/><!-- 3rd Client's UDP port -->
     <property name="mgmtclient.name" value="your.ManagementClient"/><!-- Management Client's full class name (including the package) -->
-    <property name="analytics.name" value="your.AnalyticsServer"/><!-- Analytics Server's full class name (including the package) -->
+    <property name="analytics.name" value="com.ds.analytics.AnalyticsMain"/><!-- Analytics Server's full class name (including the package) -->
     <property name="billing.name" value="your.BillingServer"/><!-- Billing Server's full class name (including the package) -->
     <property name="analytics.bindingName" value="AnalyticsServerRef"/><!-- RMI Binding Name of the Analytics Server -->
     <property name="billing.bindingName" value="BillingServerRef"/><!-- RMI Binding Name of the Billing Server -->
