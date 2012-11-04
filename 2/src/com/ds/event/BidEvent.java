@@ -2,6 +2,7 @@ package com.ds.event;
 
 public class BidEvent extends Event {
 
+    private static final long serialVersionUID = 1L;
     public static final String BID_PLACED = "BID_PLACED";
     public static final String BID_OVERBID = "BID_OVERBID";
     public static final String BID_WON = "BID_WON";

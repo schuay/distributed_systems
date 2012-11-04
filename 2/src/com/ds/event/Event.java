@@ -1,10 +1,12 @@
 package com.ds.event;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-public class Event {
+public class Event implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private final String type;
     private final long timestamp;
     private final UUID id;

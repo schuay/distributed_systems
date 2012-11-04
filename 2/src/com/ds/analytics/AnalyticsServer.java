@@ -16,7 +16,7 @@ public class AnalyticsServer implements Analytics {
 
     @Override
     public void processEvent(Event event) throws RemoteException {
-        Log.d("processEvent");
+        Log.d("processEvent: %s", event.getType());
     }
 
     @Override
