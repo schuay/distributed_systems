@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
+import com.ds.util.Initialization;
 
 public class Server implements Runnable {
 
@@ -34,6 +35,17 @@ public class Server implements Runnable {
         } catch (IllegalArgumentException e) {
             System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name>%n",
                     Server.class.getName());
+            return;
+        }
+
+        /* Connect event listeners. */
+
+        try {
+            Initialization.setSystemProperties();
+
+            serverData.getAuctionList().addOnEventListener(new EventLogger());
+        } catch (Throwable t) {
+            Log.e(t.getMessage());
             return;
         }
 
@@ -165,13 +177,6 @@ public class Server implements Runnable {
 
         private final UserList userList = new UserList();
         private final AuctionList auctionList = new AuctionList();
-        private final EventLogger eventLogger = new EventLogger();
-
-        public Data() {
-            auctionList.addOnEventListener(eventLogger);
-
-            /* TODO: Add an EventForwarder for the analytics and billing servers. */
-        }
 
         public UserList getUserList() {
             return userList;

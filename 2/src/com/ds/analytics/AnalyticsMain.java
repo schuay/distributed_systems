@@ -5,6 +5,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.ds.loggers.Log;
+import com.ds.util.Initialization;
 
 public class AnalyticsMain {
 
@@ -19,6 +20,8 @@ public class AnalyticsMain {
         String bindingName = args[0];
 
         /* Start the RMI server. */
+
+        Initialization.setSystemProperties();
 
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
