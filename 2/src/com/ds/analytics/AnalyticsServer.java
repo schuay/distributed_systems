@@ -1,8 +1,11 @@
 package com.ds.analytics;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.ds.event.Event;
@@ -26,7 +29,11 @@ public class AnalyticsServer implements Analytics {
 
         /* Generate derived events. */
 
+        /* TODO */
+
         /* Notify subscribers. */
+
+        subs.notifySubscribers(event);
 
     }
 
@@ -66,6 +73,22 @@ public class AnalyticsServer implements Analytics {
             return id;
         }
 
+        public synchronized void notifySubscribers(Event event) {
+            List<Subscription> toRemove = new ArrayList<Subscription>();
+
+            for (Subscription sub : subsByCallback.values()) {
+                try {
+                    if (sub.matches(event)) {
+                        sub.notifySubscriber(event);
+                    }
+                } catch (RemoteException e) {
+                    toRemove.add(sub);
+                }
+            }
+
+            /* TODO: Remove lost subscriptions. */
+        }
+
         public synchronized void remove(String id) {
             Subscription sub = subsByID.get(id);
             if (sub == null) {
@@ -91,6 +114,20 @@ public class AnalyticsServer implements Analytics {
             public Subscription(EventProcessor callback) {
                 this.patterns = new HashMap<String, Pattern>();
                 this.callback = callback;
+            }
+
+            public void notifySubscriber(Event event) throws RemoteException {
+                callback.processEvent(event);
+            }
+
+            public boolean matches(Event event) {
+                for (Pattern pattern : patterns.values()) {
+                    Matcher matcher = pattern.matcher(event.getType());
+                    if (matcher.matches()) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public String add(String regex) {
