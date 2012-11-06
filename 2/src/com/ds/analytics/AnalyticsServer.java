@@ -29,12 +29,20 @@ public class AnalyticsServer implements Analytics {
 
         /* Generate derived events. */
 
-        /* TODO */
+        List<Event> generatedEvents = generateEvents(event);
 
         /* Notify subscribers. */
 
         subs.notifySubscribers(event);
+        for (Event e : generatedEvents) {
+            subs.notifySubscribers(e);
+        }
 
+    }
+
+    private List<Event> generateEvents(Event event) {
+        // TODO Auto-generated method stub
+        return new ArrayList<Event>();
     }
 
     @Override
