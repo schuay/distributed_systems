@@ -35,6 +35,7 @@ public class Server implements Runnable {
         } catch (IllegalArgumentException e) {
             System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name>%n",
                     Server.class.getName());
+            shutdown();
             return;
         }
 
@@ -47,6 +48,7 @@ public class Server implements Runnable {
             serverData.getAuctionList().addOnEventListener(new EventForwarder(parsedArgs.getAnalyticsBindingName()));
         } catch (Throwable t) {
             Log.e(t.getMessage());
+            shutdown();
             return;
         }
 
@@ -55,8 +57,8 @@ public class Server implements Runnable {
         try {
             serverSocket = new ServerSocket(parsedArgs.getTcpPort());
         } catch (IOException e) {
-            serverSocket.close();
             Log.e(e.getMessage());
+            shutdown();
             return;
         }
 
@@ -93,7 +95,9 @@ public class Server implements Runnable {
      * complete.
      */
     private static void shutdown() throws IOException {
-        serverSocket.close();
+        if (serverSocket != null) {
+            serverSocket.close();
+        }
 
         executorService.shutdownNow();
 
