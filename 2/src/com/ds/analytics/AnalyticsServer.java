@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,6 +85,8 @@ public class AnalyticsServer implements Analytics {
         public synchronized void notifySubscribers(Event event) {
             List<Subscription> toRemove = new ArrayList<Subscription>();
 
+            /* Notify all matching subscribers. */
+
             for (Subscription sub : subsByCallback.values()) {
                 try {
                     if (sub.matches(event)) {
@@ -94,7 +97,14 @@ public class AnalyticsServer implements Analytics {
                 }
             }
 
-            /* TODO: Remove lost subscriptions. */
+            /* Remove lost subscriptions. */
+
+            for (Subscription s : toRemove) {
+                for (String id : s.getSubscriptionIDs()) {
+                    subsByID.remove(id);
+                }
+                subsByCallback.remove(s.getCallback());
+            }
         }
 
         public synchronized void remove(String id) {
@@ -154,6 +164,10 @@ public class AnalyticsServer implements Analytics {
 
             public EventProcessor getCallback() {
                 return callback;
+            }
+
+            public Set<String> getSubscriptionIDs() {
+                return patterns.keySet();
             }
         }
     }
