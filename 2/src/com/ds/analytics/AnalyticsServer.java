@@ -10,7 +10,11 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ds.event.AuctionEvent;
+import com.ds.event.BidEvent;
 import com.ds.event.Event;
+import com.ds.event.StatisticsEvent;
+import com.ds.event.UserEvent;
 import com.ds.interfaces.EventProcessor;
 import com.ds.loggers.Log;
 
@@ -32,12 +36,12 @@ public class AnalyticsServer implements Analytics {
 
         /* Generate derived events. */
 
-        List<Event> generatedEvents = data.updateAndGenerateEvents(event);
+        List<Event> gen = data.processEvent(event);
 
         /* Notify subscribers. */
 
         subs.notifySubscribers(event);
-        for (Event e : generatedEvents) {
+        for (Event e : gen) {
             subs.notifySubscribers(e);
         }
 
@@ -48,30 +52,79 @@ public class AnalyticsServer implements Analytics {
         private static final long MSECS_PER_SEC = 1000;
         private static final long SECS_PER_MIN = 60;
 
-        private final int sessionSecondsMin = -1;
-        private final int sessionSecondsMax = -1;
-        private final int sessionSecondsAccumulated = 0;
-        private final int sessionCount = 0;
+        private int sessionSecondsMin = -1;
+        private int sessionSecondsMax = -1;
+        private int sessionSecondsAccumulated = 0;
+        private int sessionCount = 0;
 
-        private final double bidPriceMax = -1;
-        private final int bidCount = 0;
+        private double bidPriceMax = -1;
+        private int bidCount = 0;
 
-        private final int auctionSecondsAccumulated = 0;
-        private final int auctionCount = 0;
-        private final int auctionSuccessCount = 0;
+        private int auctionSecondsAccumulated = 0;
+        private int auctionCount = 0;
+        private int auctionSuccessCount = 0;
 
         private final Date runningSince;
+
+        /** Tracks start times of currently active auctions. */
+        private final HashMap<Long, Date> auctionsSince = new HashMap<Long, Date>();
+
+        /** Tracks start times of currently active user sessions. */
+        private final HashMap<String, Date> sessionsSince = new HashMap<String, Date>();
 
 
         public AnalyticsData() {
             runningSince = new Date();
         }
 
-        public List<Event> updateAndGenerateEvents(Event event) {
+        public synchronized List<Event> processEvent(Event event) {
+            List<Event> gen = new ArrayList<Event>();
+            Date now = new Date();
 
-            /* TODO: keep track of users, auctions, and generate events accordingly. */
+            String t = event.getType();
+            if (t.equals(AuctionEvent.AUCTION_STARTED)) {
+                auctionsSince.put(((AuctionEvent)event).getAuctionID(), now);
+            } else if (t.equals(AuctionEvent.AUCTION_ENDED)) {
+                Date since = auctionsSince.remove(((AuctionEvent)event).getAuctionID());
 
-            return new ArrayList<Event>();
+                auctionCount++;
+                auctionSecondsAccumulated += secondsBetween(since, now);
+
+                gen.add(new StatisticsEvent(StatisticsEvent.AUCTION_TIME_AVG, getAuctionSecondsAvg()));
+                gen.add(new StatisticsEvent(StatisticsEvent.AUCTION_SUCCESS_RATIO, getAuctionSuccessRatio()));
+            } else if (t.equals(UserEvent.USER_LOGIN)) {
+                sessionsSince.put(((UserEvent)event).getUserName(), now);
+            } else if (t.equals(UserEvent.USER_LOGOUT)) {
+                Date since = sessionsSince.remove(((UserEvent)event).getUserName());
+                int sessionDuration = secondsBetween(since, now);
+
+                sessionCount++;
+                sessionSecondsAccumulated += sessionDuration;
+                sessionSecondsMin = Math.min(sessionDuration, sessionSecondsMin);
+                sessionSecondsMax = Math.max(sessionDuration, sessionSecondsMax);
+
+                gen.add(new StatisticsEvent(StatisticsEvent.USER_SESSIONTIME_MIN, getSessionSecondsMin()));
+                gen.add(new StatisticsEvent(StatisticsEvent.USER_SESSIONTIME_AVG, getSessionSecondsAvg()));
+                gen.add(new StatisticsEvent(StatisticsEvent.USER_SESSIONTIME_MAX, getSessionSecondsMax()));
+            } else if (t.equals(BidEvent.BID_PLACED)) {
+                BidEvent be = (BidEvent)event;
+
+                bidCount++;
+                bidPriceMax = Math.max(be.getPrice(), bidPriceMax);
+
+                gen.add(new StatisticsEvent(StatisticsEvent.BID_PRICE_MAX, getBidPriceMax()));
+                gen.add(new StatisticsEvent(StatisticsEvent.BID_COUNT_PER_MINUTE, getBidCountPerMinute()));
+            } else if (t.equals(BidEvent.BID_WON)) {
+                auctionSuccessCount++;
+
+                gen.add(new StatisticsEvent(StatisticsEvent.AUCTION_SUCCESS_RATIO, getAuctionSuccessRatio()));
+            }
+
+            return gen;
+        }
+
+        private static int secondsBetween(Date since, Date now) {
+            return (int)((now.getTime() - since.getTime()) / MSECS_PER_SEC);
         }
 
         private int getSessionSecondsMin() {
@@ -92,7 +145,7 @@ public class AnalyticsServer implements Analytics {
 
         private double getBidCountPerMinute() {
             Date now = new Date();
-            long seconds = (now.getTime() - runningSince.getTime()) / MSECS_PER_SEC;
+            int seconds = secondsBetween(runningSince,  now);
 
             if (seconds == 0) {
                 return 0;
