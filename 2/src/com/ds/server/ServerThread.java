@@ -78,9 +78,9 @@ public class ServerThread implements Runnable {
         this.state = state;
     }
 
-    private void sendResponse(Object object) {
+    private void sendResponse(Response response) {
         try {
-            out.writeObject(object);
+            out.writeObject(response);
         } catch (IOException e) {
             setQuit();
             e.printStackTrace();
