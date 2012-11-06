@@ -44,8 +44,13 @@ public class Server implements Runnable {
         try {
             Initialization.setSystemProperties();
 
-            serverData.getAuctionList().addOnEventListener(new EventLogger());
-            serverData.getAuctionList().addOnEventListener(new EventForwarder(parsedArgs.getAnalyticsBindingName()));
+            EventLogger eventLogger = new EventLogger();
+            serverData.getAuctionList().addOnEventListener(eventLogger);
+            serverData.getUserList().addOnEventListener(eventLogger);
+
+            EventForwarder analyticsForwarder = new EventForwarder(parsedArgs.getAnalyticsBindingName());
+            serverData.getAuctionList().addOnEventListener(analyticsForwarder);
+            serverData.getUserList().addOnEventListener(analyticsForwarder);
         } catch (Throwable t) {
             Log.e(t.getMessage());
             shutdown();

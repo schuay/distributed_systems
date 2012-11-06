@@ -1,7 +1,13 @@
 
 package com.ds.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.ds.event.Event;
+import com.ds.event.UserEvent;
+import com.ds.interfaces.EventListener;
 
 /**
  * A list of all users known to the system.
@@ -10,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserList {
 
     private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
+    private final List<EventListener> listeners = new ArrayList<EventListener>();
 
     /**
      * Logs in the specified user.
@@ -26,6 +33,7 @@ public class UserList {
             return null;
         }
 
+        notifyListeners(new UserEvent(UserEvent.USER_LOGIN, user.getName()));
         user.login();
         return user;
     }
@@ -40,10 +48,31 @@ public class UserList {
             return false;
         }
 
+        notifyListeners(new UserEvent(UserEvent.USER_LOGOUT, user.getName()));
+        notifyListeners(new UserEvent(UserEvent.USER_DISCONNECTED, user.getName()));
         user.logout();
         return true;
     }
 
+    public void addOnEventListener(EventListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeOnEventListener(EventListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    private void notifyListeners(Event event) {
+        synchronized (listeners) {
+            for (EventListener listener : listeners) {
+                listener.onEvent(event);
+            }
+        }
+    }
 
     /**
      * Represents a system user.
