@@ -51,6 +51,7 @@ public class ServerThread implements Runnable {
         } finally {
             try {
                 in.close();
+                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
