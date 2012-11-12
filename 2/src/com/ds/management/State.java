@@ -22,10 +22,19 @@ abstract class State {
      */
     State processCommand(CommandMatcher.Type type, List<String> args) {
         switch (type) {
-            case SUBSCRIBE:
+            case SUBSCRIBE: {
+                String filter = args.get(0);
+                String subscriptionID = data.getAnalSub().subscribe(filter);
+                System.out.printf("Created subscription with ID %s for events using filter %s%n",
+                        subscriptionID, filter);
                 return this;
-            case UNSUBSCRIBE:
+            }
+            case UNSUBSCRIBE: {
+                String subscriptionID = args.get(0);
+                data.getAnalSub().unsubscribe(subscriptionID);
+                System.out.printf("Subscription %s terminated%n", subscriptionID);
                 return this;
+            }
             case AUTO:
                 return this;
             case HIDE:
