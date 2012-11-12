@@ -30,6 +30,11 @@ public class ManagementMain {
         List<CommandMatcher> matchers = new ArrayList<CommandMatcher>();
         matchers.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+(\\S+)\\s+(\\S+)\\s*$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.SUBSCRIBE, "^!subscribe\\s+(.+)$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.UNSUBSCRIBE, "^!unsubscribe\\s+(.+)$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.AUTO, "^!auto\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.HIDE, "^!hide\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.PRINT, "^!print\\s*$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
 
         /* Main loop. */

@@ -14,6 +14,16 @@ abstract class State {
      */
     State processCommand(CommandMatcher.Type type, List<String> args) {
         switch (type) {
+            case SUBSCRIBE:
+                return this;
+            case UNSUBSCRIBE:
+                return this;
+            case AUTO:
+                return this;
+            case HIDE:
+                return this;
+            case PRINT:
+                return this;
             default:
                 return null;
         }
