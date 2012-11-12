@@ -2,11 +2,19 @@ package com.ds.management;
 
 import java.util.List;
 
+import com.ds.management.ManagementMain.Data;
+
 
 /**
  * The state is responsible for handling user input events.
  */
 abstract class State {
+
+    private final Data data;
+
+    public State(Data data) {
+        this.data = data;
+    }
 
     /**
      * Returns the next state to set, or null is not responsible for the
@@ -30,4 +38,8 @@ abstract class State {
     }
 
     public abstract String getPrefix();
+
+    protected Data getData() {
+        return data;
+    }
 }

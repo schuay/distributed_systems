@@ -3,6 +3,8 @@ package com.ds.management;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,9 +41,9 @@ public class ManagementMain {
 
         /* Main loop. */
 
-        State state = new StateLoggedOut();
         BufferedReader stdin = null;
         try {
+            State state = new StateLoggedOut(new Data(parsedArgs));
             stdin = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.print(state.getPrefix());
@@ -91,6 +93,19 @@ public class ManagementMain {
                     Log.e(e.getMessage());
                 }
             }
+        }
+    }
+
+    public static class Data {
+
+        private final AnalyticsSubscriber analSub;
+
+        public Data(ParsedArgs args) throws RemoteException, NotBoundException {
+            analSub = new AnalyticsSubscriber(args.getAnalyticsBindingName());
+        }
+
+        public AnalyticsSubscriber getAnalSub() {
+            return analSub;
         }
     }
 
