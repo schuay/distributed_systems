@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.ds.loggers.Log;
 
@@ -31,19 +29,28 @@ public class ManagementMain {
 
         List<CommandMatcher> matchers = new ArrayList<CommandMatcher>();
         matchers.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+(\\S+)\\s+(\\S+)\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
 
         /* Main loop. */
 
+        State state = new StateLoggedOut();
         BufferedReader stdin = null;
         try {
             stdin = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.print(state.getPrefix());
+            System.out.flush();
+
             String input;
             while ((input = stdin.readLine()) != null) {
 
                 /* Parse incoming command. */
 
+                CommandMatcher matcher = null;
                 List<String> matches = null;
-                for (CommandMatcher matcher : matchers) {
+                for (int i = 0; i < matchers.size(); i++) {
+                    matcher = matchers.get(i);
                     matches = matcher.match(input);
                     if (matches != null) {
                         break;
@@ -55,8 +62,18 @@ public class ManagementMain {
                     continue;
                 }
 
-                /* TODO: If command != '!end', handle command. */
+                /* If command != '!end', handle command. */
 
+                if (matcher.getType() == CommandMatcher.Type.END) {
+                    break;
+                }
+
+                state = state.processCommand(matcher.getType(), matches);
+
+                /* Prepare for next input. */
+
+                System.out.print(state.getPrefix());
+                System.out.flush();
             }
         } catch (Throwable t) {
             Log.e(t.getMessage());
@@ -69,39 +86,6 @@ public class ManagementMain {
                     Log.e(e.getMessage());
                 }
             }
-        }
-    }
-
-    private static class CommandMatcher {
-
-        enum Type {
-            LOGIN
-        }
-
-        private final Type type;
-        private final Pattern pattern;
-
-        public CommandMatcher(Type type, String regex) {
-            this.type = type;
-            pattern = Pattern.compile(regex);
-        }
-
-        public List<String> match(String input) {
-            List<String> groups = null;
-            Matcher m = pattern.matcher(input);
-
-            if (m.matches()) {
-                groups = new ArrayList<String>();
-                for (int i = 1; i < m.groupCount(); i++) {
-                    groups.add(m.group(i));
-                }
-            }
-
-            return groups;
-        }
-
-        public Type getType() {
-            return type;
         }
     }
 
