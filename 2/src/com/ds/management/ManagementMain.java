@@ -1,5 +1,9 @@
 package com.ds.management;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import com.ds.loggers.Log;
 
 public class ManagementMain {
@@ -17,6 +21,32 @@ public class ManagementMain {
             System.err.printf("Usage: java %s <Analytics Binding Name> <Billing Binding Name>%n",
                     ManagementMain.class.getName());
             return;
+        }
+
+        /* Main loop. */
+
+        BufferedReader stdin = null;
+        try {
+            stdin = new BufferedReader(new InputStreamReader(System.in));
+            String userInput;
+            while ((userInput = stdin.readLine()) != null) {
+
+                /* TODO: Parse incoming command. */
+
+                /* TODO: If command != '!end', handle command. */
+
+            }
+        } catch (Throwable t) {
+            Log.e(t.getMessage());
+        } finally {
+            /* Why does Java insist on making finally clauses so freaking ugly? */
+            if (stdin != null) {
+                try {
+                    stdin.close();
+                } catch (IOException e) {
+                    Log.e(e.getMessage());
+                }
+            }
         }
     }
 
