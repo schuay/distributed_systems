@@ -3,6 +3,10 @@ package com.ds.management;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.ds.loggers.Log;
 
@@ -23,15 +27,33 @@ public class ManagementMain {
             return;
         }
 
+        /* Configure matchers. */
+
+        List<CommandMatcher> matchers = new ArrayList<CommandMatcher>();
+        matchers.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+(\\S+)\\s+(\\S+)\\s*$"));
+
         /* Main loop. */
 
         BufferedReader stdin = null;
         try {
             stdin = new BufferedReader(new InputStreamReader(System.in));
-            String userInput;
-            while ((userInput = stdin.readLine()) != null) {
+            String input;
+            while ((input = stdin.readLine()) != null) {
 
-                /* TODO: Parse incoming command. */
+                /* Parse incoming command. */
+
+                List<String> matches = null;
+                for (CommandMatcher matcher : matchers) {
+                    matches = matcher.match(input);
+                    if (matches != null) {
+                        break;
+                    }
+                }
+
+                if (matches == null) {
+                    Log.w("Invalid command '%s'", input);
+                    continue;
+                }
 
                 /* TODO: If command != '!end', handle command. */
 
@@ -47,6 +69,39 @@ public class ManagementMain {
                     Log.e(e.getMessage());
                 }
             }
+        }
+    }
+
+    private static class CommandMatcher {
+
+        enum Type {
+            LOGIN
+        }
+
+        private final Type type;
+        private final Pattern pattern;
+
+        public CommandMatcher(Type type, String regex) {
+            this.type = type;
+            pattern = Pattern.compile(regex);
+        }
+
+        public List<String> match(String input) {
+            List<String> groups = null;
+            Matcher m = pattern.matcher(input);
+
+            if (m.matches()) {
+                groups = new ArrayList<String>();
+                for (int i = 1; i < m.groupCount(); i++) {
+                    groups.add(m.group(i));
+                }
+            }
+
+            return groups;
+        }
+
+        public Type getType() {
+            return type;
         }
     }
 
