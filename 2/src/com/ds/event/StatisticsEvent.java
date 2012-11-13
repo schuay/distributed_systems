@@ -1,5 +1,6 @@
 package com.ds.event;
 
+
 public class StatisticsEvent extends Event {
 
     private static final long serialVersionUID = 1L;
@@ -21,5 +22,10 @@ public class StatisticsEvent extends Event {
 
     public double getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s - Value = %f", getType(), getTime(), value);
     }
 }

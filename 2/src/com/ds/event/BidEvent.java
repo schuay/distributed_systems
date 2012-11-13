@@ -33,7 +33,7 @@ public class BidEvent extends Event {
 
     @Override
     public String toString() {
-        return String.format("%s: Auction ID = %d, User = %s, Price = %f",
-                getType(), getAuctionID(), getUser(), getPrice());
+        return String.format("%s: %s - Auction ID = %d, User = %s, Price = %f",
+                getType(), getTime(), getAuctionID(), getUser(), getPrice());
     }
 }

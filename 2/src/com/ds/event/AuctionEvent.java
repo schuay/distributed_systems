@@ -19,6 +19,6 @@ public class AuctionEvent extends Event {
 
     @Override
     public String toString() {
-        return String.format("%s: Auction ID = %d", getType(), getAuctionID());
+        return String.format("%s: %s - Auction ID = %d", getType(), getTime(), getAuctionID());
     }
 }
