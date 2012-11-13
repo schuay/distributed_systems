@@ -42,8 +42,10 @@ public class ManagementMain {
         /* Main loop. */
 
         BufferedReader stdin = null;
+        Data data = null;
         try {
-            State state = new StateLoggedOut(new Data(parsedArgs));
+            data = new Data(parsedArgs);
+            State state = new StateLoggedOut(data);
             stdin = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.print(state.getPrefix());
@@ -86,12 +88,17 @@ public class ManagementMain {
             Log.e(t.getMessage());
         } finally {
             /* Why does Java insist on making finally clauses so freaking ugly? */
+
             if (stdin != null) {
                 try {
                     stdin.close();
                 } catch (IOException e) {
                     Log.e(e.getMessage());
                 }
+            }
+
+            if (data != null) {
+                data.getAnalSub().shutdown();
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.ds.management;
 
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -57,6 +58,14 @@ public class AnalyticsSubscriber implements EventProcessor {
             System.out.println(s);
         }
         printCache.clear();
+    }
+
+    public synchronized void shutdown() {
+        try {
+            UnicastRemoteObject.unexportObject(this, true);
+        } catch (NoSuchObjectException e) {
+            Log.e(e.getMessage());
+        }
     }
 
     @Override
