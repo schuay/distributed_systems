@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ds.analytics.Analytics;
 import com.ds.event.Event;
@@ -15,6 +17,13 @@ public class AnalyticsSubscriber implements EventProcessor {
 
     private final Analytics analytics;
     private final EventProcessor stub;
+    private PrintMode mode = PrintMode.HIDE;
+    private final List<String> printCache = new ArrayList<String>();
+
+    public enum PrintMode {
+        AUTO,
+        HIDE
+    }
 
     public AnalyticsSubscriber(String analyticsBindingName) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry();
@@ -39,9 +48,24 @@ public class AnalyticsSubscriber implements EventProcessor {
         }
     }
 
+    public void setMode(PrintMode mode) {
+        this.mode = mode;
+    }
+
+    public synchronized void print() {
+        for (String s : printCache) {
+            System.out.println(s);
+        }
+        printCache.clear();
+    }
+
     @Override
-    public void processEvent(Event event) throws RemoteException {
+    public synchronized void processEvent(Event event) throws RemoteException {
         Log.d("Received event: %s", event.getType());
+        printCache.add(event.toString());
+        if (mode == PrintMode.AUTO) {
+            print();
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package com.ds.management;
 
 import java.util.List;
 
+import com.ds.management.AnalyticsSubscriber.PrintMode;
 import com.ds.management.ManagementMain.Data;
 
 
@@ -22,27 +23,30 @@ abstract class State {
      */
     State processCommand(CommandMatcher.Type type, List<String> args) {
         switch (type) {
-            case SUBSCRIBE: {
-                String filter = args.get(0);
-                String subscriptionID = data.getAnalSub().subscribe(filter);
-                System.out.printf("Created subscription with ID %s for events using filter %s%n",
-                        subscriptionID, filter);
-                return this;
-            }
-            case UNSUBSCRIBE: {
-                String subscriptionID = args.get(0);
-                data.getAnalSub().unsubscribe(subscriptionID);
-                System.out.printf("Subscription %s terminated%n", subscriptionID);
-                return this;
-            }
-            case AUTO:
-                return this;
-            case HIDE:
-                return this;
-            case PRINT:
-                return this;
-            default:
-                return null;
+        case SUBSCRIBE: {
+            String filter = args.get(0);
+            String subscriptionID = data.getAnalSub().subscribe(filter);
+            System.out.printf("Created subscription with ID %s for events using filter %s%n",
+                    subscriptionID, filter);
+            return this;
+        }
+        case UNSUBSCRIBE: {
+            String subscriptionID = args.get(0);
+            data.getAnalSub().unsubscribe(subscriptionID);
+            System.out.printf("Subscription %s terminated%n", subscriptionID);
+            return this;
+        }
+        case AUTO:
+            data.getAnalSub().setMode(PrintMode.AUTO);
+            return this;
+        case HIDE:
+            data.getAnalSub().setMode(PrintMode.HIDE);
+            return this;
+        case PRINT:
+            data.getAnalSub().print();
+            return this;
+        default:
+            return null;
         }
     }
 
