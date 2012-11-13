@@ -99,6 +99,7 @@ public class ManagementMain {
 
             if (data != null) {
                 data.getAnalSub().shutdown();
+                data.getBillSub().shutdown();
             }
         }
     }
@@ -106,13 +107,19 @@ public class ManagementMain {
     public static class Data {
 
         private final AnalyticsSubscriber analSub;
+        private final BillingSubscriber billSub;
 
         public Data(ParsedArgs args) throws RemoteException, NotBoundException {
             analSub = new AnalyticsSubscriber(args.getAnalyticsBindingName());
+            billSub = new BillingSubscriber(args.getBillingBindingName());
         }
 
         public AnalyticsSubscriber getAnalSub() {
             return analSub;
+        }
+
+        public BillingSubscriber getBillSub() {
+            return billSub;
         }
     }
 
