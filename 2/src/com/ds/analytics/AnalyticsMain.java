@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
+import com.ds.util.RegistryProperties;
 
 public class AnalyticsMain {
 
@@ -33,7 +34,7 @@ public class AnalyticsMain {
 
             /* Create the registry; if we only call getRegistry(), registry.rebind()
              * fails because the remote object does not exist. */
-            Registry registry = LocateRegistry.createRegistry(1099);
+            Registry registry = LocateRegistry.createRegistry(new RegistryProperties().getPort());
             registry.rebind(bindingName, stub);
 
             Log.i("%s bound", AnalyticsServer.class.getName());

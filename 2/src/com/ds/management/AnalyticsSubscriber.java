@@ -1,5 +1,6 @@
 package com.ds.management;
 
+import java.io.IOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,6 +14,7 @@ import com.ds.analytics.Analytics;
 import com.ds.event.Event;
 import com.ds.interfaces.EventProcessor;
 import com.ds.loggers.Log;
+import com.ds.util.RegistryProperties;
 
 public class AnalyticsSubscriber implements EventProcessor {
 
@@ -26,8 +28,9 @@ public class AnalyticsSubscriber implements EventProcessor {
         HIDE
     }
 
-    public AnalyticsSubscriber(String analyticsBindingName) throws RemoteException, NotBoundException {
-        Registry registry = LocateRegistry.getRegistry();
+    public AnalyticsSubscriber(String analyticsBindingName) throws NotBoundException, IOException {
+        RegistryProperties props = new RegistryProperties();
+        Registry registry = LocateRegistry.getRegistry(props.getHost(), props.getPort());
         analytics = (Analytics)registry.lookup(analyticsBindingName);
         stub = (EventProcessor)UnicastRemoteObject.exportObject(this, 0);
     }

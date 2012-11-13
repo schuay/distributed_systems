@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +108,7 @@ public class ManagementMain {
         private final AnalyticsSubscriber analSub;
         private final BillingSubscriber billSub;
 
-        public Data(ParsedArgs args) throws RemoteException, NotBoundException {
+        public Data(ParsedArgs args) throws NotBoundException, IOException {
             analSub = new AnalyticsSubscriber(args.getAnalyticsBindingName());
             billSub = new BillingSubscriber(args.getBillingBindingName());
         }
