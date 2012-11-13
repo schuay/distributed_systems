@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class UserProperties extends SimpleProperties {
 
-    protected UserProperties() throws IOException {
+    public UserProperties() throws IOException {
         super("user.properties");
     }
 

@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class RegistryProperties extends SimpleProperties {
 
-    protected RegistryProperties() throws IOException {
+    public RegistryProperties() throws IOException {
         super("registry.properties");
     }
 

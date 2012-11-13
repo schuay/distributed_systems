@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class LoadTestProperties extends SimpleProperties {
 
-    protected LoadTestProperties() throws IOException {
+    public LoadTestProperties() throws IOException {
         super("loadtest.properties");
     }
 
