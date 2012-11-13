@@ -42,7 +42,9 @@ public class Auction {
     }
 
     public void end() {
-        notifyListeners(new BidEvent(BidEvent.BID_WON, highestBidder.getName(), id, highestBid));
+        if (highestBidder != User.NONE) {
+            notifyListeners(new BidEvent(BidEvent.BID_WON, highestBidder.getName(), id, highestBid));
+        }
     }
 
     @Override
