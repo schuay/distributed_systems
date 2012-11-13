@@ -12,7 +12,7 @@ public class RegistryProperties extends SimpleProperties {
         return getProperty("registry.host");
     }
 
-    public String getPort() {
-        return getProperty("registry.port");
+    public int getPort() {
+        return Integer.parseInt(getProperty("registry.port"));
     }
 }
