@@ -10,7 +10,7 @@ public class SimpleProperties {
     private final Properties properties = new Properties();
 
     protected SimpleProperties(String filename) throws IOException {
-        InputStream is = ClassLoader.getSystemResourceAsStream("registry.properties");
+        InputStream is = ClassLoader.getSystemResourceAsStream(filename);
         if (is == null) {
             throw new FileNotFoundException();
         }
