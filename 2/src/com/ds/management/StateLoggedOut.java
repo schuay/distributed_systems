@@ -1,7 +1,9 @@
 package com.ds.management;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
+import com.ds.billing.BillingServerSecure;
 import com.ds.management.ManagementMain.Data;
 
 
@@ -25,8 +27,20 @@ class StateLoggedOut extends State {
 
         switch (type) {
             case LOGIN:
-                /* TODO: Manage authentication. */
-                return new StateLoggedIn(getData(), args.get(0));
+                String username = args.get(0);
+                String password = args.get(1);
+
+                BillingServerSecure billing = null;
+                try {
+                    billing = getData().getBillSub().getBillingServer()
+                            .login(username, password);
+                } catch (RemoteException e) {
+                    System.out.println(e.getMessage());
+                    return this;
+                }
+
+                System.out.printf("%s successfully logged in%n", username);
+                return new StateLoggedIn(getData(), args.get(0), billing);
             default:
                 throw new IllegalArgumentException(String.format(
                         "Invalid command in state %s", StateLoggedOut.class.getName()));

@@ -26,6 +26,10 @@ public class BillingSubscriber implements EventProcessor {
         stub = (EventProcessor)UnicastRemoteObject.exportObject(this, 0);
     }
 
+    public BillingServer getBillingServer() {
+        return billing;
+    }
+
     @Override
     public void processEvent(Event event) throws RemoteException {
         // TODO Auto-generated method stub
