@@ -31,7 +31,7 @@ public class BillingServerSecureImpl implements BillingServerSecure {
             throws RemoteException {
         if (!PriceStepStorage.getInstance().delete(startPrice, endPrice)) {
             throw new RemoteException(String.format(
-                                    "ERROR: Price step [%f %f] does not exist",
+                                    "ERROR: Price step [%.2f %.2f] does not exist",
                                     startPrice, endPrice));
         }
     }
