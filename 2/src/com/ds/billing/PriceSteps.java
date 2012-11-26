@@ -12,4 +12,8 @@ public class PriceSteps implements Serializable {
     PriceSteps(List<PriceStep> priceSteps) {
         this.priceSteps = priceSteps;
     }
+
+    public List<PriceStep> getPriceSteps() {
+        return priceSteps;
+    }
 }
