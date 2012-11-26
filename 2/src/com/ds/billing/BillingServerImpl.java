@@ -2,6 +2,7 @@ package com.ds.billing;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 
 import com.ds.loggers.Log;
@@ -22,7 +23,8 @@ public class BillingServerImpl implements BillingServer {
         }
 
         Log.d("login successful");
-        return null;
+        return (BillingServerSecure) UnicastRemoteObject.exportObject(
+                new BillingServerSecureImpl(), 0);
     }
 
 }
