@@ -22,7 +22,7 @@ class CommandMatcher {
         STEPS,
         ADD_STEP,
         REM_STEP,
-        END
+        EXIT
     }
 
     private final Type type;
