@@ -19,6 +19,9 @@ class CommandMatcher {
         AUTO,
         HIDE,
         PRINT,
+        STEPS,
+        ADD_STEP,
+        REM_STEP,
         END
     }
 

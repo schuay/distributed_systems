@@ -1,8 +1,11 @@
 package com.ds.management;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 import com.ds.billing.BillingServerSecure;
+import com.ds.billing.PriceSteps;
+import com.ds.billing.PriceStep;
 import com.ds.management.ManagementMain.Data;
 
 
@@ -29,7 +32,60 @@ class StateLoggedIn extends State {
 
         switch (type) {
             case LOGOUT:
+                System.out.printf("%s successfully logged out%n", user);
                 return new StateLoggedOut(getData());
+            case STEPS:
+                List<PriceStep> priceSteps;
+                try {
+                    priceSteps = billing.getPriceSteps().getPriceSteps();
+
+                    System.out.println("Min_Price Max_Price Fee_Fixed Fee_Variable");
+                    for (PriceStep p : priceSteps) {
+                        System.out.printf("%1$-9.2f %2$-9.2f %3$-9.2f %4$-9.2f%n",
+                                p.getStartPrice(), p.getEndPrice(),
+                                p.getFixedPrice(), p.getVariablePricePercent());
+                    }
+                } catch (RemoteException e) {
+                    System.out.println(e.getCause().getLocalizedMessage());
+                }
+
+                return this;
+            case ADD_STEP:
+                try {
+                    double startPrice = Double.parseDouble(args.get(0));
+                    double endPrice = Double.parseDouble(args.get(1));
+                    billing.createPriceStep(
+                            startPrice,
+                            endPrice,
+                            Double.parseDouble(args.get(2)),
+                            Double.parseDouble(args.get(3)));
+
+                    System.out.printf("Step [%.2f %.2f] successfully added%n", startPrice,
+                            endPrice);
+                } catch (NumberFormatException e) {
+                    System.out.println("Only non-negative numbers allowed.");
+                } catch (RemoteException e) {
+                    System.out.println(e.getCause().getLocalizedMessage());
+                }
+
+                return this;
+            case REM_STEP:
+                try {
+                    double startPrice = Double.parseDouble(args.get(0));
+                    double endPrice = Double.parseDouble(args.get(1));
+                    billing.deletePriceStep(
+                            startPrice,
+                            endPrice);
+
+                    System.out.printf("Price Step [%.2f %.2f] successfully removed%n", startPrice,
+                            endPrice);
+                } catch (NumberFormatException e) {
+                    System.out.println("Only non-negative numbers allowed.");
+                } catch (RemoteException e) {
+                    System.out.println(e.getCause().getLocalizedMessage());
+                }
+
+                return this;
             default:
                 throw new IllegalArgumentException(String.format(
                         "Invalid command in state %s", StateLoggedIn.class.getName()));
