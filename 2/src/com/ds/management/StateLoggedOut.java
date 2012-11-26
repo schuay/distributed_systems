@@ -41,6 +41,12 @@ class StateLoggedOut extends State {
 
                 System.out.printf("%s successfully logged in%n", username);
                 return new StateLoggedIn(getData(), args.get(0), billing);
+            case LOGOUT:
+            case STEPS:
+            case ADD_STEP:
+            case REM_STEP:
+                System.out.println("ERROR: You are currently not logged in.");
+                return this;
             default:
                 throw new IllegalArgumentException(String.format(
                         "Invalid command in state %s", StateLoggedOut.class.getName()));
