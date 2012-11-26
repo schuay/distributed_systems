@@ -49,6 +49,10 @@ public class PriceStep implements Serializable, Comparable<PriceStep> {
     }
 
     public boolean equalRange(double startPrice, double endPrice) {
+        if (endPrice == 0) {
+            endPrice = Double.POSITIVE_INFINITY;
+        }
+
         return this.startPrice == startPrice
             && this.endPrice == endPrice;
     }
