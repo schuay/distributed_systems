@@ -35,7 +35,7 @@ class StateLoggedOut extends State {
                     billing = getData().getBillSub().getBillingServer()
                             .login(username, password);
                 } catch (RemoteException e) {
-                    System.out.println(e.getMessage());
+                    System.out.println(e.getCause().getLocalizedMessage());
                     return this;
                 }
 
