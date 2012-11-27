@@ -1,6 +1,7 @@
 package com.ds.billing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.TreeSet;
 
 class PriceStepStorage {
@@ -25,7 +26,18 @@ class PriceStepStorage {
     }
 
     synchronized PriceSteps getPriceSteps() {
-        return new PriceSteps(new ArrayList<PriceStep>(storage));
+        return new PriceSteps(Collections.unmodifiableList(
+                    new ArrayList<PriceStep>(storage)));
+    }
+
+    synchronized PriceStep getPriceStepForPrice(double price) {
+        for (PriceStep p : storage) {
+            if (price >= p.getStartPrice() && price <= p.getEndPrice()) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
     synchronized boolean insert(PriceStep s) {

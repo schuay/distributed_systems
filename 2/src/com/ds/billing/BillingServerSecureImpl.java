@@ -53,9 +53,18 @@ class BillingServerSecureImpl implements BillingServerSecure {
 
     public void billAuction(String user, long auctionID, double price)
             throws RemoteException {
+        Log.d("billing auction "+auctionID+" from "+user+" "+price);
+        PriceStep p = priceStepStorage.getPriceStepForPrice(price);
+        if (p == null) {
+            Log.d(String.format("ERROR: No price step for %.2f", price));
+            throw new RemoteException(String.format("ERROR: No price step for %.2f", price));
+        }
+
+        billStorage.insert(user, new AuctionBill(auctionID, price,
+                    priceStepStorage.getPriceStepForPrice(price)));
     }
 
     public Bill getBill(String user) throws RemoteException {
-        return null;
+        return billStorage.getBill(user);
     }
 }
