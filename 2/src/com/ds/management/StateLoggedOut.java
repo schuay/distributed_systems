@@ -33,7 +33,7 @@ class StateLoggedOut extends State {
 
                 BillingServerSecure billing = null;
                 try {
-                    billing = getData().getBillSub().getBillingServer()
+                    billing = getData().getBillConn().getBillingServer()
                             .login(username, password);
                 } catch (LoginException e) {
                     System.out.println(e.getCause().getLocalizedMessage());

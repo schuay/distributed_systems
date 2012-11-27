@@ -102,7 +102,6 @@ public class ManagementMain {
 
             if (data != null) {
                 data.getAnalSub().shutdown();
-                data.getBillSub().shutdown();
             }
         }
     }
@@ -110,18 +109,18 @@ public class ManagementMain {
     public static class Data {
 
         private final AnalyticsSubscriber analSub;
-        private final BillingSubscriber billSub;
+        private final BillingConnection billSub;
 
         public Data(ParsedArgs args) throws NotBoundException, IOException {
             analSub = new AnalyticsSubscriber(args.getAnalyticsBindingName());
-            billSub = new BillingSubscriber(args.getBillingBindingName());
+            billSub = new BillingConnection(args.getBillingBindingName());
         }
 
         public AnalyticsSubscriber getAnalSub() {
             return analSub;
         }
 
-        public BillingSubscriber getBillSub() {
+        public BillingConnection getBillConn() {
             return billSub;
         }
     }
