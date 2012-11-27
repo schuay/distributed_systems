@@ -51,6 +51,9 @@ public class Server implements Runnable {
             EventForwarder analyticsForwarder = new EventForwarder(parsedArgs.getAnalyticsBindingName());
             serverData.getAuctionList().addOnEventListener(analyticsForwarder);
             serverData.getUserList().addOnEventListener(analyticsForwarder);
+
+            BillingForwarder billingForwarder = new BillingForwarder(parsedArgs.getBillingBindingName());
+            serverData.getAuctionList().addBillingListener(billingForwarder);
         } catch (Throwable t) {
             Log.e(t.getMessage());
             shutdown();
