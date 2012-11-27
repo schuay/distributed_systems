@@ -112,6 +112,9 @@ class StateLoggedIn extends State {
                 }
 
                 return this;
+            case LOGIN:
+                System.out.println("ERROR: You are already logged in.");
+                return this;
             default:
                 throw new IllegalArgumentException(String.format(
                         "Invalid command in state %s", StateLoggedIn.class.getName()));
