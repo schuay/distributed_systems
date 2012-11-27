@@ -22,6 +22,7 @@ class CommandMatcher {
         STEPS,
         ADD_STEP,
         REM_STEP,
+        BILL,
         EXIT
     }
 

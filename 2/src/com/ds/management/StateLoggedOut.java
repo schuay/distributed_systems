@@ -49,6 +49,7 @@ class StateLoggedOut extends State {
             case STEPS:
             case ADD_STEP:
             case REM_STEP:
+            case BILL:
                 System.out.println("ERROR: You are currently not logged in.");
                 return this;
             default:

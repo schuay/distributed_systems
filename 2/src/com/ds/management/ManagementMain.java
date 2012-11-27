@@ -39,6 +39,7 @@ public class ManagementMain {
         matchers.add(new CommandMatcher(CommandMatcher.Type.STEPS, "^!steps\\s*$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.ADD_STEP, "^!addStep\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.REM_STEP, "^!removeStep\\s+(\\S+)\\s+(\\S+)\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.BILL, "^!bill\\s+(\\S+)\\s*$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.EXIT, "^!exit\\s*$"));
 
         /* Main loop. */

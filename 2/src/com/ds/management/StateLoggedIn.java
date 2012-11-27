@@ -3,6 +3,7 @@ package com.ds.management;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import com.ds.billing.AuctionBill;
 import com.ds.billing.BillingServerSecure;
 import com.ds.billing.PriceSteps;
 import com.ds.billing.PriceStep;
@@ -41,9 +42,10 @@ class StateLoggedIn extends State {
 
                     System.out.println("Min_Price Max_Price Fee_Fixed Fee_Variable");
                     for (PriceStep p : priceSteps) {
-                        System.out.printf("%1$-9.2f %2$-9.2f %3$-9.2f %4$-9.2f%n",
+                        System.out.printf("%1$-9.2f %2$-9.2f %3$-9.2f %4$-9s%n",
                                 p.getStartPrice(), p.getEndPrice(),
-                                p.getFixedPrice(), p.getVariablePricePercent());
+                                p.getFixedPrice(),
+                                String.format("%.2f%%", p.getVariablePricePercent()));
                     }
                 } catch (RemoteException e) {
                     System.out.println(e.getCause().getLocalizedMessage());
@@ -54,6 +56,10 @@ class StateLoggedIn extends State {
                 try {
                     double startPrice = Double.parseDouble(args.get(0));
                     double endPrice = Double.parseDouble(args.get(1));
+                    if (endPrice == 0) {
+                        endPrice = Double.POSITIVE_INFINITY;
+                    }
+
                     billing.createPriceStep(
                             startPrice,
                             endPrice,
@@ -73,6 +79,10 @@ class StateLoggedIn extends State {
                 try {
                     double startPrice = Double.parseDouble(args.get(0));
                     double endPrice = Double.parseDouble(args.get(1));
+                    if (endPrice == 0) {
+                        endPrice = Double.POSITIVE_INFINITY;
+                    }
+
                     billing.deletePriceStep(
                             startPrice,
                             endPrice);
@@ -81,6 +91,22 @@ class StateLoggedIn extends State {
                             endPrice);
                 } catch (NumberFormatException e) {
                     System.out.println("Only non-negative numbers allowed.");
+                } catch (RemoteException e) {
+                    System.out.println(e.getCause().getLocalizedMessage());
+                }
+
+                return this;
+            case BILL:
+                List<AuctionBill> bills;
+                try {
+                    bills = billing.getBill(args.get(0)).getAuctionBills();
+
+                    System.out.println("auction_ID strike_price fee_fixed fee_variable fee_total");
+                    for (AuctionBill b : bills) {
+                        System.out.printf("%1$-10d %2$-12.2f %3$-9.2f %4$-12.2f %5$-9.2f%n",
+                                b.getAuctionID(), b.getStrikePrice(), b.getFeeFixed(),
+                                b.getFeeVariable(), b.getFeeTotal());
+                    }
                 } catch (RemoteException e) {
                     System.out.println(e.getCause().getLocalizedMessage());
                 }
