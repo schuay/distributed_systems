@@ -6,21 +6,21 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import javax.xml.bind.DatatypeConverter;
 
-import com.ds.util.SimpleProperties;
+import com.ds.util.UserProperties;
 
-class Authentication extends SimpleProperties {
+class Authentication {
     private static final int DIGEST_RADIX = 16;
 
-    private MessageDigest md;
+    private final UserProperties up;
+    private final MessageDigest md;
 
     Authentication() throws IOException, NoSuchAlgorithmException {
-        super("user.properties");
-
+        up = new UserProperties();
         md = MessageDigest.getInstance("MD5");
     }
 
     boolean loginValid(String username, String password) {
-        String pwDigest = getProperty(username);
+        String pwDigest = up.getHash(username);
         if (pwDigest == null) {
             return false;
         }
