@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
+import com.ds.util.Utils;
 
 public class Server implements Runnable {
 
@@ -70,12 +71,12 @@ public class Server implements Runnable {
             return;
         }
 
-        /* Begin listening for the user to trigger shutdown (by pressing 'Enter'). */
+        /* Begin listening for the user to trigger shutdown (by entering '!exit'). */
 
         Thread thread = new Thread(new Server());
         thread.start();
 
-        System.out.println("Server started, press Enter to initiate shutdown.");
+        Utils.printRunningMsg("Auction server");
 
         /*
          * Initialization is done. We will now accept new connections until
@@ -129,17 +130,14 @@ public class Server implements Runnable {
     private Server() { }
 
     /**
-     * Waits for the user to press Enter, and then triggers shutdown.
+     * Waits for the user to enter the exit command, and then triggers shutdown.
      */
     @Override
     public void run() {
-        try {
-            int in;
-            do {
-                in = System.in.read();
-            } while (in != '\n');
+        Utils.waitForExit();
 
-            listening = false;
+        listening = false;
+        try {
             serverSocket.close();
         } catch (IOException e) {
             Log.e(e.getMessage());

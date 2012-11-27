@@ -7,11 +7,15 @@ import java.security.NoSuchAlgorithmException;
 
 import com.ds.loggers.Log;
 
-public class BillingServerImpl implements BillingServer {
+class BillingServerImpl implements BillingServer {
     private Authentication auth;
+    private BillingServerSecureImpl secureBilling;
+    private BillingServerSecure stub;
 
-    BillingServerImpl() throws IOException, NoSuchAlgorithmException {
+    BillingServerImpl() throws IOException, NoSuchAlgorithmException, RemoteException {
         auth = new Authentication();
+        secureBilling = BillingServerSecureImpl.getInstance();
+        stub = (BillingServerSecure) UnicastRemoteObject.exportObject(secureBilling, 0);
     }
 
     public BillingServerSecure login(String username, String password)
@@ -23,8 +27,13 @@ public class BillingServerImpl implements BillingServer {
         }
 
         Log.d("login successful");
-        return (BillingServerSecure) UnicastRemoteObject.exportObject(
-                new BillingServerSecureImpl(), 0);
+
+        return stub;
     }
 
+    void shutdown() {
+        try {
+            UnicastRemoteObject.unexportObject(secureBilling, true);
+        } catch (RemoteException rx) {}
+    }
 }
