@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import com.ds.billing.BillingServerSecure;
+import com.ds.billing.LoginException;
 import com.ds.management.ManagementMain.Data;
 
 
@@ -34,6 +35,9 @@ class StateLoggedOut extends State {
                 try {
                     billing = getData().getBillSub().getBillingServer()
                             .login(username, password);
+                } catch (LoginException e) {
+                    System.out.println(e.getCause().getLocalizedMessage());
+                    return this;
                 } catch (RemoteException e) {
                     System.out.println(e.getCause().getLocalizedMessage());
                     return this;

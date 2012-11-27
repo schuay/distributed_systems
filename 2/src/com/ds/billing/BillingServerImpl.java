@@ -19,7 +19,7 @@ public class BillingServerImpl implements BillingServer {
         Log.d("Logging in %s", username);
         if (!auth.loginValid(username, password)) {
             Log.d("login failed");
-            throw new RemoteException("Login failed");
+            throw new LoginException("Login failed");
         }
 
         Log.d("login successful");
