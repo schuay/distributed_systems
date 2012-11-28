@@ -1,0 +1,13 @@
+Jakob Gruber:
+- lab1 implementation
+- removal of UDP stuff
+- analytics server
+- management client
+	- skeleton, sending/receiving commands
+	- event related commands
+
+Mino Sharkhawy:
+- billing server
+- loadtesting component
+- management client
+	- billing related commands
