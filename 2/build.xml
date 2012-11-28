@@ -18,6 +18,7 @@
     <property name="billing.name" value="com.ds.billing.BillingMain"/><!-- Billing Server's full class name (including the package) -->
     <property name="analytics.bindingName" value="AnalyticsServerRef"/><!-- RMI Binding Name of the Analytics Server -->
     <property name="billing.bindingName" value="BillingServerRef"/><!-- RMI Binding Name of the Billing Server -->
+    <property name="loadtest.name" value="com.ds.loadtest.Loadtest"/><!-- Loadtest's full class name (including the package) -->
 
     <path id="project.classpath">
         <pathelement location="${build.dir}"/>
@@ -102,7 +103,7 @@
     </target>
 
     <target name="run-loadtest" depends="compile" description="Run Load Test.">
-        <java classname="${client.name}" fork="true" classpathref="project.classpath">
+        <java classname="${loadtest.name}" fork="true" classpathref="project.classpath">
             <arg value="${server.host}"/>
             <arg value="${server.port}"/>
             <arg value="${analytics.bindingName}"/>
