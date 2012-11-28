@@ -55,6 +55,8 @@ public class ServerThread implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            state.cleanup();
         }
 
         Log.i("ServerThread %d shutting down", id);
@@ -92,6 +94,7 @@ public class ServerThread implements Runnable {
      */
     private interface State {
         void processCommand(Command command);
+        void cleanup();
     }
 
     /**
@@ -132,6 +135,9 @@ public class ServerThread implements Runnable {
                     Log.e("Invalid command %s in connected state", command);
             }
         }
+
+        @Override
+        public void cleanup() {}
 
     }
 
@@ -183,6 +189,12 @@ public class ServerThread implements Runnable {
                 default:
                     Log.e("Invalid command %s in registered state", command);
             }
+        }
+
+        @Override
+        public void cleanup() {
+            serverThread.getUserList().logout(user);
+            Log.i("Connection lost, user %s logged out", user.getName());
         }
 
         private void logout() {
