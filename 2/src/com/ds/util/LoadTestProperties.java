@@ -8,23 +8,23 @@ public class LoadTestProperties extends SimpleProperties {
         super("loadtest.properties");
     }
 
-    public String getClients() {
-        return getProperty("clients");
+    public int getClients() {
+        return Integer.parseInt(getProperty("clients"));
     }
 
-    public String getAuctionsPerMin() {
-        return getProperty("auctionsPerMin");
+    public long getAuctionsPerMin() {
+        return Long.parseLong(getProperty("auctionsPerMin"));
     }
 
-    public String getAuctionDuration() {
-        return getProperty("auctionDuration");
+    public long getAuctionDuration() {
+        return Long.parseLong(getProperty("auctionDuration"));
     }
 
-    public String getUpdateIntervalSec() {
-        return getProperty("updateIntervalSec");
+    public long getUpdateIntervalSec() {
+        return Long.parseLong(getProperty("updateIntervalSec"));
     }
 
-    public String getBidsPerMin() {
-        return getProperty("bidsPerMin");
+    public long getBidsPerMin() {
+        return Long.parseLong(getProperty("bidsPerMin"));
     }
 }
