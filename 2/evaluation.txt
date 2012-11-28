@@ -1,0 +1,8 @@
+Linux 3.6.7, 1x Intel Pentium 4, 3,6 GHz, 2G RAM
+clients = 70
+auctionsPerMin = 400
+auctionDuration = 200
+updateIntervalSec = 1 # can't be decreased further
+bidsPerMin = 9000
+
+Increasing these values resulted in processes getting killed.
