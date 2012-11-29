@@ -6,3 +6,17 @@ updateIntervalSec = 1 # can't be decreased further
 bidsPerMin = 9000
 
 Increasing these values resulted in processes getting killed.
+
+Linux jsrv64 3.6.8-1-ARCH #1 SMP PREEMPT Mon Nov 26 22:10:40 CET 2012 x86_64 GNU/Linux
+Intel(R) Core(TM)2 Duo CPU     E6850  @ 3.00GHz
+6 GB Memory
+
+clients = 8388608
+auctionsPerMin = 60000
+auctionDuration = 2000
+updateIntervalSec: 1
+bidsPerMin = 60000
+
+auctionsPerMin and bidsPerMin are at their maximum values, updateIntervalSec
+is at its minimum, and I stopped increasing clients when I reached 8388608.
+The system was still running without issues.
