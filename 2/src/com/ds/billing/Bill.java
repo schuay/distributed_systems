@@ -1,7 +1,6 @@
 package com.ds.billing;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 public class Bill implements Serializable {

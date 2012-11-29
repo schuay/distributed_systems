@@ -3,13 +3,12 @@ package com.ds.billing;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+
 import javax.xml.bind.DatatypeConverter;
 
 import com.ds.util.UserProperties;
 
 class Authentication {
-    private static final int DIGEST_RADIX = 16;
 
     private final UserProperties up;
     private final MessageDigest md;

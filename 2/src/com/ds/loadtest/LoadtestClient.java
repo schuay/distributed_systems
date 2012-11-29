@@ -1,13 +1,11 @@
 package com.ds.loadtest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Date;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -28,7 +26,7 @@ class LoadtestClient {
     private String[] auctions;
 
     LoadtestClient(int id, LoadTestProperties prop, Socket sock, long millisStart)
-        throws IOException {
+            throws IOException {
         this.id = id;
         this.prop = prop;
         this.sock = sock;
@@ -58,12 +56,12 @@ class LoadtestClient {
     }
 
     private class StartAuctionTask extends TimerTask {
-        private long auctionId = 0;
+        private final long auctionId = 0;
         @Override
         public void run() {
             try {
                 out.writeObject(Command.parse(String.format("!create %d loadtest%d_%d",
-                                prop.getAuctionDuration(), id, auctionId)));
+                        prop.getAuctionDuration(), id, auctionId)));
                 in.readObject();
             } catch (Exception e) {
                 Log.w(e.getLocalizedMessage());
@@ -77,7 +75,7 @@ class LoadtestClient {
             try {
                 out.writeObject(Command.parse("!list"));
                 auctions = ((ResponseAuctionList)in.readObject()).toString()
-                    .split(String.format("%n"));
+                        .split(String.format("%n"));
             } catch (Exception e) {
                 Log.w(e.getLocalizedMessage());
             }
@@ -95,7 +93,7 @@ class LoadtestClient {
                 int auctionId = Integer.parseInt(auctions[rng.nextInt(auctions.length)]
                         .split("\\.")[0]);
                 out.writeObject(Command.parse(String.format("!bid %d %d",
-                                auctionId, new Date().getTime() - millisStart)));
+                        auctionId, new Date().getTime() - millisStart)));
                 in.readObject();
             } catch (Exception e) {
                 Log.w(e.getLocalizedMessage());
