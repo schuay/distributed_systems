@@ -58,7 +58,26 @@ public class ServerThread implements Runnable {
         try {
             String msg;
             while (!quit && (msg = in.readLine()) != null) {
+
+                /* Parse incoming command. */
+
+                CommandMatcher matcher = null;
+                List<String> matches = null;
+                for (int i = 0; i < matchers.size(); i++) {
+                    matcher = matchers.get(i);
+                    matches = matcher.match(msg);
+                    if (matches != null) {
+                        break;
+                    }
+                }
+
+                if (matches == null) {
+                    Log.w("Invalid command '%s'", msg);
+                    continue;
+                }
+
                 Log.i("Received command: %s", msg);
+
                 /* state.processCommand(command); */
             }
         } catch (Exception e) {
