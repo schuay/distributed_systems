@@ -33,8 +33,10 @@ public class Server implements Runnable {
             Log.i("TCP Port: %d", parsedArgs.getTcpPort());
             Log.i("Analytics Binding Name: %s", parsedArgs.getAnalyticsBindingName());
             Log.i("Billing Binding Name: %s", parsedArgs.getBillingBindingName());
+            Log.i("Server Key: %s", parsedArgs.getServerKey());
+            Log.i("Client Key Directory: %s", parsedArgs.getClientKeyDir());
         } catch (IllegalArgumentException e) {
-            System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name>%n",
+            System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name> <Server Key> <Client Key Directory>%n",
                     Server.class.getName());
             shutdown();
             return;
@@ -148,14 +150,15 @@ public class Server implements Runnable {
      * Parses command-line arguments.
      */
     private static class ParsedArgs {
+
         private final int tcpPort;
-
         private final String analyticsBindingName;
-
         private final String billingBindingName;
+        private final String serverKey;
+        private final String clientKeyDir;
 
         public ParsedArgs(String[] args) {
-            if (args.length != 3) {
+            if (args.length != 5) {
                 throw new IllegalArgumentException();
             }
 
@@ -163,6 +166,8 @@ public class Server implements Runnable {
                 tcpPort = Integer.parseInt(args[0]);
                 analyticsBindingName = args[1];
                 billingBindingName = args[2];
+                serverKey = args[3];
+                clientKeyDir = args[4];
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException();
             }
@@ -178,6 +183,14 @@ public class Server implements Runnable {
 
         public String getBillingBindingName() {
             return billingBindingName;
+        }
+
+        public String getServerKey() {
+            return serverKey;
+        }
+
+        public String getClientKeyDir() {
+            return clientKeyDir;
         }
     }
 

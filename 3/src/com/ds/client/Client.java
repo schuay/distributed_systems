@@ -22,10 +22,14 @@ public class Client {
         ParsedArgs parsedArgs;
         try {
             parsedArgs = new ParsedArgs(args);
-            Log.i("Host: %s TCP Port: %d UDP Port: %d", parsedArgs.getHost(),
-                    parsedArgs.getTcpPort(), parsedArgs.getUdpPort());
+            Log.i("Host: %s", parsedArgs.getHost());
+            Log.i("TCP Port: %d", parsedArgs.getTcpPort());
+            Log.i("UDP Port: %d", parsedArgs.getUdpPort());
+            Log.i("Server Public Key: %s", parsedArgs.getServerPublicKey());
+            Log.i("Client Key Directory: %s", parsedArgs.getClientKeyDir());
         } catch (IllegalArgumentException e) {
-            System.err.printf("Usage: java %s <host> <tcpPort> <udpPort>%n", Client.class.getName());
+            System.err.printf("Usage: java %s <host> <tcpPort> <udpPort> <serverPublicKey> <clientKeyDir>%n",
+                    Client.class.getName());
             return;
         }
 
@@ -92,22 +96,25 @@ public class Client {
      * Parses command-line arguments.
      */
     private static class ParsedArgs {
+
         private final String host;
-
         private final int tcpPort;
-
         private final int udpPort;
+        private final String serverPublicKey;
+        private final String clientKeyDir;
+
 
         public ParsedArgs(String[] args) {
-            if (args.length != 3) {
+            if (args.length != 5) {
                 throw new IllegalArgumentException();
             }
 
-            host = args[0];
-
             try {
+                host = args[0];
                 tcpPort = Integer.parseInt(args[1]);
                 udpPort = Integer.parseInt(args[2]);
+                serverPublicKey = args[3];
+                clientKeyDir = args[4];
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException();
             }
@@ -123,6 +130,14 @@ public class Client {
 
         public int getUdpPort() {
             return udpPort;
+        }
+
+        public String getServerPublicKey() {
+            return serverPublicKey;
+        }
+
+        public String getClientKeyDir() {
+            return clientKeyDir;
         }
     }
 }
