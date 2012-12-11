@@ -23,7 +23,11 @@ public class CommandMatcher {
         ADD_STEP,
         REM_STEP,
         BILL,
-        EXIT
+        EXIT,
+        LIST,
+        CREATE,
+        BID,
+        END
     }
 
     private final Type type;

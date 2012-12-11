@@ -1,9 +1,10 @@
 
 package com.ds.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,8 +22,8 @@ import com.ds.server.UserList.User;
 
 public class ServerThread implements Runnable {
 
-    private final ObjectInputStream in;
-    private final ObjectOutputStream out;
+    private final BufferedReader in;
+    private final PrintWriter out;
     private final int id;
     private final Server.Data serverData;
     private State state = new StateConnected(this);
@@ -32,8 +33,8 @@ public class ServerThread implements Runnable {
         this.id = id;
         this.serverData = serverData;
 
-        in = new ObjectInputStream(socket.getInputStream());
-        out = new ObjectOutputStream(socket.getOutputStream());
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream());
 
         Log.i("ServerThread %d created", id);
     }
@@ -41,10 +42,10 @@ public class ServerThread implements Runnable {
     @Override
     public void run() {
         try {
-            Command command;
-            while (!quit && (command = (Command)in.readObject()) != null) {
-                Log.i("Received command: %s", command);
-                state.processCommand(command);
+            String msg;
+            while (!quit && (msg = in.readLine()) != null) {
+                Log.i("Received command: %s", msg);
+                /* state.processCommand(command); */
             }
         } catch (Exception e) {
             Log.e(e.getMessage());
@@ -81,12 +82,7 @@ public class ServerThread implements Runnable {
     }
 
     private void sendResponse(Response response) {
-        try {
-            out.writeObject(response);
-        } catch (IOException e) {
-            setQuit();
-            e.printStackTrace();
-        }
+        out.write(response.toString());
     }
 
     /**
@@ -112,27 +108,27 @@ public class ServerThread implements Runnable {
         @Override
         public void processCommand(Command command) {
             switch (command.getId()) {
-                case LOGIN:
-                    CommandLogin commandLogin = (CommandLogin)command;
-                    UserList userList = serverThread.getUserList();
-                    User user = userList.login(commandLogin.getUser());
-                    if (user == null) {
-                        serverThread.sendResponse(new Response(Rsp.ERROR));
-                        Log.e("User %s login failed: already logged in", commandLogin.getUser());
-                        return;
-                    }
-                    serverThread.setState(new StateRegistered(serverThread, user));
-                    serverThread.sendResponse(new Response(Rsp.OK));
-                    Log.i("User %s logged in", user.getName());
-                    break;
-                case LIST:
-                    serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
-                    break;
-                case END:
-                    serverThread.setQuit();
-                    break;
-                default:
-                    Log.e("Invalid command %s in connected state", command);
+            case LOGIN:
+                CommandLogin commandLogin = (CommandLogin)command;
+                UserList userList = serverThread.getUserList();
+                User user = userList.login(commandLogin.getUser());
+                if (user == null) {
+                    serverThread.sendResponse(new Response(Rsp.ERROR));
+                    Log.e("User %s login failed: already logged in", commandLogin.getUser());
+                    return;
+                }
+                serverThread.setState(new StateRegistered(serverThread, user));
+                serverThread.sendResponse(new Response(Rsp.OK));
+                Log.i("User %s logged in", user.getName());
+                break;
+            case LIST:
+                serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
+                break;
+            case END:
+                serverThread.setQuit();
+                break;
+            default:
+                Log.e("Invalid command %s in connected state", command);
             }
         }
 
@@ -158,36 +154,36 @@ public class ServerThread implements Runnable {
         @Override
         public void processCommand(Command command) {
             switch (command.getId()) {
-                case LIST:
-                    serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
-                    break;
-                case LOGOUT:
-                    logout();
-                    break;
-                case CREATE:
-                    CommandCreate commandCreate = (CommandCreate)command;
-                    AuctionList auctionList = serverThread.getAuctionList();
+            case LIST:
+                serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
+                break;
+            case LOGOUT:
+                logout();
+                break;
+            case CREATE:
+                CommandCreate commandCreate = (CommandCreate)command;
+                AuctionList auctionList = serverThread.getAuctionList();
 
-                    Calendar now = Calendar.getInstance();
-                    now.setTime(new Date());
-                    now.add(Calendar.SECOND, commandCreate.getDuration());
+                Calendar now = Calendar.getInstance();
+                now.setTime(new Date());
+                now.add(Calendar.SECOND, commandCreate.getDuration());
 
-                    int id = auctionList.add(commandCreate.getDescription(), user, now.getTime());
-                    serverThread.sendResponse(new ResponseAuctionCreated(id));
-                    break;
-                case BID:
-                    CommandBid commandBid = (CommandBid)command;
-                    auctionList = serverThread.getAuctionList();
+                int id = auctionList.add(commandCreate.getDescription(), user, now.getTime());
+                serverThread.sendResponse(new ResponseAuctionCreated(id));
+                break;
+            case BID:
+                CommandBid commandBid = (CommandBid)command;
+                auctionList = serverThread.getAuctionList();
 
-                    auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
-                    serverThread.sendResponse(new Response(Rsp.OK));
-                    break;
-                case END:
-                    logout();
-                    serverThread.setQuit();
-                    break;
-                default:
-                    Log.e("Invalid command %s in registered state", command);
+                auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
+                serverThread.sendResponse(new Response(Rsp.OK));
+                break;
+            case END:
+                logout();
+                serverThread.setQuit();
+                break;
+            default:
+                Log.e("Invalid command %s in registered state", command);
             }
         }
 
