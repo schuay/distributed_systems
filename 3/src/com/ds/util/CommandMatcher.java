@@ -1,4 +1,4 @@
-package com.ds.management;
+package com.ds.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 /**
  * A convenience class for matching strings against regex.
  */
-class CommandMatcher {
+public class CommandMatcher {
 
     public enum Type {
         LOGIN,
