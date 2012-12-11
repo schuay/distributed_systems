@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -21,6 +22,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PasswordFinder;
 import org.bouncycastle.util.encoders.Base64;
@@ -29,6 +31,11 @@ import org.bouncycastle.util.encoders.Hex;
 import com.ds.loggers.Log;
 
 public class SecurityUtils {
+
+    static {
+        /* Set BouncyCastle as the system default in the context of this application. */
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     public static byte[] toBase64(byte[] from) {
         return Base64.encode(from);
