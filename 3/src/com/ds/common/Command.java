@@ -13,6 +13,7 @@ public class Command implements Serializable {
     }
 
     private final Cmd id;
+    private final String cmdStr;
 
     public static Command parse(String line) {
         StringTokenizer st = new StringTokenizer(line);
@@ -23,17 +24,17 @@ public class Command implements Serializable {
         try {
             String token = st.nextToken().toLowerCase();
             if (token.equals("!logout")) {
-                return new Command(Cmd.LOGOUT);
+                return new Command(token, Cmd.LOGOUT);
             } else if (token.equals("!list")) {
-                return new Command(Cmd.LIST);
+                return new Command(token, Cmd.LIST);
             } else if (token.equals("!end")) {
-                return new Command(Cmd.END);
+                return new Command(token, Cmd.END);
             } else if (token.equals("!login")) {
-                return new CommandLogin(st);
+                return new CommandLogin(token, st);
             } else if (token.equals("!create")) {
-                return new CommandCreate(st);
+                return new CommandCreate(token, st);
             } else if (token.equals("!bid")) {
-                return new CommandBid(st);
+                return new CommandBid(token, st);
             }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(e);
@@ -42,7 +43,8 @@ public class Command implements Serializable {
         throw new IllegalArgumentException();
     }
 
-    protected Command(Cmd id) {
+    protected Command(String cmdStr, Cmd id) {
+        this.cmdStr = cmdStr;
         this.id = id;
     }
 
@@ -52,6 +54,6 @@ public class Command implements Serializable {
 
     @Override
     public String toString() {
-        return id.toString();
+        return cmdStr;
     }
 }

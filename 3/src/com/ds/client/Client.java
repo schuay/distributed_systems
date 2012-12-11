@@ -4,7 +4,7 @@ package com.ds.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import com.ds.common.Command;
@@ -34,14 +34,14 @@ public class Client {
          */
 
         Socket socket = null;
-        ObjectOutputStream out = null;
+        PrintWriter out = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
 
             Thread responseThread = new Thread(new ResponseThread(socket));
             responseThread.start();
 
-            out = new ObjectOutputStream(socket.getOutputStream());
+            out = new PrintWriter(socket.getOutputStream());
             Log.i("Connection successful.");
 
             inputLoop(parsedArgs, out);
@@ -57,7 +57,7 @@ public class Client {
         }
     }
 
-    private static void inputLoop(ParsedArgs args, ObjectOutputStream out) throws IOException {
+    private static void inputLoop(ParsedArgs args, PrintWriter out) throws IOException {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
         /* Initial indentation. */
@@ -72,7 +72,8 @@ public class Client {
 
             try {
                 command = Command.parse(userInput);
-                out.writeObject(command);
+                out.println(command.toString());
+                out.flush();
 
                 if (command.getId() == Cmd.END) {
                     break;

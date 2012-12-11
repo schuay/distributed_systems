@@ -19,8 +19,8 @@ public class CommandBid extends Command {
         return amount;
     }
 
-    protected CommandBid(StringTokenizer st) {
-        super(Cmd.BID);
+    protected CommandBid(String cmdStr, StringTokenizer st) {
+        super(cmdStr, Cmd.BID);
 
         if (st.countTokens() < 2) {
             throw new IllegalArgumentException();
@@ -28,5 +28,10 @@ public class CommandBid extends Command {
 
         this.auctionId = Integer.parseInt(st.nextToken());
         this.amount = Integer.parseInt(st.nextToken());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %d %d", super.toString(), auctionId, amount);
     }
 }

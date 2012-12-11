@@ -19,8 +19,8 @@ public class CommandCreate extends Command {
         return description;
     }
 
-    protected CommandCreate(StringTokenizer st) {
-        super(Cmd.CREATE);
+    protected CommandCreate(String cmdStr, StringTokenizer st) {
+        super(cmdStr, Cmd.CREATE);
 
         if (st.countTokens() < 2) {
             throw new IllegalArgumentException();
@@ -33,5 +33,10 @@ public class CommandCreate extends Command {
             sb.append(String.format("%s ", st.nextToken()));
         }
         this.description = sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %d %s", super.toString(), duration, description);
     }
 }
