@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import com.ds.common.Command;
 import com.ds.common.CommandBid;
@@ -19,6 +21,7 @@ import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.ResponseAuctionList;
 import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
+import com.ds.util.CommandMatcher;
 
 public class ServerThread implements Runnable {
 
@@ -28,6 +31,7 @@ public class ServerThread implements Runnable {
     private final Server.Data serverData;
     private State state = new StateConnected(this);
     private boolean quit = false;
+    private final List<CommandMatcher> matchers;
 
     public ServerThread(int id, Socket socket, Server.Data serverData) throws IOException {
         this.id = id;
@@ -35,6 +39,16 @@ public class ServerThread implements Runnable {
 
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream());
+
+        /* Configure matchers. */
+
+        matchers = new ArrayList<CommandMatcher>();
+        matchers.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+([a-zA-Z0-9_\\-]+)\\s+([a-zA-Z0-9/+]{43}=)$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.LIST, "^!list\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.CREATE, "^!create\\s+([0-9]+)\\s+(.+)$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.BID, "^!bid\\s+([0-9]+)\\s+([0-9.]+)$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
 
         Log.i("ServerThread %d created", id);
     }
