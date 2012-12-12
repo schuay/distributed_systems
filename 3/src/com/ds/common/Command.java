@@ -43,7 +43,7 @@ public class Command implements Serializable {
         throw new IllegalArgumentException();
     }
 
-    protected Command(String cmdStr, Cmd id) {
+    public Command(String cmdStr, Cmd id) {
         this.cmdStr = cmdStr;
         this.id = id;
     }

@@ -19,6 +19,12 @@ public class CommandBid extends Command {
         return amount;
     }
 
+    public CommandBid(String cmdStr, int auctionId, int amount) {
+        super(cmdStr, Cmd.BID);
+        this.auctionId = auctionId;
+        this.amount = amount;
+    }
+
     protected CommandBid(String cmdStr, StringTokenizer st) {
         super(cmdStr, Cmd.BID);
 

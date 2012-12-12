@@ -19,6 +19,12 @@ public class CommandCreate extends Command {
         return description;
     }
 
+    public CommandCreate(String cmdStr, int duration, String description) {
+        super(cmdStr, Cmd.CREATE);
+        this.duration = duration;
+        this.description = description;
+    }
+
     protected CommandCreate(String cmdStr, StringTokenizer st) {
         super(cmdStr, Cmd.CREATE);
 

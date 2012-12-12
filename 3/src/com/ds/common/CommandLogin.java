@@ -10,6 +10,12 @@ public class CommandLogin extends Command {
     private final String user;
     private String challenge;
 
+    public CommandLogin(String cmdStr, String user, String challenge) {
+        super(cmdStr, Cmd.LOGIN);
+        this.user = user;
+        this.challenge = challenge;
+    }
+
     protected CommandLogin(String cmdStr, StringTokenizer st) {
         super(cmdStr, Cmd.LOGIN);
 

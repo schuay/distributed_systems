@@ -78,7 +78,15 @@ public class ServerThread implements Runnable {
 
                 Log.i("Received command: %s", msg);
 
-                /* state.processCommand(command); */
+                Command cmd;
+                try {
+                    cmd = toCommand(msg, matcher.getType(), matches);
+                } catch (IllegalArgumentException e) {
+                    Log.w(e.getMessage());
+                    continue;
+                }
+
+                state.processCommand(cmd);
             }
         } catch (Exception e) {
             Log.e(e.getMessage());
@@ -116,6 +124,28 @@ public class ServerThread implements Runnable {
 
     private void sendResponse(Response response) {
         out.write(response.toString());
+    }
+
+    /**
+     * Extracts a Command object from the parsed incoming string.
+     */
+    private static Command toCommand(String cmd, CommandMatcher.Type type, List<String> args) {
+        switch (type) {
+        case LIST:
+            return new Command(cmd, Command.Cmd.LIST);
+        case LOGIN:
+            return new CommandLogin(cmd, args.get(0), args.get(1));
+        case LOGOUT:
+            return new Command(cmd, Command.Cmd.LOGOUT);
+        case BID:
+            return new CommandBid(cmd, Integer.parseInt(args.get(0)), (int)Double.parseDouble(args.get(1)));
+        case CREATE:
+            return new CommandCreate(cmd, Integer.parseInt(args.get(0)), args.get(1));
+        case END:
+            return new Command(cmd, Command.Cmd.END);
+        default:
+            throw new IllegalArgumentException("Could not parse command");
+        }
     }
 
     /**
