@@ -40,4 +40,13 @@ public class ResponseChallenge extends Response {
     public SecretKey getSecretKey() {
         return secretKey;
     }
+
+    @Override
+    public String toNetString() {
+        return String.format("!ok %s %s %s %s",
+                SecurityUtils.toBase64(clientChallenge),
+                SecurityUtils.toBase64(serverChallenge),
+                SecurityUtils.toBase64(secretKey.getEncoded()),
+                SecurityUtils.toBase64(iv));
+    }
 }

@@ -2,6 +2,7 @@
 package com.ds.server;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,6 +17,7 @@ import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
 import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.ResponseAuctionList;
+import com.ds.common.ResponseChallenge;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
@@ -166,7 +168,15 @@ public class ServerThread implements Runnable {
             case LOGIN:
                 CommandLogin commandLogin = (CommandLogin)command;
 
-                /* TODO: Send back !ok challenge and switch to AES channel. */
+                try {
+                    ResponseChallenge r = new ResponseChallenge(commandLogin.getChallenge());
+                    serverThread.sendResponse(r);
+                } catch (NoSuchAlgorithmException e) {
+                    Log.e(e.getMessage());
+                    return;
+                }
+
+                /* TODO: Switch to AES channel. */
 
                 serverThread.setState(new StateChallenge(serverThread,
                         commandLogin.getUser(), commandLogin.getChallenge()));
