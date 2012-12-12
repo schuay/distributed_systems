@@ -1,4 +1,4 @@
-package com.ds.common;
+package com.ds.channels;
 
 import java.io.IOException;
 

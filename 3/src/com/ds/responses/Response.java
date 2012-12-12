@@ -1,5 +1,5 @@
 
-package com.ds.common;
+package com.ds.responses;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;

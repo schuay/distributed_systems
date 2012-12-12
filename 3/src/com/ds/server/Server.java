@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.bouncycastle.openssl.PasswordFinder;
 
-import com.ds.common.MaybeRsaChannel;
+import com.ds.channels.MaybeRsaChannel;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;

@@ -11,10 +11,10 @@ import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 
-import com.ds.common.Command;
-import com.ds.common.Command.Cmd;
-import com.ds.common.CommandLogin;
-import com.ds.common.TcpChannel;
+import com.ds.channels.TcpChannel;
+import com.ds.commands.Command;
+import com.ds.commands.CommandLogin;
+import com.ds.commands.Command.Cmd;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 import com.ds.util.SecurityUtils;

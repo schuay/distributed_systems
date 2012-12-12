@@ -3,9 +3,9 @@ package com.ds.client;
 
 import java.io.IOException;
 
-import com.ds.common.Response;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
+import com.ds.responses.Response;
 
 public class ResponseThread implements Runnable {
 

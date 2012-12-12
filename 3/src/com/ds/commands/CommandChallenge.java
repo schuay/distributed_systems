@@ -1,5 +1,5 @@
 
-package com.ds.common;
+package com.ds.commands;
 
 
 public class CommandChallenge extends Command {

@@ -1,5 +1,5 @@
 
-package com.ds.common;
+package com.ds.commands;
 
 import java.util.StringTokenizer;
 

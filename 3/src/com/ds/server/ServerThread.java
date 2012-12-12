@@ -8,18 +8,18 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import com.ds.common.Command;
-import com.ds.common.CommandBid;
-import com.ds.common.CommandChallenge;
-import com.ds.common.CommandCreate;
-import com.ds.common.CommandLogin;
-import com.ds.common.Response;
-import com.ds.common.Response.Rsp;
-import com.ds.common.ResponseAuctionCreated;
-import com.ds.common.ResponseAuctionList;
-import com.ds.common.ResponseChallenge;
+import com.ds.commands.Command;
+import com.ds.commands.CommandBid;
+import com.ds.commands.CommandChallenge;
+import com.ds.commands.CommandCreate;
+import com.ds.commands.CommandLogin;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
+import com.ds.responses.Response;
+import com.ds.responses.ResponseAuctionCreated;
+import com.ds.responses.ResponseAuctionList;
+import com.ds.responses.ResponseChallenge;
+import com.ds.responses.Response.Rsp;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
 
