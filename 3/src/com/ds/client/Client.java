@@ -2,13 +2,18 @@
 package com.ds.client;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+
+import javax.crypto.Cipher;
 
 import com.ds.common.Command;
 import com.ds.common.Command.Cmd;
+import com.ds.common.CommandLogin;
 import com.ds.common.TcpChannel;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
@@ -96,7 +101,47 @@ public class Client {
     }
 
     private static void processCommand(Data data, Command command) {
-        data.getChannel().printf(command.toString());
+        switch (command.getId()) {
+        case LOGIN:
+            try {
+                CommandLogin c = (CommandLogin)command;
+
+                /* TODO: Keep this somewhere to handle the server challenge when it arrives. */
+
+                PrivateKey key = readPrivateKey(data.getClientKeyDir(), c.getUser());
+
+                /* Encrypt the login command with the server's public key. */
+
+                Cipher cipher = SecurityUtils.getCipher(
+                        SecurityUtils.RSA,
+                        Cipher.ENCRYPT_MODE,
+                        data.getServerKey(),
+                        null);
+                byte[] secretMessage = cipher.doFinal(c.toString().getBytes());
+
+                /* TODO: Do the base64 encoding transparently in the channel. */
+
+                byte[] encodedMessage = SecurityUtils.toBase64(secretMessage);
+                data.getChannel().printf(new String(encodedMessage));
+            } catch (Throwable t) {
+                Log.e(t.getMessage());
+            }
+            break;
+        default:
+            data.getChannel().printf(command.toString());
+            break;
+        }
+    }
+
+    private static PrivateKey readPrivateKey(String clientKeyDir, String user) throws IOException {
+        File dir = new File(clientKeyDir);
+        File file = new File(dir, String.format("%s.pem", user));
+
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("Could not read private key");
+        }
+
+        return SecurityUtils.readPrivateKey(file.getAbsolutePath());
     }
 
     private static class Data {
