@@ -1,8 +1,14 @@
 
 package com.ds.server;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +18,7 @@ import com.ds.interfaces.StringChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
+import com.ds.util.SecurityUtils;
 import com.ds.util.Utils;
 
 public class Server implements Runnable {
@@ -19,7 +26,7 @@ public class Server implements Runnable {
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
     private static ExecutorService executorService = Executors.newCachedThreadPool();
-    private static final Data serverData = new Data();
+    private static Data serverData;
 
     public static void main(String[] args) throws IOException {
 
@@ -39,6 +46,8 @@ public class Server implements Runnable {
             shutdown();
             return;
         }
+
+        serverData = new Data(parsedArgs.getServerKey(), parsedArgs.getClientKeyDir());
 
         /* Connect event listeners. */
 
@@ -188,8 +197,52 @@ public class Server implements Runnable {
      */
     public static class Data {
 
+        private static final String KEY_EXTENSION = ".pub.pem";
+
         private final UserList userList = new UserList();
         private final AuctionList auctionList = new AuctionList();
+        private final PrivateKey serverKey;
+        private final Map<String, PublicKey> clientKeys;
+
+        public Data(String serverKey, String clientKeyDir) throws IOException {
+            this.serverKey = SecurityUtils.readPrivateKey(serverKey);
+            this.clientKeys = readClientKeys(clientKeyDir);
+        }
+
+        private static Map<String, PublicKey> readClientKeys(String clientKeyDir) {
+            Map<String, PublicKey> map = new HashMap<String, PublicKey>();
+
+            File directory = new File(clientKeyDir);
+            if (!directory.isDirectory()) {
+                throw new IllegalArgumentException("Invalid client key directory");
+            }
+
+            FilenameFilter f = new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(KEY_EXTENSION);
+                }
+            };
+
+            for (File file : directory.listFiles(f)) {
+                try {
+                    String client = clientName(file.getName());
+                    PublicKey pub = SecurityUtils.readPublicKey(file.getAbsolutePath());
+                    map.put(client, pub);
+                    Log.d("Found keyfile: %s for client %s", file.getName(), client);
+                } catch (Throwable t) {
+                    Log.e("Error reading client keys: %s", t.getMessage());
+                }
+            }
+
+
+            return map;
+        }
+
+        private static String clientName(String name) {
+            int len = name.length();
+            return name.substring(0, len - KEY_EXTENSION.length());
+        }
 
         public UserList getUserList() {
             return userList;
@@ -197,6 +250,14 @@ public class Server implements Runnable {
 
         public AuctionList getAuctionList() {
             return auctionList;
+        }
+
+        public PrivateKey getServerKey() {
+            return serverKey;
+        }
+
+        public PublicKey getClientKey(String client) {
+            return clientKeys.get(client);
         }
     }
 }
