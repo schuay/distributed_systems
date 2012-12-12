@@ -1,11 +1,7 @@
 
 package com.ds.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -19,26 +15,24 @@ import com.ds.common.Response;
 import com.ds.common.Response.Rsp;
 import com.ds.common.ResponseAuctionCreated;
 import com.ds.common.ResponseAuctionList;
+import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
 
 public class ServerThread implements Runnable {
 
-    private final BufferedReader in;
-    private final PrintWriter out;
+    private final StringChannel channel;
     private final int id;
     private final Server.Data serverData;
     private State state = new StateConnected(this);
     private boolean quit = false;
     private final List<CommandMatcher> matchers;
 
-    public ServerThread(int id, Socket socket, Server.Data serverData) throws IOException {
+    public ServerThread(int id, StringChannel channel, Server.Data serverData) throws IOException {
         this.id = id;
         this.serverData = serverData;
-
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream());
+        this.channel = channel;
 
         /* Configure matchers. */
 
@@ -57,7 +51,7 @@ public class ServerThread implements Runnable {
     public void run() {
         try {
             String msg;
-            while (!quit && (msg = in.readLine()) != null) {
+            while (!quit && (msg = channel.readLine()) != null) {
 
                 /* Parse incoming command. */
 
@@ -91,13 +85,7 @@ public class ServerThread implements Runnable {
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
-            try {
-                in.close();
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            channel.close();
             state.cleanup();
         }
 
@@ -123,7 +111,7 @@ public class ServerThread implements Runnable {
     }
 
     private void sendResponse(Response response) {
-        out.write(response.toString());
+        channel.printf(response.toString());
     }
 
     /**

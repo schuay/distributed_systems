@@ -3,13 +3,12 @@ package com.ds.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.ds.common.TcpChannel;
+import com.ds.interfaces.StringChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
@@ -19,7 +18,6 @@ public class Server implements Runnable {
 
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
-    private static List<Socket> sockets = new ArrayList<Socket>();
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     private static final Data serverData = new Data();
 
@@ -88,9 +86,8 @@ public class Server implements Runnable {
         int id = 0;
         while (listening) {
             try {
-                Socket socket = serverSocket.accept();
-                sockets.add(socket);
-                executorService.submit(new ServerThread(id++, socket, serverData));
+                StringChannel channel = new TcpChannel(serverSocket.accept());
+                executorService.submit(new ServerThread(id++, channel, serverData));
             } catch (IOException e) {
                 Log.e(e.getMessage());
             }
@@ -111,14 +108,6 @@ public class Server implements Runnable {
         }
 
         executorService.shutdownNow();
-
-        for (Socket socket : sockets) {
-            if (socket.isClosed()) {
-                continue;
-            }
-            socket.close();
-        }
-
         serverData.getAuctionList().cancelTimers();
 
         try {
