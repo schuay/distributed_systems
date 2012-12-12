@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import com.ds.interfaces.StringChannel;
+import com.ds.loggers.Log;
 
 public class TcpChannel implements StringChannel {
 
@@ -30,9 +31,18 @@ public class TcpChannel implements StringChannel {
         return in.readLine();
     }
 
-    public void close() throws IOException {
-        in.close();
+    @Override
+    public void close() {
+        try {
+            in.close();
+        } catch (Throwable t) {
+            Log.e(t.getMessage());
+        }
         out.close();
-        socket.close();
+        try {
+            socket.close();
+        } catch (Throwable t) {
+            Log.e(t.getMessage());
+        }
     }
 }

@@ -7,4 +7,6 @@ public interface StringChannel {
     void printf(String format, Object... args);
 
     String readLine() throws IOException;
+
+    void close();
 }
