@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.ds.event.BidEvent;
 import com.ds.event.Event;
-import com.ds.interfaces.EventListener;
+import com.ds.loggers.EventListener;
 import com.ds.server.UserList.User;
 
 public class Auction {

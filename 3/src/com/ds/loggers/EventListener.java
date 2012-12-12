@@ -1,4 +1,4 @@
-package com.ds.interfaces;
+package com.ds.loggers;
 
 import com.ds.event.Event;
 

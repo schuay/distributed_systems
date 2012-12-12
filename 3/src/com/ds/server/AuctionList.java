@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
-import com.ds.interfaces.EventListener;
+import com.ds.loggers.EventListener;
 import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
 

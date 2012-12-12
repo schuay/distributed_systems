@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.ds.event.Event;
 import com.ds.event.UserEvent;
-import com.ds.interfaces.EventListener;
+import com.ds.loggers.EventListener;
 
 /**
  * A list of all users known to the system.
