@@ -24,6 +24,7 @@ public class TcpChannel implements StringChannel {
     @Override
     public void printf(String format, Object... args) {
         out.printf(format, args);
+        out.flush();
     }
 
     @Override
