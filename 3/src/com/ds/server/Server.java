@@ -95,7 +95,7 @@ public class Server implements Runnable {
                 StringChannel channel = new MaybeRsaChannel(serverSocket.accept(),
                         serverData.getServerKey());
                 executorService.submit(new ServerThread(id++, channel, serverData));
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 Log.e(e.getMessage());
             }
         }
