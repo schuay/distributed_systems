@@ -15,7 +15,7 @@ public class Response implements Serializable {
     }
 
     public enum Rsp {
-        OK, ERROR, AUCTION_LIST, AUCTION_CREATED, BID
+        OK, ERROR, AUCTION_LIST, AUCTION_CREATED, BID, CHALLENGE
     }
 
     public static Response parse(String line) {
