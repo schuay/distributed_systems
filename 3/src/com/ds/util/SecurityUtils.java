@@ -96,10 +96,10 @@ public class SecurityUtils {
     }
 
 
-    public static SecretKey generateSecretKey(int keysize) throws NoSuchAlgorithmException {
+    public static SecretKey generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
         // KEYSIZE is in bits
-        generator.init(keysize);
+        generator.init(256);
         return generator.generateKey();
     }
 
