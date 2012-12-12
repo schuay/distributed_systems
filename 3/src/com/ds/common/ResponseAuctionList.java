@@ -15,6 +15,17 @@ public class ResponseAuctionList extends Response {
         auctionListString = auctionList.toString();
     }
 
+    public ResponseAuctionList(String auctionListString) {
+        super(Rsp.AUCTION_LIST);
+
+        this.auctionListString = auctionListString;
+    }
+
+    @Override
+    public String toNetString() {
+        return String.format("%s %s", super.toString(), auctionListString);
+    }
+
     @Override
     public String toString() {
         return auctionListString;
