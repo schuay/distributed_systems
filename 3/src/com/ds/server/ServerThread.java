@@ -111,7 +111,7 @@ public class ServerThread implements Runnable {
     }
 
     private void sendResponse(Response response) {
-        channel.printf(response.toString());
+        channel.printf(response.toNetString());
     }
 
     /**
