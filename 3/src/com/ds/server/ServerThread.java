@@ -161,16 +161,11 @@ public class ServerThread implements Runnable {
             switch (command.getId()) {
             case LOGIN:
                 CommandLogin commandLogin = (CommandLogin)command;
-                UserList userList = serverThread.getUserList();
-                User user = userList.login(commandLogin.getUser());
-                if (user == null) {
-                    serverThread.sendResponse(new Response(Rsp.ERROR));
-                    Log.e("User %s login failed: already logged in", commandLogin.getUser());
-                    return;
-                }
-                serverThread.setState(new StateRegistered(serverThread, user));
-                serverThread.sendResponse(new Response(Rsp.OK));
-                Log.i("User %s logged in", user.getName());
+
+                /* TODO: Send back !ok challenge and switch to AES channel. */
+
+                serverThread.setState(new StateChallenge(serverThread,
+                        commandLogin.getUser(), commandLogin.getChallenge()));
                 break;
             case LIST:
                 serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
@@ -180,6 +175,49 @@ public class ServerThread implements Runnable {
                 break;
             default:
                 Log.e("Invalid command %s in connected state", command);
+            }
+        }
+
+        @Override
+        public void cleanup() {}
+
+    }
+
+    /**
+     * StateChallenge is responsible for completing the authentication after
+     * a client has requested to be logged in.
+     */
+    private static class StateChallenge implements State {
+
+        private final byte[] challenge;
+        private final ServerThread serverThread;
+        private final String username;
+
+        public StateChallenge(ServerThread serverThread, String username, byte[] challenge) {
+            this.serverThread = serverThread;
+            this.challenge = challenge;
+            this.username = username;
+        }
+
+        @Override
+        public void processCommand(Command command) {
+            switch (command.getId()) {
+            case LOGIN:
+                /* TODO: Validate challenge. */
+
+                UserList userList = serverThread.getUserList();
+                User user = userList.login(username);
+                if (user == null) {
+                    serverThread.sendResponse(new Response(Rsp.ERROR));
+                    Log.e("User %s login failed: already logged in", username);
+                    return;
+                }
+                serverThread.setState(new StateRegistered(serverThread, user));
+                Log.i("User %s logged in", user.getName());
+                break;
+            default:
+                Log.e("Invalid command %s in challenged state", command);
+                serverThread.setState(new StateConnected(serverThread));
             }
         }
 
