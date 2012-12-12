@@ -216,23 +216,33 @@ public class ServerThread implements Runnable {
         @Override
         public void processCommand(Command command) {
             switch (command.getId()) {
-            case LOGIN:
-                /* TODO: Validate challenge. */
+            case CHALLENGE:
+                CommandChallenge c = (CommandChallenge)command;
+
+                if (!(challenge.equals(c.getChallenge()))) {
+                    Log.w("Client did not match server challenge");
+                    break;
+                }
 
                 UserList userList = serverThread.getUserList();
                 User user = userList.login(username);
                 if (user == null) {
                     serverThread.sendResponse(new Response(Rsp.ERROR));
                     Log.e("User %s login failed: already logged in", username);
-                    return;
+                    break;
                 }
                 serverThread.setState(new StateRegistered(serverThread, user));
                 Log.i("User %s logged in", user.getName());
                 break;
             default:
                 Log.e("Invalid command %s in challenged state", command);
-                serverThread.setState(new StateConnected(serverThread));
+                break;
             }
+
+
+            /* TODO: Switch to MaybeRSA channel. */
+
+            serverThread.setState(new StateConnected(serverThread));
         }
 
         @Override
