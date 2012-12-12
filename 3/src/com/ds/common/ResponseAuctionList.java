@@ -23,7 +23,7 @@ public class ResponseAuctionList extends Response {
 
     @Override
     public String toNetString() {
-        return String.format("%s %s", super.toString(), auctionListString);
+        return String.format("%s %s", super.toNetString(), auctionListString);
     }
 
     @Override

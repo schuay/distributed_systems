@@ -26,7 +26,7 @@ public class ResponseAuctionCreated extends Response {
 
     @Override
     public String toNetString() {
-        return String.format("%s %d", super.toString(), id);
+        return String.format("%s %d", super.toNetString(), id);
     }
 
     @Override
