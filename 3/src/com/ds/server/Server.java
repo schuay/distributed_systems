@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -209,7 +210,7 @@ public class Server implements Runnable {
 
         public Data(String serverKey, String clientKeyDir) throws IOException {
             this.serverKey = readPrivateKey(serverKey);
-            this.clientKeys = readClientKeys(clientKeyDir);
+            this.clientKeys = Collections.unmodifiableMap(readClientKeys(clientKeyDir));
         }
 
         private static PrivateKey readPrivateKey(String path) throws IOException {
