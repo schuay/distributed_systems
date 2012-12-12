@@ -27,7 +27,8 @@ public class CommandMatcher {
         LIST,
         CREATE,
         BID,
-        END
+        END,
+        CHALLENGE
     }
 
     private final Type type;

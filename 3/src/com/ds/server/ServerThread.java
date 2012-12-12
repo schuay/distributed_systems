@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.ds.common.Command;
 import com.ds.common.CommandBid;
+import com.ds.common.CommandChallenge;
 import com.ds.common.CommandCreate;
 import com.ds.common.CommandLogin;
 import com.ds.common.Response;
@@ -43,6 +44,7 @@ public class ServerThread implements Runnable {
         matchers.add(new CommandMatcher(CommandMatcher.Type.CREATE, "^!create\\s+([0-9]+)\\s+(.+)$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.BID, "^!bid\\s+([0-9]+)\\s+([0-9.]+)$"));
         matchers.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
+        matchers.add(new CommandMatcher(CommandMatcher.Type.CHALLENGE, "^([a-zA-Z0-9/+]{43}=)$"));
 
         Log.i("ServerThread %d created", id);
     }
@@ -131,6 +133,8 @@ public class ServerThread implements Runnable {
             return new CommandCreate(cmd, Integer.parseInt(args.get(0)), args.get(1));
         case END:
             return new Command(cmd, Command.Cmd.END);
+        case CHALLENGE:
+            return new CommandChallenge(args.get(0).getBytes()); /* TODO: Extract challenge. */
         default:
             throw new IllegalArgumentException("Could not parse command");
         }
