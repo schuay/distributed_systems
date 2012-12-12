@@ -45,31 +45,35 @@ public class SecurityUtils {
         return Base64.decode(from);
     }
 
-    public static PrivateKey readPrivateKey(String path) throws IOException {
+    public static PrivateKey readPrivateKey(String path, PasswordFinder finder) throws IOException {
         PEMReader in = null;
-
         try {
-            in = new PEMReader(new FileReader(path), new PasswordFinder() {
-                @Override
-                public char[] getPassword() {
-                    char[] password = null;
-                    try {
-                        // reads the password from standard input for decrypting the private key
-                        System.out.println("Enter pass phrase:");
-                        password = new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
-                    } catch (IOException e) {
-                        Log.e(e.getLocalizedMessage());
-                    }
-
-                    return password;
-                }
-            });
-
+            in = new PEMReader(new FileReader(path), finder);
             KeyPair keyPair = (KeyPair) in.readObject();
             return keyPair.getPrivate();
         } finally {
             try { in.close(); } catch (Throwable t) { }
         }
+    }
+
+    public static PrivateKey readPrivateKey(String path) throws IOException {
+        PasswordFinder finder = new PasswordFinder() {
+            @Override
+            public char[] getPassword() {
+                char[] password = null;
+                try {
+                    // reads the password from standard input for decrypting the private key
+                    System.out.println("Enter pass phrase:");
+                    password = new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+                } catch (IOException e) {
+                    Log.e(e.getLocalizedMessage());
+                }
+
+                return password;
+            }
+        };
+
+        return readPrivateKey(path, finder);
     }
 
     public static PublicKey readPublicKey(String path) throws IOException {

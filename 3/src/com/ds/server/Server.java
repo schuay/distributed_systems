@@ -14,11 +14,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.ds.common.TcpChannel;
+import org.bouncycastle.openssl.PasswordFinder;
+
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
 import com.ds.util.SecurityUtils;
+import com.ds.util.ServerProperties;
 import com.ds.util.Utils;
 
 public class Server implements Runnable {
@@ -205,26 +208,46 @@ public class Server implements Runnable {
         private final Map<String, PublicKey> clientKeys;
 
         public Data(String serverKey, String clientKeyDir) throws IOException {
-            this.serverKey = SecurityUtils.readPrivateKey(serverKey);
+            this.serverKey = readPrivateKey(serverKey);
             this.clientKeys = readClientKeys(clientKeyDir);
         }
 
-        private static Map<String, PublicKey> readClientKeys(String clientKeyDir) {
+        private static PrivateKey readPrivateKey(String path) throws IOException {
+            /* A passphrase finder that returns the phrase from server.properties. */
+
+            PasswordFinder finder = new PasswordFinder() {
+                @Override
+                public char[] getPassword() {
+                    try {
+                        return new ServerProperties().getPassphrase().toCharArray();
+                    } catch (IOException e) {
+                        Log.e("Could not read server properties");
+                        return null;
+                    }
+                }
+            };
+
+            return SecurityUtils.readPrivateKey(path, finder);
+        }
+
+        private static Map<String, PublicKey> readClientKeys(String path) {
             Map<String, PublicKey> map = new HashMap<String, PublicKey>();
 
-            File directory = new File(clientKeyDir);
+            File directory = new File(path);
             if (!directory.isDirectory()) {
                 throw new IllegalArgumentException("Invalid client key directory");
             }
 
-            FilenameFilter f = new FilenameFilter() {
+            /* A filter for public keys. */
+
+            FilenameFilter filter = new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.endsWith(KEY_EXTENSION);
                 }
             };
 
-            for (File file : directory.listFiles(f)) {
+            for (File file : directory.listFiles(filter)) {
                 try {
                     String client = clientName(file.getName());
                     PublicKey pub = SecurityUtils.readPublicKey(file.getAbsolutePath());
