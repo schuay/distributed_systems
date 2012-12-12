@@ -3,12 +3,14 @@ package com.ds.common;
 
 import java.util.StringTokenizer;
 
+import com.ds.util.SecurityUtils;
+
 public class CommandLogin extends Command {
 
     private static final long serialVersionUID = 8266776473396356465L;
 
     private final String user;
-    private byte[] challenge;
+    private final byte[] challenge;
 
     public CommandLogin(String cmdStr, String user, byte[] challenge) {
         super(cmdStr, Cmd.LOGIN);
@@ -24,10 +26,7 @@ public class CommandLogin extends Command {
         }
 
         this.user = st.nextToken();
-    }
-
-    public void setChallenge(byte[] challenge) {
-        this.challenge = challenge;
+        this.challenge = SecurityUtils.getSecureRandom();
     }
 
     public byte[] getChallenge() {
@@ -40,10 +39,6 @@ public class CommandLogin extends Command {
 
     @Override
     public String toString() {
-        if (challenge != null) {
-            return String.format("%s %s %s", super.toString(), user, challenge);
-        }
-
-        return String.format("%s %s", super.toString(), user);
+        return String.format("%s %s %s", super.toString(), user, challenge);
     }
 }
