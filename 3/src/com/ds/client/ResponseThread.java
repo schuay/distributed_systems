@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import com.ds.common.Response;
+import com.ds.loggers.Log;
 
 public class ResponseThread implements Runnable {
 
@@ -26,7 +27,7 @@ public class ResponseThread implements Runnable {
                 System.out.println(response);
             }
         } catch (Exception e) {
-            e.getMessage();
+            Log.w("ResponseThread terminating");
         } finally {
             try {
                 if (in != null)
