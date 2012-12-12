@@ -20,7 +20,7 @@ public class MaybeRsaChannel extends TcpChannel {
             NoSuchAlgorithmException, NoSuchPaddingException {
         super(socket);
         cipher = SecurityUtils.getCipher(
-                "RSA/NONE/OAEPWithSHA256AndMGF1Padding",
+                SecurityUtils.RSA,
                 Cipher.DECRYPT_MODE,
                 privateKey,
                 null);

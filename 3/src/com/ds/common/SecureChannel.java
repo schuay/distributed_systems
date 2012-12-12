@@ -14,7 +14,7 @@ import com.ds.interfaces.StringChannel;
 import com.ds.util.SecurityUtils;
 
 public class SecureChannel implements StringChannel {
-    private static final String CIPHER = "AES/CTR/NoPadding";
+
     private final Base64Channel base64Channel;
     private final Cipher encCipher;
     private final Cipher decCipher;
@@ -22,9 +22,9 @@ public class SecureChannel implements StringChannel {
     public SecureChannel(Base64Channel base64Channel, Key sessionKey, SecureRandom iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         this.base64Channel = base64Channel;
-        this.encCipher = SecurityUtils.getCipher(CIPHER, Cipher.ENCRYPT_MODE,
+        this.encCipher = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.ENCRYPT_MODE,
                 sessionKey, iv);
-        this.decCipher = SecurityUtils.getCipher(CIPHER, Cipher.DECRYPT_MODE,
+        this.decCipher = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.DECRYPT_MODE,
                 sessionKey, iv);
     }
 

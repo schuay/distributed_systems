@@ -32,6 +32,9 @@ import com.ds.loggers.Log;
 
 public class SecurityUtils {
 
+    public static final String RSA = "RSA/NONE/OAEPWithSHA256AndMGF1Padding";
+    public static final String AES = "AES/CTR/NoPadding";
+
     static {
         /* Set BouncyCastle as the system default in the context of this application. */
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
