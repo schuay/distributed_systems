@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.ds.event.BidEvent;
 import com.ds.event.Event;
-import com.ds.interfaces.BillingListener;
 import com.ds.interfaces.EventListener;
 import com.ds.server.UserList.User;
 
@@ -20,7 +19,6 @@ public class Auction {
     private int highestBid = 0;
     private User highestBidder = User.NONE;
     private final List<EventListener> listeners = new ArrayList<EventListener>();
-    private final List<BillingListener> billingListeners = new ArrayList<BillingListener>();
 
     public Auction(int id, String description, User owner, Date end) {
         this.id = id;
@@ -47,8 +45,6 @@ public class Auction {
         if (highestBidder != User.NONE) {
             notifyListeners(new BidEvent(BidEvent.BID_WON, highestBidder.getName(), id, highestBid));
         }
-
-        notifyBillingListeners();
     }
 
     @Override
@@ -81,26 +77,6 @@ public class Auction {
         synchronized (listeners) {
             for (EventListener listener : listeners) {
                 listener.onEvent(event);
-            }
-        }
-    }
-
-    public void addBillingListener(BillingListener billingListener) {
-        synchronized (billingListeners) {
-            billingListeners.add(billingListener);
-        }
-    }
-
-    public void removeBillingListener(BillingListener billingListener) {
-        synchronized (billingListeners) {
-            billingListeners.remove(billingListener);
-        }
-    }
-
-    private void notifyBillingListeners() {
-        synchronized (billingListeners) {
-            for (BillingListener billingListener : billingListeners) {
-                billingListener.billAuction(owner.getName(), id, highestBid);
             }
         }
     }
