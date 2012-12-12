@@ -4,11 +4,12 @@ package com.ds.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 import com.ds.common.Command;
 import com.ds.common.Command.Cmd;
+import com.ds.common.TcpChannel;
+import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 
 public class Client {
@@ -38,30 +39,31 @@ public class Client {
          */
 
         Socket socket = null;
-        PrintWriter out = null;
+        StringChannel channel = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
+            channel = new TcpChannel(socket);
 
-            Thread responseThread = new Thread(new ResponseThread(socket));
+            Thread responseThread = new Thread(new ResponseThread(channel));
             responseThread.start();
 
-            out = new PrintWriter(socket.getOutputStream());
             Log.i("Connection successful.");
 
-            inputLoop(parsedArgs, out);
+            inputLoop(parsedArgs, channel);
 
             responseThread.join();
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
-            if (out != null)
-                out.close();
-            if (socket != null)
+            if (channel != null) {
+                channel.close();
+            } else {
                 socket.close();
+            }
         }
     }
 
-    private static void inputLoop(ParsedArgs args, PrintWriter out) throws IOException {
+    private static void inputLoop(ParsedArgs args, StringChannel channel) throws IOException {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
         /* Initial indentation. */
@@ -76,8 +78,7 @@ public class Client {
 
             try {
                 command = Command.parse(userInput);
-                out.println(command.toString());
-                out.flush();
+                channel.printf(command.toString());
 
                 if (command.getId() == Cmd.END) {
                     break;

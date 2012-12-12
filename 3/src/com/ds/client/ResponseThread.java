@@ -2,39 +2,30 @@
 package com.ds.client;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.Socket;
 
 import com.ds.common.Response;
+import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 
 public class ResponseThread implements Runnable {
 
-    private final Socket socket;
+    private final StringChannel channel;
 
-    public ResponseThread(Socket socket) throws IOException {
-        this.socket = socket;
+    public ResponseThread(StringChannel channel) throws IOException {
+        this.channel = channel;
     }
 
     @Override
     public void run() {
-        ObjectInputStream in = null;
         try {
-            in = new ObjectInputStream(socket.getInputStream());
-
             Response response;
-            while ((response = (Response)in.readObject()) != null) {
+            while ((response = Response.parse(channel.readLine())) != null) {
                 System.out.println(response);
             }
         } catch (Exception e) {
             Log.w("ResponseThread terminating");
         } finally {
-            try {
-                if (in != null)
-                    in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            channel.close();
         }
     }
 
