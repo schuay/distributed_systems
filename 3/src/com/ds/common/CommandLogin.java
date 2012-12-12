@@ -8,9 +8,9 @@ public class CommandLogin extends Command {
     private static final long serialVersionUID = 8266776473396356465L;
 
     private final String user;
-    private String challenge;
+    private byte[] challenge;
 
-    public CommandLogin(String cmdStr, String user, String challenge) {
+    public CommandLogin(String cmdStr, String user, byte[] challenge) {
         super(cmdStr, Cmd.LOGIN);
         this.user = user;
         this.challenge = challenge;
@@ -27,7 +27,11 @@ public class CommandLogin extends Command {
     }
 
     public void setChallenge(byte[] challenge) {
-        this.challenge = new String(challenge);
+        this.challenge = challenge;
+    }
+
+    public byte[] getChallenge() {
+        return challenge;
     }
 
     public String getUser() {

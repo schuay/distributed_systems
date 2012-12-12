@@ -122,7 +122,7 @@ public class ServerThread implements Runnable {
         case LIST:
             return new Command(cmd, Command.Cmd.LIST);
         case LOGIN:
-            return new CommandLogin(cmd, args.get(0), args.get(1));
+            return new CommandLogin(cmd, args.get(0), args.get(1).getBytes()); /* TODO: Extract challenge. */
         case LOGOUT:
             return new Command(cmd, Command.Cmd.LOGOUT);
         case BID:
