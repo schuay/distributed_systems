@@ -14,12 +14,12 @@ public class Base64Channel extends TcpChannel {
     @Override
     public void printf(String format, Object... args) {
         byte[] from = String.format(format, args).getBytes();
-        super.printf(SecurityUtils.toBase64(from).toString());
+        super.printf(new String(SecurityUtils.toBase64(from)));
     }
 
     @Override
     public String readLine() throws IOException {
         byte[] from = super.readLine().getBytes();
-        return SecurityUtils.fromBase64(from).toString();
+        return new String(SecurityUtils.fromBase64(from));
     }
 }
