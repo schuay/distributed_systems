@@ -11,6 +11,8 @@ import com.ds.loggers.Log;
 
 public class TcpChannel implements Channel {
 
+    protected static final String CHARSET = "UTF-8";
+
     private final BufferedReader in;
     private final BufferedWriter out;
     private final Socket socket;
@@ -23,7 +25,7 @@ public class TcpChannel implements Channel {
 
     @Override
     public void write(byte[] bytes) throws IOException {
-        char[] chars = new String(bytes, "UTF-8").toCharArray();
+        char[] chars = new String(bytes, CHARSET).toCharArray();
 
         out.write(chars);
         out.append('\n');
@@ -33,6 +35,11 @@ public class TcpChannel implements Channel {
     @Override
     public String readLine() throws IOException {
         return in.readLine();
+    }
+
+    @Override
+    public byte[] read() throws IOException {
+        return readLine().getBytes();
     }
 
     @Override
