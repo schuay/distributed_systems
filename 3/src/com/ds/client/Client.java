@@ -5,12 +5,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.security.PublicKey;
 
 import com.ds.common.Command;
 import com.ds.common.Command.Cmd;
 import com.ds.common.TcpChannel;
 import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
+import com.ds.util.SecurityUtils;
 
 public class Client {
 
@@ -49,7 +51,7 @@ public class Client {
 
             Log.i("Connection successful.");
 
-            inputLoop(parsedArgs, channel);
+            inputLoop(new Data(channel, parsedArgs));
 
             responseThread.join();
         } catch (Exception e) {
@@ -63,7 +65,7 @@ public class Client {
         }
     }
 
-    private static void inputLoop(ParsedArgs args, StringChannel channel) throws IOException {
+    private static void inputLoop(Data data) throws IOException {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
         /* Initial indentation. */
@@ -78,7 +80,7 @@ public class Client {
 
             try {
                 command = Command.parse(userInput);
-                channel.printf(command.toString());
+                processCommand(data, command);
 
                 if (command.getId() == Cmd.END) {
                     break;
@@ -91,6 +93,35 @@ public class Client {
         }
 
         stdin.close();
+    }
+
+    private static void processCommand(Data data, Command command) {
+        data.getChannel().printf(command.toString());
+    }
+
+    private static class Data {
+
+        private final StringChannel channel;
+        private final PublicKey serverKey;
+        private final String clientKeyDir;
+
+        public Data(StringChannel channel, ParsedArgs args) throws IOException {
+            this.channel = channel;
+            this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
+            this.clientKeyDir = args.getClientKeyDir();
+        }
+
+        public StringChannel getChannel() {
+            return channel;
+        }
+
+        public PublicKey getServerKey() {
+            return serverKey;
+        }
+
+        public String getClientKeyDir() {
+            return clientKeyDir;
+        }
     }
 
     /**

@@ -39,6 +39,10 @@ public class CommandLogin extends Command {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", super.toString(), user, challenge);
+        byte[] base64Challenge = SecurityUtils.toBase64(challenge);
+        return String.format("%s %s %s",
+                super.toString(),
+                user,
+                new String(base64Challenge));
     }
 }
