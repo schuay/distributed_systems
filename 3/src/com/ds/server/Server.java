@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.bouncycastle.openssl.PasswordFinder;
 
-import com.ds.channels.MaybeRsaChannel;
-import com.ds.interfaces.StringChannel;
+import com.ds.channels.Channel;
+import com.ds.channels.TcpChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
@@ -92,8 +92,9 @@ public class Server implements Runnable {
         int id = 0;
         while (listening) {
             try {
-                StringChannel channel = new MaybeRsaChannel(serverSocket.accept(),
-                        serverData.getServerKey());
+                //                Channel channel = new MaybeChannel(serverSocket.accept(),
+                //                        serverData.getServerKey());
+                Channel channel = new TcpChannel(serverSocket.accept());
                 executorService.submit(new ServerThread(id++, channel, serverData));
             } catch (Throwable e) {
                 Log.e(e.getMessage());

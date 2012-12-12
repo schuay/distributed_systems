@@ -11,11 +11,11 @@ import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 
+import com.ds.channels.Channel;
 import com.ds.channels.TcpChannel;
 import com.ds.commands.Command;
-import com.ds.commands.CommandLogin;
 import com.ds.commands.Command.Cmd;
-import com.ds.interfaces.StringChannel;
+import com.ds.commands.CommandLogin;
 import com.ds.loggers.Log;
 import com.ds.util.SecurityUtils;
 
@@ -46,7 +46,7 @@ public class Client {
          */
 
         Socket socket = null;
-        StringChannel channel = null;
+        Channel channel = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
             channel = new TcpChannel(socket);
@@ -100,7 +100,7 @@ public class Client {
         stdin.close();
     }
 
-    private static void processCommand(Data data, Command command) {
+    private static void processCommand(Data data, Command command) throws IOException {
         switch (command.getId()) {
         case LOGIN:
             try {
@@ -122,13 +122,13 @@ public class Client {
                 /* TODO: Do the base64 encoding transparently in the channel. */
 
                 byte[] encodedMessage = SecurityUtils.toBase64(secretMessage);
-                data.getChannel().printf(new String(encodedMessage));
+                data.getChannel().write(encodedMessage);
             } catch (Throwable t) {
                 Log.e(t.getMessage());
             }
             break;
         default:
-            data.getChannel().printf(command.toString());
+            data.getChannel().write(command.toString().getBytes());
             break;
         }
     }
@@ -146,17 +146,17 @@ public class Client {
 
     private static class Data {
 
-        private final StringChannel channel;
+        private final Channel channel;
         private final PublicKey serverKey;
         private final String clientKeyDir;
 
-        public Data(StringChannel channel, ParsedArgs args) throws IOException {
+        public Data(Channel channel, ParsedArgs args) throws IOException {
             this.channel = channel;
             this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
             this.clientKeyDir = args.getClientKeyDir();
         }
 
-        public StringChannel getChannel() {
+        public Channel getChannel() {
             return channel;
         }
 

@@ -8,31 +8,31 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.ds.channels.Channel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandCreate;
 import com.ds.commands.CommandLogin;
-import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
+import com.ds.responses.Response.Rsp;
 import com.ds.responses.ResponseAuctionCreated;
 import com.ds.responses.ResponseAuctionList;
 import com.ds.responses.ResponseChallenge;
-import com.ds.responses.Response.Rsp;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
 
 public class ServerThread implements Runnable {
 
-    private final StringChannel channel;
+    private final Channel channel;
     private final int id;
     private final Server.Data serverData;
     private State state = new StateConnected(this);
     private boolean quit = false;
     private final List<CommandMatcher> matchers;
 
-    public ServerThread(int id, StringChannel channel, Server.Data serverData) throws IOException {
+    public ServerThread(int id, Channel channel, Server.Data serverData) throws IOException {
         this.id = id;
         this.serverData = serverData;
         this.channel = channel;
@@ -115,7 +115,11 @@ public class ServerThread implements Runnable {
     }
 
     private void sendResponse(Response response) {
-        channel.printf(response.toNetString());
+        try {
+            channel.write(response.toNetString().getBytes());
+        } catch (IOException e) {
+            Log.e("Could not write to channel");
+        }
     }
 
     /**

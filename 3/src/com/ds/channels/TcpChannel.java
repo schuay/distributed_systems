@@ -1,30 +1,32 @@
 package com.ds.channels;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import com.ds.interfaces.StringChannel;
 import com.ds.loggers.Log;
 
-public class TcpChannel implements StringChannel {
+public class TcpChannel implements Channel {
 
     private final BufferedReader in;
-    private final PrintWriter out;
+    private final BufferedWriter out;
     private final Socket socket;
 
     public TcpChannel(Socket socket) throws IOException {
         this.socket = socket;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream());
+        this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
 
     @Override
-    public void printf(String format, Object... args) {
-        out.printf(format, args);
-        out.println();
+    public void write(byte[] bytes) throws IOException {
+        char[] chars = new String(bytes, "UTF-8").toCharArray();
+
+        out.write(chars);
+        out.append('\n');
         out.flush();
     }
 
@@ -37,11 +39,7 @@ public class TcpChannel implements StringChannel {
     public void close() {
         try {
             in.close();
-        } catch (Throwable t) {
-            Log.e(t.getMessage());
-        }
-        out.close();
-        try {
+            out.close();
             socket.close();
         } catch (Throwable t) {
             Log.e(t.getMessage());

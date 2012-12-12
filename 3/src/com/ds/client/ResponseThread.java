@@ -3,15 +3,15 @@ package com.ds.client;
 
 import java.io.IOException;
 
-import com.ds.interfaces.StringChannel;
+import com.ds.channels.Channel;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
 
 public class ResponseThread implements Runnable {
 
-    private final StringChannel channel;
+    private final Channel channel;
 
-    public ResponseThread(StringChannel channel) throws IOException {
+    public ResponseThread(Channel channel) throws IOException {
         this.channel = channel;
     }
 
