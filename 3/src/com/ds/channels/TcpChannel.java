@@ -39,7 +39,7 @@ public class TcpChannel implements Channel {
 
     @Override
     public byte[] read() throws IOException {
-        return readLine().getBytes();
+        return in.readLine().getBytes();
     }
 
     @Override
