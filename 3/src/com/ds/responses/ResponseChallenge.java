@@ -44,9 +44,9 @@ public class ResponseChallenge extends Response {
     @Override
     public String toNetString() {
         return String.format("!ok %s %s %s %s",
-                SecurityUtils.toBase64(clientChallenge),
-                SecurityUtils.toBase64(serverChallenge),
-                SecurityUtils.toBase64(secretKey.getEncoded()),
-                SecurityUtils.toBase64(iv));
+                new String(SecurityUtils.toBase64(clientChallenge)),
+                new String(SecurityUtils.toBase64(serverChallenge)),
+                new String(SecurityUtils.toBase64(secretKey.getEncoded())),
+                new String(SecurityUtils.toBase64(iv)));
     }
 }
