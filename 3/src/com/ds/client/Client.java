@@ -9,9 +9,9 @@ import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import javax.crypto.Cipher;
-
+import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
+import com.ds.channels.RsaChannel;
 import com.ds.channels.TcpChannel;
 import com.ds.commands.Command;
 import com.ds.commands.Command.Cmd;
@@ -46,7 +46,7 @@ public class Client {
          */
 
         Socket socket = null;
-        Channel channel = null;
+        TcpChannel channel = null;
         Data data = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
@@ -114,23 +114,15 @@ public class Client {
             try {
                 CommandLogin c = (CommandLogin)command;
 
-                /* TODO: Keep this somewhere to handle the server challenge when it arrives. */
-
-                PrivateKey key = readPrivateKey(data.getClientKeyDir(), c.getUser());
-
                 /* Encrypt the login command with the server's public key. */
 
-                Cipher cipher = SecurityUtils.getCipher(
-                        SecurityUtils.RSA,
-                        Cipher.ENCRYPT_MODE,
-                        data.getServerKey(),
-                        null);
-                byte[] secretMessage = cipher.doFinal(c.toString().getBytes());
+                PrivateKey key = readPrivateKey(data.getClientKeyDir(), c.getUser());
+                Channel b64c = new Base64Channel(data.getTcpChannel());
+                Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
 
-                /* TODO: Do the base64 encoding transparently in the channel. */
+                rsac.write(c.toString().getBytes());
 
-                byte[] encodedMessage = SecurityUtils.toBase64(secretMessage);
-                data.getChannel().write(encodedMessage);
+                data.setChannel(rsac);
             } catch (Throwable t) {
                 Log.e(t.getMessage());
             }
@@ -155,11 +147,12 @@ public class Client {
     protected static class Data {
 
         private Channel channel;
+        private TcpChannel tcpChannel;
         private final PublicKey serverKey;
         private final String clientKeyDir;
 
-        public Data(Channel channel, ParsedArgs args) throws IOException {
-            this.setChannel(channel);
+        public Data(TcpChannel tcpChannel, ParsedArgs args) throws IOException {
+            this.channel = this.tcpChannel = tcpChannel;
             this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
             this.clientKeyDir = args.getClientKeyDir();
         }
@@ -170,6 +163,10 @@ public class Client {
 
         public synchronized Channel getChannel() {
             return channel;
+        }
+
+        public TcpChannel getTcpChannel() {
+            return tcpChannel;
         }
 
         public PublicKey getServerKey() {
