@@ -4,6 +4,8 @@ import java.io.IOException;
 
 public interface Channel {
 
+    String CHARSET = "UTF-8";
+
     void write(byte[] bytes) throws IOException;
 
     String readLine() throws IOException;

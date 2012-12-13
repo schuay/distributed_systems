@@ -11,8 +11,6 @@ import com.ds.loggers.Log;
 
 public class TcpChannel implements Channel {
 
-    protected static final String CHARSET = "UTF-8";
-
     private final BufferedReader in;
     private final BufferedWriter out;
     private final Socket socket;
