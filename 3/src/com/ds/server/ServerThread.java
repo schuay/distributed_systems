@@ -2,11 +2,12 @@
 package com.ds.server;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import javax.crypto.spec.IvParameterSpec;
 
 import com.ds.channels.AesChannel;
 import com.ds.channels.Base64Channel;
@@ -24,6 +25,7 @@ import com.ds.responses.ResponseAuctionList;
 import com.ds.responses.ResponseChallenge;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
+import com.ds.util.SecurityUtils;
 
 public class ServerThread implements Runnable {
 
@@ -148,7 +150,7 @@ public class ServerThread implements Runnable {
         case LIST:
             return new Command(cmd, Command.Cmd.LIST);
         case LOGIN:
-            return new CommandLogin(cmd, args.get(0), args.get(1).getBytes()); /* TODO: Extract challenge. */
+            return new CommandLogin(cmd, args.get(0), SecurityUtils.fromBase64(args.get(1).getBytes()));
         case LOGOUT:
             return new Command(cmd, Command.Cmd.LOGOUT);
         case BID:
@@ -158,7 +160,7 @@ public class ServerThread implements Runnable {
         case END:
             return new Command(cmd, Command.Cmd.END);
         case CHALLENGE:
-            return new CommandChallenge(args.get(0).getBytes()); /* TODO: Extract challenge. */
+            return new CommandChallenge(SecurityUtils.fromBase64(args.get(0).getBytes()));
         default:
             throw new IllegalArgumentException("Could not parse command");
         }
@@ -195,7 +197,7 @@ public class ServerThread implements Runnable {
                     serverThread.sendResponse(r);
 
                     Channel b64c = new Base64Channel(serverThread.getChannel());
-                    Channel aesc = new AesChannel(b64c, r.getSecretKey(), new SecureRandom(r.getIv()));
+                    Channel aesc = new AesChannel(b64c, r.getSecretKey(), new IvParameterSpec(r.getIv()));
                     serverThread.setChannel(aesc);
 
                     serverThread.setState(new StateChallenge(

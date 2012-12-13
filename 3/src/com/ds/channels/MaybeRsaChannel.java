@@ -2,6 +2,7 @@ package com.ds.channels;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -23,8 +24,8 @@ public class MaybeRsaChannel extends TcpChannel {
     private final Cipher cipher;
 
     public MaybeRsaChannel(Socket socket, PrivateKey privateKey)
-            throws IOException, InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchPaddingException {
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchPaddingException, InvalidAlgorithmParameterException {
 
         super(socket);
         cipher = SecurityUtils.getCipher(SecurityUtils.RSA, Cipher.DECRYPT_MODE,

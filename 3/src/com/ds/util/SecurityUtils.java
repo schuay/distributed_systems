@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -14,6 +15,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -34,6 +36,9 @@ public class SecurityUtils {
 
     public static final String RSA = "RSA/NONE/OAEPWithSHA256AndMGF1Padding";
     public static final String AES = "AES/CTR/NoPadding";
+
+    public static final int CHALLENGE_BYTES = 32;
+    public static final int IV_BYTES = 16;
 
     static {
         /* Set BouncyCastle as the system default in the context of this application. */
@@ -90,10 +95,9 @@ public class SecurityUtils {
         }
     }
 
-    public static byte[] getSecureRandom() {
-        // generates a 32 byte secure random number
+    public static byte[] getSecureRandom(int bytes) {
         SecureRandom secureRandom = new SecureRandom();
-        final byte[] number = new byte[32];
+        final byte[] number = new byte[bytes];
         secureRandom.nextBytes(number);
         return number;
     }
@@ -106,8 +110,8 @@ public class SecurityUtils {
         return generator.generateKey();
     }
 
-    public static Cipher getCipher(String algorithm, int mode, Key key, SecureRandom iv)
-            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+    public static Cipher getCipher(String algorithm, int mode, Key key, AlgorithmParameterSpec iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         // make sure to use the right ALGORITHM for what you want to do
         // (see text)
         Cipher crypt = Cipher.getInstance(algorithm);

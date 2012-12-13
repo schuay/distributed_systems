@@ -26,7 +26,7 @@ public class CommandLogin extends Command {
         }
 
         this.user = st.nextToken();
-        this.challenge = SecurityUtils.getSecureRandom();
+        this.challenge = SecurityUtils.getSecureRandom(SecurityUtils.CHALLENGE_BYTES);
     }
 
     public byte[] getChallenge() {

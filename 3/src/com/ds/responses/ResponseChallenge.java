@@ -20,9 +20,9 @@ public class ResponseChallenge extends Response {
     public ResponseChallenge(byte[] clientChallenge) throws NoSuchAlgorithmException {
         super(Rsp.CHALLENGE);
         this.clientChallenge = clientChallenge;
-        this.serverChallenge = SecurityUtils.getSecureRandom();
+        this.serverChallenge = SecurityUtils.getSecureRandom(SecurityUtils.CHALLENGE_BYTES);
         this.secretKey = SecurityUtils.generateSecretKey();
-        this.iv = SecurityUtils.getSecureRandom();
+        this.iv = SecurityUtils.getSecureRandom(SecurityUtils.IV_BYTES);
     }
 
     public byte[] getClientChallenge() {

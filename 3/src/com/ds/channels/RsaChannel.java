@@ -1,6 +1,7 @@
 package com.ds.channels;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -23,7 +24,8 @@ public class RsaChannel implements Channel {
     private final Cipher ecrypt; /**< Encryption cipher. */
 
     public RsaChannel(Channel channel, PublicKey publicKey, PrivateKey privateKey)
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchPaddingException, InvalidAlgorithmParameterException {
         this.channel = channel;
         dcrypt = SecurityUtils.getCipher(SecurityUtils.RSA, Cipher.DECRYPT_MODE, privateKey, null);
         ecrypt = SecurityUtils.getCipher(SecurityUtils.RSA, Cipher.ENCRYPT_MODE, publicKey, null);
