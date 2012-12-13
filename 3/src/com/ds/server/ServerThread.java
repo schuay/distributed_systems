@@ -2,12 +2,14 @@
 package com.ds.server;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.ds.channels.AesChannel;
+import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
@@ -25,7 +27,8 @@ import com.ds.util.CommandMatcher;
 
 public class ServerThread implements Runnable {
 
-    private final Channel channel;
+    private final Channel baseChannel;
+    private Channel channel;
     private final int id;
     private final Server.Data serverData;
     private State state = new StateConnected(this);
@@ -35,7 +38,7 @@ public class ServerThread implements Runnable {
     public ServerThread(int id, Channel channel, Server.Data serverData) throws IOException {
         this.id = id;
         this.serverData = serverData;
-        this.channel = channel;
+        this.channel = this.baseChannel = channel;
 
         /* Configure matchers. */
 
@@ -122,6 +125,21 @@ public class ServerThread implements Runnable {
         }
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        if (this.channel != null && this.channel != this.baseChannel) {
+            this.channel.close();
+        }
+        this.channel = channel;
+    }
+
+    public void resetChannel() {
+        setChannel(baseChannel);
+    }
+
     /**
      * Extracts a Command object from the parsed incoming string.
      */
@@ -175,15 +193,19 @@ public class ServerThread implements Runnable {
                 try {
                     ResponseChallenge r = new ResponseChallenge(commandLogin.getChallenge());
                     serverThread.sendResponse(r);
-                } catch (NoSuchAlgorithmException e) {
-                    Log.e(e.getMessage());
+
+                    Channel b64c = new Base64Channel(serverThread.getChannel());
+                    Channel aesc = new AesChannel(b64c, r.getSecretKey(), new SecureRandom(r.getIv()));
+                    serverThread.setChannel(aesc);
+
+                    serverThread.setState(new StateChallenge(
+                            serverThread,
+                            commandLogin.getUser(),
+                            commandLogin.getChallenge()));
+                } catch (Throwable t) {
+                    Log.e(t.getMessage());
                     return;
                 }
-
-                /* TODO: Switch to AES channel. */
-
-                serverThread.setState(new StateChallenge(serverThread,
-                        commandLogin.getUser(), commandLogin.getChallenge()));
                 break;
             case LIST:
                 serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
@@ -237,15 +259,15 @@ public class ServerThread implements Runnable {
                 }
                 serverThread.setState(new StateRegistered(serverThread, user));
                 Log.i("User %s logged in", user.getName());
-                break;
+                return;
             default:
                 Log.e("Invalid command %s in challenged state", command);
                 break;
             }
 
+            /* On error, this part is reached. */
 
-            /* TODO: Switch to MaybeRSA channel. */
-
+            serverThread.resetChannel();
             serverThread.setState(new StateConnected(serverThread));
         }
 
@@ -318,6 +340,7 @@ public class ServerThread implements Runnable {
                 return;
             }
             serverThread.setState(new StateConnected(serverThread));
+            serverThread.resetChannel();
             serverThread.sendResponse(new Response(Rsp.OK));
             Log.i("User %s logged out", user.getName());
         }
