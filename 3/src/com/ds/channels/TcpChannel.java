@@ -42,6 +42,14 @@ public class TcpChannel implements Channel {
 
     @Override
     public void close() {
+
+        /* TODO: Cleanup methods are not yet cleared up.
+         * On the one hand, it makes sense for close() to call
+         * close() on enclosed channels to clean up things like ciphers; on the
+         * other, we don't want our underlying TcpChannel to be closed before we are
+         * completely done.
+         */
+
         try {
             in.close();
             out.close();
