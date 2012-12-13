@@ -15,23 +15,21 @@ import com.ds.util.SecurityUtils;
 
 public class AesChannel implements Channel {
 
-    private final Base64Channel base64Channel;
-    private final Cipher encCipher;
-    private final Cipher decCipher;
+    private final Channel channel;
+    private final Cipher ecrypt;
+    private final Cipher dcrypt;
 
-    public AesChannel(Base64Channel base64Channel, Key sessionKey, SecureRandom iv)
+    public AesChannel(Channel channel, Key sessionKey, SecureRandom iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-        this.base64Channel = base64Channel;
-        this.encCipher = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.ENCRYPT_MODE,
-                sessionKey, iv);
-        this.decCipher = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.DECRYPT_MODE,
-                sessionKey, iv);
+        this.channel = channel;
+        ecrypt = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.ENCRYPT_MODE, sessionKey, iv);
+        dcrypt = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.DECRYPT_MODE, sessionKey, iv);
     }
 
     @Override
     public void write(byte[] bytes) throws IOException {
-        byte[] encrypted = encCipher.update(bytes);
-        base64Channel.write(encrypted);
+        byte[] encrypted = ecrypt.update(bytes);
+        channel.write(encrypted);
     }
 
     @Override
@@ -41,14 +39,14 @@ public class AesChannel implements Channel {
 
     @Override
     public byte[] read() throws IOException {
-        return decCipher.update(base64Channel.read());
+        return dcrypt.update(channel.read());
     }
 
     @Override
     public void close() {
         try {
-            encCipher.doFinal();
-            decCipher.doFinal();
+            ecrypt.doFinal();
+            dcrypt.doFinal();
         } catch (Exception e) {
             Log.e(e.getMessage());
         }
