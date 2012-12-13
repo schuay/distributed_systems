@@ -47,24 +47,32 @@ public class Client {
 
         Socket socket = null;
         Channel channel = null;
+        Data data = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
             channel = new TcpChannel(socket);
+            data  = new Data(channel, parsedArgs);
 
-            Thread responseThread = new Thread(new ResponseThread(channel));
+            Thread responseThread = new Thread(new ResponseThread(data));
             responseThread.start();
 
             Log.i("Connection successful.");
 
-            inputLoop(new Data(channel, parsedArgs));
+            inputLoop(data);
 
             responseThread.join();
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
+            if (data.getChannel() != null) {
+                data.getChannel().close();
+            }
+
             if (channel != null) {
                 channel.close();
-            } else {
+            }
+
+            if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
         }
@@ -144,19 +152,23 @@ public class Client {
         return SecurityUtils.readPrivateKey(file.getAbsolutePath());
     }
 
-    private static class Data {
+    protected static class Data {
 
-        private final Channel channel;
+        private Channel channel;
         private final PublicKey serverKey;
         private final String clientKeyDir;
 
         public Data(Channel channel, ParsedArgs args) throws IOException {
-            this.channel = channel;
+            this.setChannel(channel);
             this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
             this.clientKeyDir = args.getClientKeyDir();
         }
 
-        public Channel getChannel() {
+        public synchronized void setChannel(Channel channel) {
+            this.channel = channel;
+        }
+
+        public synchronized Channel getChannel() {
             return channel;
         }
 
