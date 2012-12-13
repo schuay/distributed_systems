@@ -26,7 +26,7 @@ public class Response implements Serializable {
 
         try {
             String token = st.nextToken().toLowerCase();
-            if (token.equals("!ok")) {
+            if (token.equals("!ok")) { /* TODO: Adapt this parser to new !ok command. */
                 return new Response(Rsp.OK);
             } else if (token.equals("!error")) {
                 return new Response(Rsp.ERROR);
