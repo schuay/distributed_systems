@@ -116,8 +116,10 @@ public class Client {
 
                 /* Encrypt the login command with the server's public key. */
 
+                data.resetChannel();
+
                 PrivateKey key = readPrivateKey(data.getClientKeyDir(), c.getUser());
-                Channel b64c = new Base64Channel(data.getTcpChannel());
+                Channel b64c = new Base64Channel(data.getChannel());
                 Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
 
                 rsac.write(c.toString().getBytes());
@@ -126,6 +128,10 @@ public class Client {
             } catch (Throwable t) {
                 Log.e(t.getMessage());
             }
+            break;
+        case LOGOUT:
+            data.getChannel().write(command.toString().getBytes());
+            data.resetChannel();
             break;
         default:
             data.getChannel().write(command.toString().getBytes());
@@ -158,15 +164,18 @@ public class Client {
         }
 
         public synchronized void setChannel(Channel channel) {
+            if (this.channel != null && this.channel != tcpChannel) {
+                this.channel.close();
+            }
             this.channel = channel;
+        }
+
+        public synchronized void resetChannel() {
+            setChannel(tcpChannel);
         }
 
         public synchronized Channel getChannel() {
             return channel;
-        }
-
-        public TcpChannel getTcpChannel() {
-            return tcpChannel;
         }
 
         public PublicKey getServerKey() {
