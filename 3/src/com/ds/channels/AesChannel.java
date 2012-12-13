@@ -13,13 +13,13 @@ import com.ds.loggers.Log;
 import com.ds.util.SecurityUtils;
 
 
-public class SecureChannel implements Channel {
+public class AesChannel implements Channel {
 
     private final Base64Channel base64Channel;
     private final Cipher encCipher;
     private final Cipher decCipher;
 
-    public SecureChannel(Base64Channel base64Channel, Key sessionKey, SecureRandom iv)
+    public AesChannel(Base64Channel base64Channel, Key sessionKey, SecureRandom iv)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         this.base64Channel = base64Channel;
         this.encCipher = SecurityUtils.getCipher(SecurityUtils.AES, Cipher.ENCRYPT_MODE,
