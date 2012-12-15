@@ -30,8 +30,12 @@ public class AesChannel implements Channel {
 
     @Override
     public void write(byte[] bytes) throws IOException {
-        byte[] encrypted = ecrypt.update(bytes);
-        channel.write(encrypted);
+        try {
+            byte[] encrypted = ecrypt.doFinal(bytes);
+            channel.write(encrypted);
+        } catch (Throwable t) {
+            throw new IOException(t);
+        }
     }
 
     @Override
@@ -42,9 +46,6 @@ public class AesChannel implements Channel {
     @Override
     public byte[] read() throws IOException {
         try {
-            /* TODO: This only decrypts a part of the sent message.
-             * The bytes passed to doFinal seem to be correct..
-             */
             return dcrypt.doFinal(channel.read());
         } catch (Throwable t) {
             throw new IOException(t);
