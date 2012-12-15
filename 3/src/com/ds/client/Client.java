@@ -70,7 +70,7 @@ public class Client {
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
-            if (data.getChannel() != null) {
+            if (data != null && data.getChannel() != null) {
                 data.getChannel().close();
             }
 
