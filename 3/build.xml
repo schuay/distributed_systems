@@ -55,17 +55,9 @@
     </target>
 
     <target name="run-analytics-server" depends="compile" description="Run Analytics Server.">
-        <java classname="${analytics.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${analytics.bindingName}"/>
-        </java>
     </target>
 
     <target name="run-billing-server" depends="compile" description="Run Billing Server.">
-        <java classname="${billing.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
     </target>
 
     <target name="run-client1" depends="compile" description="Run 1st Client.">
@@ -102,36 +94,15 @@
     </target>
 
     <target name="run-mgmtclient1" depends="compile" description="Run Management Client 1.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
     </target>
 
     <target name="run-mgmtclient2" depends="compile" description="Run Management Client 2.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
     </target>
 
     <target name="run-mgmtclient3" depends="compile" description="Run Management Client 3.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
     </target>
 
     <target name="run-loadtest" depends="compile" description="Run Load Test.">
-        <java classname="${loadtest.name}" fork="true" classpathref="project.classpath">
-            <assertions refid="project.assertions"/>
-            <arg value="${server.host}"/>
-            <arg value="${server.port}"/>
-            <arg value="${analytics.bindingName}"/>
-        </java>
     </target>
 
     <target name="clean" description="Clean project.">
