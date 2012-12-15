@@ -41,16 +41,18 @@ public class AesChannel implements Channel {
 
     @Override
     public byte[] read() throws IOException {
-        return dcrypt.update(channel.read());
+        try {
+            /* TODO: This only decrypts a part of the sent message.
+             * The bytes passed to doFinal seem to be correct..
+             */
+            return dcrypt.doFinal(channel.read());
+        } catch (Throwable t) {
+            throw new IOException(t);
+        }
     }
 
     @Override
     public void close() {
-        try {
-            ecrypt.doFinal();
-            dcrypt.doFinal();
-        } catch (Exception e) {
-            Log.e(e.getMessage());
-        }
+        /* Empty. */
     }
 }
