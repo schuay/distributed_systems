@@ -33,6 +33,8 @@ public class AesChannel implements Channel {
         try {
             byte[] encrypted = ecrypt.doFinal(bytes);
             channel.write(encrypted);
+        } catch (IOException e) {
+            throw e;
         } catch (Throwable t) {
             throw new IOException(t);
         }
@@ -47,6 +49,8 @@ public class AesChannel implements Channel {
     public byte[] read() throws IOException {
         try {
             return dcrypt.doFinal(channel.read());
+        } catch (IOException e) {
+            throw e;
         } catch (Throwable t) {
             throw new IOException(t);
         }

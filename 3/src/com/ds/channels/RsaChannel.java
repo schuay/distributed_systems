@@ -36,6 +36,8 @@ public class RsaChannel implements Channel {
         try {
             byte[] msg = ecrypt.doFinal(bytes);
             channel.write(msg);
+        } catch (IOException e) {
+            throw e;
         } catch (Throwable t) {
             throw new IOException(t);
         }
