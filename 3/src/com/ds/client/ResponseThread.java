@@ -1,6 +1,8 @@
 
 package com.ds.client;
 
+import java.net.SocketTimeoutException;
+
 import javax.crypto.spec.IvParameterSpec;
 
 import com.ds.channels.AesChannel;
@@ -23,8 +25,33 @@ public class ResponseThread implements Runnable {
     @Override
     public void run() {
         try {
-            Response response;
-            while ((response = Response.parse(data.getChannel().readLine())) != null) {
+            while (true) {
+
+                /* This complicated construct is required to handle the case in which we must make
+                 * sure that the next incoming message is received using a specific channel.
+                 *
+                 * While we are listening, we lock a semaphore. When the socket timeout occurs,
+                 * we give the other thread a chance to switch the channel.
+                 */
+
+                Response response = null;
+                boolean timeout;
+                do {
+                    try {
+                        timeout = false;
+                        data.getSemaphore().acquire();
+                        response = Response.parse(data.getChannel().readLine());
+                    } catch (SocketTimeoutException e) {
+                        timeout = true;
+                    } finally {
+                        data.getSemaphore().release();
+                    }
+                } while (timeout);
+
+                if (response == null) {
+                    break;
+                }
+
                 switch (response.getResponse()) {
                 case OK:
 

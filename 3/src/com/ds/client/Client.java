@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.concurrent.Semaphore;
 
 import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
@@ -22,6 +23,9 @@ import com.ds.util.SecurityUtils;
 public class Client {
 
     private static final String INDENT = "> ";
+    private static final int TIMEOUT_MS = 5;
+
+    private static Thread responseThread;
 
     public static void main(String[] args) throws IOException {
 
@@ -50,10 +54,12 @@ public class Client {
         Data data = null;
         try {
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
+            socket.setSoTimeout(TIMEOUT_MS);
+
             channel = new TcpChannel(socket);
             data  = new Data(channel, parsedArgs);
 
-            Thread responseThread = new Thread(new ResponseThread(data));
+            responseThread = new Thread(new ResponseThread(data));
             responseThread.start();
 
             Log.i("Connection successful.");
@@ -122,14 +128,16 @@ public class Client {
                 Channel b64c = new Base64Channel(data.getChannel());
                 Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
 
-                rsac.write(c.toString().getBytes());
-
-                /* TODO: The ResponseThread is still blocking on the previously set
-                 * channel. We need a way to tell that thread to switch to the new
-                 * channel immediately.
+                /* Ensure that the response thread is listening on the correct
+                 * channel before sending the command.
                  */
 
+                data.getSemaphore().acquire();
                 data.setChannel(rsac);
+                data.getSemaphore().release();
+
+                rsac.write(c.toString().getBytes());
+
             } catch (Throwable t) {
                 Log.e(t.getMessage());
             }
@@ -161,6 +169,7 @@ public class Client {
         private TcpChannel tcpChannel;
         private final PublicKey serverKey;
         private final String clientKeyDir;
+        private final Semaphore semaphore = new Semaphore(1);
 
         public Data(TcpChannel tcpChannel, ParsedArgs args) throws IOException {
             this.channel = this.tcpChannel = tcpChannel;
@@ -190,6 +199,10 @@ public class Client {
         public String getClientKeyDir() {
             return clientKeyDir;
         }
+
+        public Semaphore getSemaphore() {
+            return semaphore;
+        }
     }
 
     /**
@@ -202,7 +215,6 @@ public class Client {
         private final int udpPort;
         private final String serverPublicKey;
         private final String clientKeyDir;
-
 
         public ParsedArgs(String[] args) {
             if (args.length != 5) {
