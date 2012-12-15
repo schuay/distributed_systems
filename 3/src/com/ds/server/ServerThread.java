@@ -229,7 +229,7 @@ public class ServerThread implements Runnable {
                     serverThread.setState(new StateChallenge(
                             serverThread,
                             commandLogin.getUser(),
-                            commandLogin.getChallenge()));
+                            r.getServerChallenge()));
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return;
