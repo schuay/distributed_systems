@@ -2,6 +2,8 @@
 package com.ds.server;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,6 +14,7 @@ import javax.crypto.spec.IvParameterSpec;
 import com.ds.channels.AesChannel;
 import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
+import com.ds.channels.RsaChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
@@ -115,6 +118,14 @@ public class ServerThread implements Runnable {
         return serverData.getAuctionList();
     }
 
+    private PublicKey getClientKey(String client) {
+        return serverData.getClientKey(client);
+    }
+
+    public PrivateKey getServerKey() {
+        return serverData.getServerKey();
+    }
+
     private void setState(State state) {
         this.state = state;
     }
@@ -193,10 +204,21 @@ public class ServerThread implements Runnable {
                 CommandLogin commandLogin = (CommandLogin)command;
 
                 try {
+                    /* First, send the server challenge over an RSA channel. */
+
+                    Channel b64c = new Base64Channel(serverThread.getChannel());
+                    Channel rsac = new RsaChannel(b64c,
+                            serverThread.getClientKey(commandLogin.getUser()),
+                            serverThread.getServerKey());
+                    serverThread.setChannel(rsac);
+
                     ResponseOk r = new ResponseOk(commandLogin.getChallenge());
                     serverThread.sendResponse(r);
 
-                    Channel b64c = new Base64Channel(serverThread.getChannel());
+                    /* Then, immediately switch to an AES channel to prepare for
+                     * the incoming response. */
+
+                    b64c = new Base64Channel(serverThread.getChannel());
                     Channel aesc = new AesChannel(b64c, r.getSecretKey(), new IvParameterSpec(r.getIv()));
                     serverThread.setChannel(aesc);
 

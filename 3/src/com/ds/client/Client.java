@@ -124,6 +124,11 @@ public class Client {
 
                 rsac.write(c.toString().getBytes());
 
+                /* TODO: The ResponseThread is still blocking on the previously set
+                 * channel. We need a way to tell that thread to switch to the new
+                 * channel immediately.
+                 */
+
                 data.setChannel(rsac);
             } catch (Throwable t) {
                 Log.e(t.getMessage());
