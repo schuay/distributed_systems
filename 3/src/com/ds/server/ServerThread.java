@@ -206,6 +206,8 @@ public class ServerThread implements Runnable {
                 try {
                     /* First, send the server challenge over an RSA channel. */
 
+                    serverThread.resetChannel();
+
                     Channel b64c = new Base64Channel(serverThread.getChannel());
                     Channel rsac = new RsaChannel(b64c,
                             serverThread.getClientKey(commandLogin.getUser()),
@@ -217,6 +219,8 @@ public class ServerThread implements Runnable {
 
                     /* Then, immediately switch to an AES channel to prepare for
                      * the incoming response. */
+
+                    serverThread.resetChannel();
 
                     b64c = new Base64Channel(serverThread.getChannel());
                     Channel aesc = new AesChannel(b64c, r.getSecretKey(), new IvParameterSpec(r.getIv()));
