@@ -54,7 +54,7 @@ public class RsaChannel implements Channel {
         }
 
         try {
-            return dcrypt.doFinal(SecurityUtils.fromBase64(msg));
+            return dcrypt.doFinal(msg);
         } catch (Throwable t) {
             throw new IOException(t);
         }
@@ -62,11 +62,6 @@ public class RsaChannel implements Channel {
 
     @Override
     public void close() {
-        try {
-            dcrypt.doFinal();
-            ecrypt.doFinal();
-        } catch (Exception e) {
-            Log.e(e.getMessage());
-        }
+        /* Empty. */
     }
 }
