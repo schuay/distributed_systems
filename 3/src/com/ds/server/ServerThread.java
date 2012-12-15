@@ -22,7 +22,7 @@ import com.ds.responses.Response;
 import com.ds.responses.Response.Rsp;
 import com.ds.responses.ResponseAuctionCreated;
 import com.ds.responses.ResponseAuctionList;
-import com.ds.responses.ResponseChallenge;
+import com.ds.responses.ResponseOk;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
 import com.ds.util.SecurityUtils;
@@ -193,7 +193,7 @@ public class ServerThread implements Runnable {
                 CommandLogin commandLogin = (CommandLogin)command;
 
                 try {
-                    ResponseChallenge r = new ResponseChallenge(commandLogin.getChallenge());
+                    ResponseOk r = new ResponseOk(commandLogin.getChallenge());
                     serverThread.sendResponse(r);
 
                     Channel b64c = new Base64Channel(serverThread.getChannel());
@@ -255,7 +255,7 @@ public class ServerThread implements Runnable {
                 UserList userList = serverThread.getUserList();
                 User user = userList.login(username);
                 if (user == null) {
-                    serverThread.sendResponse(new Response(Rsp.ERROR));
+                    serverThread.sendResponse(new Response(Rsp.NAK));
                     Log.e("User %s login failed: already logged in", username);
                     break;
                 }
@@ -317,7 +317,7 @@ public class ServerThread implements Runnable {
                 auctionList = serverThread.getAuctionList();
 
                 auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
-                serverThread.sendResponse(new Response(Rsp.OK));
+                serverThread.sendResponse(new Response(Rsp.ACK));
                 break;
             case END:
                 logout();
@@ -337,13 +337,13 @@ public class ServerThread implements Runnable {
         private void logout() {
             UserList userList = serverThread.getUserList();
             if (!userList.logout(user)) {
-                serverThread.sendResponse(new Response(Rsp.ERROR));
+                serverThread.sendResponse(new Response(Rsp.NAK));
                 Log.e("User %s logout failed: not logged in", user.getName());
                 return;
             }
             serverThread.setState(new StateConnected(serverThread));
             serverThread.resetChannel();
-            serverThread.sendResponse(new Response(Rsp.OK));
+            serverThread.sendResponse(new Response(Rsp.ACK));
             Log.i("User %s logged out", user.getName());
         }
 

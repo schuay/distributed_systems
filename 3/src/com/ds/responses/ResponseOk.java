@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import com.ds.util.SecurityUtils;
 
 
-public class ResponseChallenge extends Response {
+public class ResponseOk extends Response {
 
     private static final long serialVersionUID = 2523937474952629824L;
 
@@ -17,8 +17,8 @@ public class ResponseChallenge extends Response {
     private final byte[] iv;
     private final SecretKey secretKey;
 
-    public ResponseChallenge(byte[] clientChallenge) throws NoSuchAlgorithmException {
-        super(Rsp.CHALLENGE);
+    public ResponseOk(byte[] clientChallenge) throws NoSuchAlgorithmException {
+        super(Rsp.OK);
         this.clientChallenge = clientChallenge;
         this.serverChallenge = SecurityUtils.getSecureRandom(SecurityUtils.CHALLENGE_BYTES);
         this.secretKey = SecurityUtils.generateSecretKey();
@@ -43,7 +43,8 @@ public class ResponseChallenge extends Response {
 
     @Override
     public String toNetString() {
-        return String.format("!ok %s %s %s %s",
+        return String.format("!%s %s %s %s %s",
+                super.toNetString(),
                 new String(SecurityUtils.toBase64(clientChallenge)),
                 new String(SecurityUtils.toBase64(serverChallenge)),
                 new String(SecurityUtils.toBase64(secretKey.getEncoded())),

@@ -15,7 +15,7 @@ public class Response implements Serializable {
     }
 
     public enum Rsp {
-        OK, ERROR, AUCTION_LIST, AUCTION_CREATED, BID, CHALLENGE
+        ACK, NAK, AUCTION_LIST, AUCTION_CREATED, BID, OK
     }
 
     public static Response parse(String line) {
@@ -26,10 +26,10 @@ public class Response implements Serializable {
 
         try {
             String token = st.nextToken().toLowerCase();
-            if (token.equals("!ok")) { /* TODO: Adapt this parser to new !ok command. */
-                return new Response(Rsp.OK);
-            } else if (token.equals("!error")) {
-                return new Response(Rsp.ERROR);
+            if (token.equals("!ack")) { /* TODO: Adapt this parser to new !ok command. */
+                return new Response(Rsp.ACK);
+            } else if (token.equals("!nak")) {
+                return new Response(Rsp.NAK);
             } else if (token.equals("!auction_list")) {
                 return new ResponseAuctionList(line.substring(token.length()).trim());
             } else if (token.equals("!auction_created")) {
