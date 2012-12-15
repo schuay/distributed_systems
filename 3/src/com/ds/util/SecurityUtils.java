@@ -102,7 +102,6 @@ public class SecurityUtils {
         return number;
     }
 
-
     public static SecretKey generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
         // KEYSIZE is in bits
@@ -122,6 +121,10 @@ public class SecurityUtils {
         return crypt;
     }
 
+    public static SecretKey readSecretKey(byte[] bytes, String algorithm) {
+        return new SecretKeySpec(bytes, algorithm);
+    }
+
     public static Key readSecretKey(String path, String algorithm) throws IOException {
         byte[] keyBytes = new byte[1024];
         FileInputStream fis = null;
@@ -134,9 +137,7 @@ public class SecurityUtils {
         }
 
         byte[] input = Hex.decode(keyBytes);
-        // make sure to use the right ALGORITHM for what you want to do
-        // (see text)
-        return new SecretKeySpec(input, algorithm);
+        return readSecretKey(input, algorithm);
     }
 
     public static byte[] getHMAC(Key key, String algorithm, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {

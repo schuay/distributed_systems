@@ -26,7 +26,7 @@ public class Response implements Serializable {
 
         try {
             String token = st.nextToken().toLowerCase();
-            if (token.equals("!ack")) { /* TODO: Adapt this parser to new !ok command. */
+            if (token.equals("!ack")) {
                 return new Response(Rsp.ACK);
             } else if (token.equals("!nak")) {
                 return new Response(Rsp.NAK);
@@ -36,6 +36,8 @@ public class Response implements Serializable {
                 return new ResponseAuctionCreated(st);
             } else if (token.equals("!bid")) {
                 return new Response(Rsp.BID);
+            } else if (token.equals("!ok")) {
+                return new ResponseOk(st);
             }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(e);
