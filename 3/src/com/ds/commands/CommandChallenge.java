@@ -1,6 +1,8 @@
 
 package com.ds.commands;
 
+import com.ds.util.SecurityUtils;
+
 
 public class CommandChallenge extends Command {
 
@@ -15,5 +17,10 @@ public class CommandChallenge extends Command {
 
     public byte[] getChallenge() {
         return challenge;
+    }
+
+    @Override
+    public String toString() {
+        return new String(SecurityUtils.toBase64(challenge));
     }
 }
