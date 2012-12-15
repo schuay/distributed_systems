@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -273,7 +274,7 @@ public class ServerThread implements Runnable {
             case CHALLENGE:
                 CommandChallenge c = (CommandChallenge)command;
 
-                if (!(challenge.equals(c.getChallenge()))) {
+                if (!Arrays.equals(challenge, c.getChallenge())) {
                     Log.w("Client did not match server challenge");
                     break;
                 }
