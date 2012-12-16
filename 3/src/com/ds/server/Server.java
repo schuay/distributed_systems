@@ -5,10 +5,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.bouncycastle.openssl.PasswordFinder;
 
-import com.ds.channels.Channel;
-import com.ds.channels.MaybeRsaChannel;
 import com.ds.loggers.EventLogger;
 import com.ds.loggers.Log;
 import com.ds.util.Initialization;
@@ -29,6 +30,7 @@ public class Server implements Runnable {
 
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
+    private static List<Socket> sockets = new ArrayList<Socket>();
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     private static Data serverData;
 
@@ -92,8 +94,9 @@ public class Server implements Runnable {
         int id = 0;
         while (listening) {
             try {
-                Channel channel = new MaybeRsaChannel(serverSocket.accept(), serverData.getServerKey());
-                executorService.submit(new ServerThread(id++, channel, serverData));
+                Socket socket = serverSocket.accept();
+                sockets.add(socket);
+                executorService.submit(new ServerThread(id++, socket, serverData));
             } catch (Throwable e) {
                 Log.e(e.getMessage());
             }
@@ -114,6 +117,14 @@ public class Server implements Runnable {
         }
 
         executorService.shutdownNow();
+
+        for (Socket socket : sockets) {
+            if (socket.isClosed()) {
+                continue;
+            }
+            socket.close();
+        }
+
         serverData.getAuctionList().cancelTimers();
 
         try {

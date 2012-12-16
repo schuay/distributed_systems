@@ -1,7 +1,11 @@
 
 package com.ds.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -15,6 +19,8 @@ import javax.crypto.spec.IvParameterSpec;
 import com.ds.channels.AesChannel;
 import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
+import com.ds.channels.MaybeRsaChannel;
+import com.ds.channels.NopChannel;
 import com.ds.channels.RsaChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
@@ -33,18 +39,27 @@ import com.ds.util.SecurityUtils;
 
 public class ServerThread implements Runnable {
 
-    private final Channel baseChannel;
-    private Channel channel;
+    private final BufferedReader in;
+    private final PrintWriter out;
+    private Channel channel = null;
+
     private final int id;
     private final Server.Data serverData;
     private State state = new StateConnected(this);
     private boolean quit = false;
     private final List<CommandMatcher> matchers;
 
-    public ServerThread(int id, Channel channel, Server.Data serverData) throws IOException {
+    public ServerThread(int id, Socket socket, Server.Data serverData) throws IOException {
         this.id = id;
         this.serverData = serverData;
-        this.channel = this.baseChannel = channel;
+        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream());
+
+        try {
+            this.channel = new MaybeRsaChannel(new NopChannel(), serverData.getServerKey());
+        } catch (Throwable t) {
+            throw new IOException(t);
+        }
 
         /* Configure matchers. */
 
@@ -63,8 +78,11 @@ public class ServerThread implements Runnable {
     @Override
     public void run() {
         try {
-            String msg;
-            while (!quit && (msg = channel.readLine()) != null) {
+            String s;
+            while (!quit && (s = in.readLine()) != null) {
+
+                byte[] bytes = channel.decode(s.getBytes());
+                String msg = new String(bytes, Channel.CHARSET);
 
                 /* Parse incoming command. */
 
@@ -98,7 +116,12 @@ public class ServerThread implements Runnable {
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
-            channel.close();
+            try {
+                in.close();
+            } catch (IOException e) {
+                Log.e(e.getMessage());
+            }
+            out.close();
             state.cleanup();
         }
 
@@ -133,7 +156,8 @@ public class ServerThread implements Runnable {
 
     private void sendResponse(Response response) {
         try {
-            channel.write(response.toNetString().getBytes());
+            byte[] bytes = channel.encode(response.toNetString().getBytes());
+            out.write(new String(bytes, Channel.CHARSET));
         } catch (IOException e) {
             Log.e("Could not write to channel");
         }
@@ -144,14 +168,7 @@ public class ServerThread implements Runnable {
     }
 
     public void setChannel(Channel channel) {
-        if (this.channel != null && this.channel != this.baseChannel) {
-            this.channel.close();
-        }
         this.channel = channel;
-    }
-
-    public void resetChannel() {
-        setChannel(baseChannel);
     }
 
     /**
@@ -207,7 +224,7 @@ public class ServerThread implements Runnable {
                 try {
                     /* First, send the server challenge over an RSA channel. */
 
-                    serverThread.resetChannel();
+                    serverThread.setChannel(new NopChannel());
 
                     Channel b64c = new Base64Channel(serverThread.getChannel());
                     Channel rsac = new RsaChannel(b64c,
@@ -221,9 +238,7 @@ public class ServerThread implements Runnable {
                     /* Then, immediately switch to an AES channel to prepare for
                      * the incoming response. */
 
-                    serverThread.resetChannel();
-
-                    b64c = new Base64Channel(serverThread.getChannel());
+                    b64c = new Base64Channel(new NopChannel());
                     Channel aesc = new AesChannel(b64c, r.getSecretKey(), new IvParameterSpec(r.getIv()));
                     serverThread.setChannel(aesc);
 
@@ -296,7 +311,7 @@ public class ServerThread implements Runnable {
 
             /* On error, this part is reached. */
 
-            serverThread.resetChannel();
+            serverThread.setChannel(new NopChannel());
             serverThread.setState(new StateConnected(serverThread));
         }
 
@@ -369,7 +384,7 @@ public class ServerThread implements Runnable {
                 return;
             }
             serverThread.setState(new StateConnected(serverThread));
-            serverThread.resetChannel();
+            serverThread.setChannel(new NopChannel());
             serverThread.sendResponse(new Response(Rsp.ACK));
             Log.i("User %s logged out", user.getName());
         }
