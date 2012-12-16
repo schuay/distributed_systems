@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.concurrent.Semaphore;
 
 import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
@@ -161,95 +159,5 @@ public class Client {
         }
 
         return SecurityUtils.readPrivateKey(file.getAbsolutePath());
-    }
-
-    protected static class Data {
-
-        private Channel channel;
-        private TcpChannel tcpChannel;
-        private final PublicKey serverKey;
-        private final String clientKeyDir;
-        private final Semaphore semaphore = new Semaphore(1);
-
-        public Data(TcpChannel tcpChannel, ParsedArgs args) throws IOException {
-            this.channel = this.tcpChannel = tcpChannel;
-            this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
-            this.clientKeyDir = args.getClientKeyDir();
-        }
-
-        public synchronized void setChannel(Channel channel) {
-            if (this.channel != null && this.channel != tcpChannel) {
-                this.channel.close();
-            }
-            this.channel = channel;
-        }
-
-        public synchronized void resetChannel() {
-            setChannel(tcpChannel);
-        }
-
-        public synchronized Channel getChannel() {
-            return channel;
-        }
-
-        public PublicKey getServerKey() {
-            return serverKey;
-        }
-
-        public String getClientKeyDir() {
-            return clientKeyDir;
-        }
-
-        public Semaphore getSemaphore() {
-            return semaphore;
-        }
-    }
-
-    /**
-     * Parses command-line arguments.
-     */
-    private static class ParsedArgs {
-
-        private final String host;
-        private final int tcpPort;
-        private final int udpPort;
-        private final String serverPublicKey;
-        private final String clientKeyDir;
-
-        public ParsedArgs(String[] args) {
-            if (args.length != 5) {
-                throw new IllegalArgumentException();
-            }
-
-            try {
-                host = args[0];
-                tcpPort = Integer.parseInt(args[1]);
-                udpPort = Integer.parseInt(args[2]);
-                serverPublicKey = args[3];
-                clientKeyDir = args[4];
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException();
-            }
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public int getTcpPort() {
-            return tcpPort;
-        }
-
-        public int getUdpPort() {
-            return udpPort;
-        }
-
-        public String getServerPublicKey() {
-            return serverPublicKey;
-        }
-
-        public String getClientKeyDir() {
-            return clientKeyDir;
-        }
     }
 }
