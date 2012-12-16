@@ -73,10 +73,6 @@ public class ResponseThread implements Runnable {
 
                     break;
 
-                    /* TODO: Handle logouts and aborted handshakes. In these cases, the channel
-                     * must be reset.
-                     */
-
                 default:
                     System.out.println(response);
                     break;
