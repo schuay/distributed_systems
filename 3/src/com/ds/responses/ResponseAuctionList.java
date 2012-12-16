@@ -12,13 +12,25 @@ public class ResponseAuctionList extends Response {
     public ResponseAuctionList(AuctionList auctionList) {
         super(Rsp.AUCTION_LIST);
 
-        auctionListString = auctionList.toString();
+        /* Sloppy escape.
+         * Since we use '#' in place of a '\n' (for transmission as a single line
+         * string), escape all '#'.
+         */
+
+        auctionListString = auctionList.toString()
+                .replaceAll("#", "\\#")
+                .replaceAll("\\n", "#");
     }
 
     public ResponseAuctionList(String auctionListString) {
         super(Rsp.AUCTION_LIST);
 
-        this.auctionListString = auctionListString;
+        /* Sloppy unescape. */
+
+        this.auctionListString = auctionListString
+                .replaceAll("\\\\#", "\0")
+                .replaceAll("#", "\n")
+                .replaceAll("\0", "#");
     }
 
     @Override
