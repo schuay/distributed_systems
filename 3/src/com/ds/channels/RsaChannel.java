@@ -31,10 +31,10 @@ public class RsaChannel implements Channel {
     }
 
     @Override
-    public void write(byte[] bytes) throws IOException {
+    public byte[] encode(byte[] in) throws IOException {
         try {
-            byte[] msg = ecrypt.doFinal(bytes);
-            channel.write(msg);
+            byte[] b = ecrypt.doFinal(in);
+            return channel.encode(b);
         } catch (IOException e) {
             throw e;
         } catch (Throwable t) {
@@ -43,26 +43,12 @@ public class RsaChannel implements Channel {
     }
 
     @Override
-    public String readLine() throws IOException {
-        return new String(read(), TcpChannel.CHARSET);
-    }
-
-    @Override
-    public byte[] read() throws IOException {
-        byte[] msg = channel.read();
-        if (msg == null) {
-            return null;
-        }
-
+    public byte[] decode(byte[] in) throws IOException {
         try {
-            return dcrypt.doFinal(msg);
+            byte[] b = channel.decode(in);
+            return dcrypt.doFinal(b);
         } catch (Throwable t) {
             throw new IOException(t);
         }
-    }
-
-    @Override
-    public void close() {
-        /* Empty. */
     }
 }

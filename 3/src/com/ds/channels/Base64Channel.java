@@ -13,22 +13,14 @@ public class Base64Channel implements Channel {
     }
 
     @Override
-    public void write(byte[] bytes) throws IOException {
-        byte[] encoded = SecurityUtils.toBase64(bytes);
-        channel.write(encoded);
+    public byte[] encode(byte[] in) throws IOException {
+        byte[] encoded = SecurityUtils.toBase64(in);
+        return channel.encode(encoded);
     }
 
     @Override
-    public String readLine() throws IOException {
-        return new String(read(), TcpChannel.CHARSET);
+    public byte[] decode(byte[] in) throws IOException {
+        byte[] b = channel.decode(in);
+        return SecurityUtils.fromBase64(b);
     }
-
-    @Override
-    public byte[] read() throws IOException {
-        String encoded = channel.readLine();
-        return SecurityUtils.fromBase64(encoded.getBytes());
-    }
-
-    @Override
-    public void close() { }
 }

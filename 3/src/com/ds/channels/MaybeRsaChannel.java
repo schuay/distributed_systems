@@ -1,7 +1,6 @@
 package com.ds.channels;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -13,42 +12,40 @@ import javax.crypto.NoSuchPaddingException;
 import com.ds.util.SecurityUtils;
 
 /**
- * MaybeRsaChannel is identical to TcpChannel, except that it can unwrap incoming messages
- * encrypted with a public key (to which we have the matching private key).
+ * Encodes as a NOP, decodes by unwrap incoming messages
+ * encrypted with a public key (to which we have the matching private key) if possible,
+ * or as a NOP if not.
  * 
  * The expected message format is either plain strings, or rsa encrypted messages encoded as
  * base64.
  */
-public class MaybeRsaChannel extends TcpChannel {
+public class MaybeRsaChannel implements Channel {
 
     private final Cipher cipher;
+    private final Channel channel;
 
-    public MaybeRsaChannel(Socket socket, PrivateKey privateKey)
+    public MaybeRsaChannel(Channel channel, PrivateKey privateKey)
             throws IOException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidAlgorithmParameterException {
-
-        super(socket);
+        this.channel = channel;
         cipher = SecurityUtils.getCipher(SecurityUtils.RSA, Cipher.DECRYPT_MODE,
                 privateKey, null);
     }
 
     @Override
-    public String readLine() throws IOException {
-        return new String(read(), CHARSET);
+    public byte[] encode(byte[] in) throws IOException {
+        return channel.encode(in);
     }
 
     @Override
-    public byte[] read() throws IOException {
-        byte[] msg = super.read();
-        if (msg == null) {
-            return null;
-        }
+    public byte[] decode(byte[] in) throws IOException {
+        byte[] b = channel.decode(in);
 
         try {
-            byte[] dcrypt = cipher.doFinal(SecurityUtils.fromBase64(msg));
+            byte[] dcrypt = cipher.doFinal(SecurityUtils.fromBase64(b));
             return dcrypt;
         } catch (Throwable t) {
-            return msg;
+            return b;
         }
     }
 }
