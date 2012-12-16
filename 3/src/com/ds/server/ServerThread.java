@@ -157,7 +157,9 @@ public class ServerThread implements Runnable {
     private void sendResponse(Response response) {
         try {
             byte[] bytes = channel.encode(response.toNetString().getBytes());
-            out.write(new String(bytes, Channel.CHARSET));
+            String str = new String(bytes, Channel.CHARSET);
+            out.println(str);
+            out.flush();
         } catch (IOException e) {
             Log.e("Could not write to channel");
         }

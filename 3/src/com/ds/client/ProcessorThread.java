@@ -65,6 +65,7 @@ public class ProcessorThread implements Runnable {
     private void send(String in) {
         try {
             out.println(new String(channel.encode(in.getBytes(Channel.CHARSET)), Channel.CHARSET));
+            out.flush();
         } catch (UnsupportedEncodingException e) {
             Log.e(e.getMessage());
         } catch (IOException e) {
@@ -90,6 +91,7 @@ public class ProcessorThread implements Runnable {
 
         public State processNetworkParcel(Parcel parcel) {
             System.out.println(parcel.getMessage());
+            System.out.flush();
             return this;
         }
 
