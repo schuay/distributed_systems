@@ -57,7 +57,7 @@ public class ProcessorThread implements Runnable {
             return;
         }
 
-        switch (cmd.getId()) {
+        switch (cmd.getType()) {
         case END:
             keepGoing = false;
             break;

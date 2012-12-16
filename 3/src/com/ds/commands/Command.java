@@ -12,7 +12,7 @@ public class Command implements Serializable {
         LOGIN, LOGOUT, LIST, CREATE, BID, END, CHALLENGE
     }
 
-    private final Cmd id;
+    private final Cmd type;
     private final String cmdStr;
 
     public static Command parse(String line) {
@@ -43,13 +43,13 @@ public class Command implements Serializable {
         throw new IllegalArgumentException();
     }
 
-    public Command(String cmdStr, Cmd id) {
+    public Command(String cmdStr, Cmd type) {
         this.cmdStr = cmdStr;
-        this.id = id;
+        this.type = type;
     }
 
-    public Cmd getId() {
-        return id;
+    public Cmd getType() {
+        return type;
     }
 
     @Override

@@ -217,7 +217,7 @@ public class ServerThread implements Runnable {
 
         @Override
         public void processCommand(Command command) {
-            switch (command.getId()) {
+            switch (command.getType()) {
             case LOGIN:
                 CommandLogin commandLogin = (CommandLogin)command;
 
@@ -285,7 +285,7 @@ public class ServerThread implements Runnable {
 
         @Override
         public void processCommand(Command command) {
-            switch (command.getId()) {
+            switch (command.getType()) {
             case CHALLENGE:
                 CommandChallenge c = (CommandChallenge)command;
 
@@ -336,7 +336,7 @@ public class ServerThread implements Runnable {
 
         @Override
         public void processCommand(Command command) {
-            switch (command.getId()) {
+            switch (command.getType()) {
             case LIST:
                 serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
                 break;
