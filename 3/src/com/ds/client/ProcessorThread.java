@@ -15,6 +15,7 @@ import com.ds.channels.RsaChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandLogin;
 import com.ds.loggers.Log;
+import com.ds.responses.Response;
 import com.ds.util.SecurityUtils;
 
 public class ProcessorThread implements Runnable {
@@ -48,10 +49,41 @@ public class ProcessorThread implements Runnable {
 
                 switch (parcel.getType()) {
                 case PARCEL_TERMINAL:
-                    state = state.processTerminalParcel(parcel);
+                    Command cmd = null;
+                    try {
+                        byte[] bytes = parcel.getMessage().getBytes(Channel.CHARSET);
+                        String in = new String(channel.decode(bytes), Channel.CHARSET);
+                        cmd = Command.parse(in);
+                    } catch (IllegalArgumentException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    } catch (IOException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    }
+
+                    state = state.processCommand(cmd);
                     break;
                 case PARCEL_NETWORK:
-                    state = state.processNetworkParcel(parcel);
+                    Response rsp = null;
+                    try {
+                        byte[] bytes = parcel.getMessage().getBytes(Channel.CHARSET);
+                        String in = new String(channel.decode(bytes), Channel.CHARSET);
+                        rsp = Response.parse(in);
+                    } catch (IllegalArgumentException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    } catch (IOException e) {
+                        Log.e("Invalid command: %s", parcel.getMessage());
+                        continue;
+                    }
+                    state = state.processResponse(rsp);
                     break;
                 default:
                     break;
@@ -89,21 +121,13 @@ public class ProcessorThread implements Runnable {
      */
     private abstract class State {
 
-        public State processNetworkParcel(Parcel parcel) {
-            System.out.println(parcel.getMessage());
+        public State processResponse(Response response) {
+            System.out.println(response.toNetString());
             System.out.flush();
             return this;
         }
 
-        public State processTerminalParcel(Parcel parcel) {
-            Command cmd = null;
-            try {
-                cmd = Command.parse(parcel.getMessage());
-            } catch (IllegalArgumentException e) {
-                Log.e("Invalid command: %s", parcel.getMessage());
-                return this;
-            }
-
+        public State processCommand(Command cmd) {
             switch (cmd.getType()) {
             case END:
                 keepGoing = false;
@@ -121,15 +145,7 @@ public class ProcessorThread implements Runnable {
     private class StateLoggedOut extends State {
 
         @Override
-        public State processTerminalParcel(Parcel parcel) {
-            Command cmd = null;
-            try {
-                cmd = Command.parse(parcel.getMessage());
-            } catch (IllegalArgumentException e) {
-                Log.e("Invalid command: %s", parcel.getMessage());
-                return this;
-            }
-
+        public State processCommand(Command cmd) {
             switch (cmd.getType()) {
             case LOGIN:
                 try {
@@ -144,35 +160,50 @@ public class ProcessorThread implements Runnable {
                     channel = rsac;
 
                     send(c.toString());
-                    return new StateChallenge();
+                    return new StateChallenge(c.getUser(), c.getChallenge());
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return this;
                 }
             default:
-                return super.processTerminalParcel(parcel);
+                return super.processCommand(cmd);
             }
         }
 
         private class StateChallenge extends State {
 
-            @Override
-            public State processTerminalParcel(Parcel parcel) {
-                Command cmd = null;
-                try {
-                    cmd = Command.parse(parcel.getMessage());
-                } catch (IllegalArgumentException e) {
-                    Log.e("Invalid command: %s", parcel.getMessage());
-                    return this;
-                }
+            private final byte[] challenge;
+            private final String user;
 
+            public StateChallenge(String user, byte[] challenge) {
+                this.user = user;
+                this.challenge = challenge;
+            }
+
+            @Override
+            public State processResponse(Response response) {
+                //              Response response = Response.parse(data.getChannel().readLine());
+                return null;
+            }
+
+            @Override
+            public State processCommand(Command cmd) {
+                Log.w("Cannot process user input during handshake");
+                return this;
+            }
+        }
+
+        private class StateLoggedIn extends State {
+
+            @Override
+            public State processCommand(Command cmd) {
                 switch (cmd.getType()) {
                 case LOGOUT:
                     send(cmd.toString());
                     channel = new NopChannel();
                     return new StateLoggedOut();
                 default:
-                    return super.processTerminalParcel(parcel);
+                    return super.processCommand(cmd);
                 }
             }
         }
