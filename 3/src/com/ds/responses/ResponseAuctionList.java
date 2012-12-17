@@ -2,6 +2,7 @@
 package com.ds.responses;
 
 import com.ds.server.AuctionList;
+import com.ds.util.Multiline;
 
 public class ResponseAuctionList extends Response {
 
@@ -11,31 +12,17 @@ public class ResponseAuctionList extends Response {
 
     public ResponseAuctionList(AuctionList auctionList) {
         super(Rsp.AUCTION_LIST);
-
-        /* Sloppy escape.
-         * Since we use '#' in place of a '\n' (for transmission as a single line
-         * string), escape all '#'.
-         */
-
-        auctionListString = auctionList.toString()
-                .replaceAll("#", "\\#")
-                .replaceAll("\\n", "#");
+        this.auctionListString = auctionList.toString();
     }
 
     public ResponseAuctionList(String auctionListString) {
         super(Rsp.AUCTION_LIST);
-
-        /* Sloppy unescape. */
-
-        this.auctionListString = auctionListString
-                .replaceAll("\\\\#", "\0")
-                .replaceAll("#", "\n")
-                .replaceAll("\0", "#");
+        this.auctionListString = Multiline.decode(auctionListString);
     }
 
     @Override
     public String toNetString() {
-        return String.format("%s %s", super.toNetString(), auctionListString);
+        return String.format("%s %s", super.toNetString(), Multiline.encode(auctionListString));
     }
 
     @Override
