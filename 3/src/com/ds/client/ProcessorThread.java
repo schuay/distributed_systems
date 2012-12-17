@@ -144,7 +144,7 @@ public class ProcessorThread implements Runnable {
 
                     /* Encrypt the login command with the server's public key. */
 
-                    PrivateKey key = readPrivateKey(c.getUser());
+                    PrivateKey key = readPrivateKey(c.getUser(), "12345"); /* TODO */
 
                     Channel b64c = new Base64Channel(new NopChannel());
                     Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
@@ -163,13 +163,7 @@ public class ProcessorThread implements Runnable {
         }
     }
 
-    private PrivateKey readPrivateKey(String user) throws IOException {
-        /* TODO: We are currently running into issues here, because another
-         * thread is listening to stdin while we are attempting to read the passphrase
-         * in readPrivateKey().
-         * Work around that for now.
-         */
-
+    private PrivateKey readPrivateKey(String user, final String passphrase) throws IOException {
         File dir = new File(data.getClientKeyDir());
         File file = new File(dir, String.format("%s.pem",  user));
 
@@ -181,10 +175,10 @@ public class ProcessorThread implements Runnable {
                 new PasswordFinder() {
             @Override
             public char[] getPassword() {
-                Log.w("Using key entry workaround");
-                return "12345".toCharArray();
+                return passphrase.toCharArray();
             }
         });
+
         return key;
     }
 
