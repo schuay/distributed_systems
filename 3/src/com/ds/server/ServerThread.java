@@ -240,9 +240,7 @@ public class ServerThread implements Runnable {
                 try {
                     /* First, send the server challenge over an RSA channel. */
 
-                    serverThread.setChannel(new NopChannel());
-
-                    Channel b64c = new Base64Channel(serverThread.getChannel());
+                    Channel b64c = new Base64Channel(new NopChannel());
                     Channel rsac = new RsaChannel(b64c,
                             serverThread.getClientPublicKey(commandLogin.getUser()),
                             serverThread.getServerKey());
