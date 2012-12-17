@@ -21,6 +21,7 @@ public class Base64Channel extends Channel {
     @Override
     public byte[] decode(byte[] in) throws IOException {
         byte[] b = channel.decode(in);
+        setFlags(channel.getFlags());
         return SecurityUtils.fromBase64(b);
     }
 }

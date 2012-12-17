@@ -46,6 +46,7 @@ public class RsaChannel extends Channel {
     public byte[] decode(byte[] in) throws IOException {
         try {
             byte[] b = channel.decode(in);
+            setFlags(channel.getFlags() | FLAG_ENCRYPTED);
             return dcrypt.doFinal(b);
         } catch (Throwable t) {
             throw new IOException(t);

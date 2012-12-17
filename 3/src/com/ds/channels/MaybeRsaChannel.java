@@ -43,8 +43,10 @@ public class MaybeRsaChannel extends Channel {
 
         try {
             byte[] dcrypt = cipher.doFinal(SecurityUtils.fromBase64(b));
+            setFlags(channel.getFlags() | FLAG_ENCRYPTED);
             return dcrypt;
         } catch (Throwable t) {
+            setFlags(channel.getFlags());
             return b;
         }
     }
