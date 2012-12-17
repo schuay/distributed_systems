@@ -3,11 +3,41 @@ package com.ds.channels;
 import java.io.IOException;
 
 
-public interface Channel {
+public abstract class Channel {
 
-    String CHARSET = "UTF-8";
+    public static final String CHARSET = "UTF-8";
 
-    byte[] encode(byte[] in) throws IOException;
-    byte[] decode(byte[] in) throws IOException;
+    /** Set if the message is encrypted. */
+    public static final int FLAG_ENCRYPTED = 1 >> 0;
+
+    /** Set if the message is a retry transmission. */
+    public static final int FLAG_RETRY = 1 >> 1;
+
+    /** Set if the message has been mangled (for example, if the HMAC doesn't match). */
+    public static final int FLAG_MANGLED = 1 >> 2;
+
+
+    private int flags = 0;
+
+
+    public abstract byte[] encode(byte[] in) throws IOException;
+
+    public abstract byte[] decode(byte[] in) throws IOException;
+
+    /**
+     * Returns the flags regarding the last operation.
+     * Flags are set by decode() and cleared by encode().
+     */
+    public final int getFlags() {
+        return flags;
+    }
+
+    /**
+     * Sets flags for the next operation.
+     * Flags are set by decode() and cleared by encode().
+     */
+    public final void setFlags(int flags) {
+        this.flags = flags;
+    }
 
 }

@@ -13,7 +13,7 @@ import javax.crypto.NoSuchPaddingException;
 import com.ds.util.SecurityUtils;
 
 
-public class AesChannel implements Channel {
+public class AesChannel extends Channel {
 
     private final Channel channel;
     private final Cipher ecrypt;

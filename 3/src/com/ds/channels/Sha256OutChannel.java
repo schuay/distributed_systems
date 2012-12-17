@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 
 import com.ds.util.SecurityUtils;
 
-public class Sha256OutChannel implements Channel {
+public class Sha256OutChannel extends Channel {
 
     private final Channel b64c = new Base64Channel(new NopChannel());
     private final Channel channel;

@@ -16,7 +16,7 @@ import com.ds.util.SecurityUtils;
  * RsaChannel encrypts all outgoing traffic with a public key,
  * and decrypts all incoming traffic with a private key.
  */
-public class RsaChannel implements Channel {
+public class RsaChannel extends Channel {
 
     private final Channel channel;
     private final Cipher dcrypt; /**< Decryption cipher. */

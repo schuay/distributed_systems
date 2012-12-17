@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.ds.util.SecurityUtils;
 
-public class Base64Channel implements Channel {
+public class Base64Channel extends Channel {
 
     private final Channel channel;
 

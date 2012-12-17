@@ -1,6 +1,6 @@
 package com.ds.channels;
 
-public class NopChannel implements Channel {
+public class NopChannel extends Channel {
 
     @Override
     public byte[] encode(byte[] in) {

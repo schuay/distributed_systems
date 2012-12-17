@@ -19,7 +19,7 @@ import com.ds.util.SecurityUtils;
  * The expected message format is either plain strings, or rsa encrypted messages encoded as
  * base64.
  */
-public class MaybeRsaChannel implements Channel {
+public class MaybeRsaChannel extends Channel {
 
     private final Cipher cipher;
     private final Channel channel;
