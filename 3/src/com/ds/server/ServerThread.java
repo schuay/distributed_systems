@@ -385,10 +385,14 @@ public class ServerThread implements Runnable {
                 Log.e("User %s logout failed: not logged in", user.getName());
                 return;
             }
-            serverThread.setState(new StateConnected(serverThread));
-            serverThread.setChannel(new NopChannel());
-            serverThread.sendResponse(new Response(Rsp.ACK));
-            Log.i("User %s logged out", user.getName());
+            try {
+                serverThread.setState(new StateConnected(serverThread));
+                serverThread.setChannel(new MaybeRsaChannel(new NopChannel(), serverThread.getServerKey()));
+                serverThread.sendResponse(new Response(Rsp.ACK));
+                Log.i("User %s logged out", user.getName());
+            } catch (Throwable t) {
+                Log.e("Error while logging out: %s", t.getMessage());
+            }
         }
 
     }
