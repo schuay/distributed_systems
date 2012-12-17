@@ -32,7 +32,7 @@ public class Server implements Runnable {
     private static ServerSocket serverSocket = null;
     private static List<Socket> sockets = new ArrayList<Socket>();
     private static ExecutorService executorService = Executors.newCachedThreadPool();
-    private static Data serverData;
+    private static Data serverData = null;
 
     public static void main(String[] args) throws IOException {
 
@@ -53,11 +53,11 @@ public class Server implements Runnable {
             return;
         }
 
-        serverData = new Data(parsedArgs.getServerKey(), parsedArgs.getClientKeyDir());
-
-        /* Connect event listeners. */
-
         try {
+            serverData = new Data(parsedArgs.getServerKey(), parsedArgs.getClientKeyDir());
+
+            /* Connect event listeners. */
+
             Initialization.setSystemProperties();
 
             EventLogger eventLogger = new EventLogger();
@@ -125,7 +125,9 @@ public class Server implements Runnable {
             socket.close();
         }
 
-        serverData.getAuctionList().cancelTimers();
+        if (serverData != null) {
+            serverData.getAuctionList().cancelTimers();
+        }
 
         try {
             executorService.awaitTermination(5, TimeUnit.SECONDS);
@@ -208,13 +210,14 @@ public class Server implements Runnable {
         private static final String KEY_EXTENSION = ".pub.pem";
 
         private final UserList userList = new UserList();
-        private final AuctionList auctionList = new AuctionList();
+        private final AuctionList auctionList;
         private final PrivateKey serverKey;
         private final Map<String, PublicKey> clientKeys;
 
         public Data(String serverKey, String clientKeyDir) throws IOException {
             this.serverKey = readPrivateKey(serverKey);
             this.clientKeys = Collections.unmodifiableMap(readClientKeys(clientKeyDir));
+            auctionList = new AuctionList();
         }
 
         private static PrivateKey readPrivateKey(String path) throws IOException {
