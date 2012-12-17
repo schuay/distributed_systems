@@ -300,6 +300,8 @@ public class ProcessorThread implements Runnable {
      */
     private class StateLoggedIn extends State {
 
+        private boolean pendingRetry = false;
+
         @Override
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
@@ -315,17 +317,26 @@ public class ProcessorThread implements Runnable {
         @Override
         public State processResponse(Response response) {
 
+            /* If a message is mangled, print it but do not process it further in any way.
+             * Request retransmission if this is the first such message received in sequence,
+             * otherwise reset our pendingRetry state.
+             */
+
             boolean isMangled = ((channel.getFlags() & Channel.FLAG_MANGLED) != 0);
             if (isMangled) {
                 System.out.printf("Mangled server response:%n%s", response.toNetString());
 
-                boolean isRetry = ((channel.getFlags() & Channel.FLAG_RETRY) != 0);
-                if (!isRetry) {
+                if (!pendingRetry ) {
+                    pendingRetry = true;
                     send(new CommandRetry().toString());
+                } else {
+                    pendingRetry = false;
                 }
 
                 return this;
             }
+
+            pendingRetry = false;
 
             return super.processResponse(response);
         }
