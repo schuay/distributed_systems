@@ -35,7 +35,7 @@ public class Sha256InChannel implements Channel {
             byte[] b64hmac = msgAndHmac.substring(indexOfLastSpace + 1).getBytes(Channel.CHARSET);
             byte[] hmac = b64c.decode(b64hmac);
 
-            boolean isEqual = SecurityUtils.verifyHMAC(key, SecurityUtils.SHA256, hmac, in);
+            boolean isEqual = SecurityUtils.verifyHMAC(key, SecurityUtils.SHA256, hmac, msg);
             if (!isEqual) {
                 /* TODO: Do this in such a way that can be easily recognized by the catcher. */
                 throw new IOException("Hmac Mismatch");
