@@ -1,6 +1,7 @@
 
 package com.ds.server;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,10 +21,12 @@ public class UserList {
 
     /**
      * Logs in the specified user.
+     * @param address
+     * @param port
      * 
      * @return true The user if login was successful, null otherwise.
      */
-    public synchronized User login(String userName) {
+    public synchronized User login(String userName, int port, InetAddress address) {
         if (!users.containsKey(userName)) {
             users.put(userName, new User(userName));
         }
@@ -34,7 +37,7 @@ public class UserList {
         }
 
         notifyListeners(new UserEvent(UserEvent.USER_LOGIN, user.getName()));
-        user.login();
+        user.login(address, port);
         return user;
     }
 
@@ -61,8 +64,6 @@ public class UserList {
             if (!user.isLoggedIn()) {
                 continue;
             }
-
-            /* TODO: Include IP and port information. */
 
             sb.append(String.format("%s%n", user.toString()));
         }
@@ -102,6 +103,9 @@ public class UserList {
         }
 
         private boolean loggedIn = false;
+        private InetAddress address = null;
+        private int port = 0;
+
         public boolean isLoggedIn() {
             return loggedIn;
         }
@@ -111,8 +115,10 @@ public class UserList {
             this.name = name;
         }
 
-        private void login() {
+        private void login(InetAddress address, int port) {
             this.loggedIn = true;
+            this.address = address;
+            this.port = port;
         }
 
         private void logout() {
@@ -121,7 +127,7 @@ public class UserList {
 
         @Override
         public String toString() {
-            return name;
+            return String.format("%s:%d - %s", address.toString(), port, name);
         }
     }
 }

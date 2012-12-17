@@ -147,6 +147,7 @@ public class ProcessorThread implements Runnable {
             case LOGIN:
                 try {
                     CommandLogin c = (CommandLogin)cmd;
+                    c.setPort(data.getPort());
                     System.out.println("Please enter your passphrase using the '!pass <passphrase>' command");
                     return new StatePassphrase(c);
                 } catch (Throwable t) {

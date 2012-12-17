@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -51,11 +52,12 @@ public class ServerThread implements Runnable {
     private final Server.Data serverData;
     private State state = new StateConnected(this);
     private boolean quit = false;
+    private final InetAddress clientAddress;
     private static final List<CommandMatcher> matchers;
 
     static {
         List<CommandMatcher> l = new ArrayList<CommandMatcher>();
-        l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+([a-zA-Z0-9_\\-]+)\\s+([a-zA-Z0-9/+]{43}=)$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login\\s+([a-zA-Z0-9_\\-]+)\\s+([0-9]+)\\s+([a-zA-Z0-9/+]{43}=)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout\\s*$"));
         l.add(new CommandMatcher(CommandMatcher.Type.LIST, "^!list\\s*$"));
         l.add(new CommandMatcher(CommandMatcher.Type.CREATE, "^!create\\s+([0-9]+)\\s+(.+)$"));
@@ -71,6 +73,7 @@ public class ServerThread implements Runnable {
         this.serverData = serverData;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream());
+        this.clientAddress = socket.getInetAddress();
 
         try {
             this.channel = new MaybeRsaChannel(new NopChannel(), serverData.getServerKey());
@@ -191,7 +194,8 @@ public class ServerThread implements Runnable {
         case LIST:
             return new Command(cmd, Command.Cmd.LIST);
         case LOGIN:
-            return new CommandLogin(cmd, args.get(0), SecurityUtils.fromBase64(args.get(1).getBytes()));
+            return new CommandLogin(cmd, args.get(0), Integer.parseInt(args.get(1)),
+                    SecurityUtils.fromBase64(args.get(2).getBytes()));
         case LOGOUT:
             return new Command(cmd, Command.Cmd.LOGOUT);
         case BID:
@@ -267,6 +271,7 @@ public class ServerThread implements Runnable {
                     serverThread.setState(new StateChallenge(
                             serverThread,
                             commandLogin.getUser(),
+                            commandLogin.getPort(),
                             r.getServerChallenge()));
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
@@ -301,11 +306,14 @@ public class ServerThread implements Runnable {
         private final byte[] challenge;
         private final ServerThread serverThread;
         private final String username;
+        private final int port;
 
-        public StateChallenge(ServerThread serverThread, String username, byte[] challenge) {
+        public StateChallenge(ServerThread serverThread, String username,
+                int port, byte[] challenge) {
             this.serverThread = serverThread;
             this.challenge = challenge;
             this.username = username;
+            this.port = port;
         }
 
         @Override
@@ -320,7 +328,7 @@ public class ServerThread implements Runnable {
                 }
 
                 UserList userList = serverThread.getUserList();
-                User user = userList.login(username);
+                User user = userList.login(username, port, serverThread.clientAddress);
                 if (user == null) {
                     serverThread.sendResponse(new Response(Rsp.NAK));
                     Log.e("User %s login failed: already logged in", username);

@@ -10,11 +10,13 @@ public class CommandLogin extends Command {
     private static final long serialVersionUID = 8266776473396356465L;
 
     private final String user;
+    private int port;
     private final byte[] challenge;
 
-    public CommandLogin(String cmdStr, String user, byte[] challenge) {
+    public CommandLogin(String cmdStr, String user, int port, byte[] challenge) {
         super(cmdStr, Cmd.LOGIN);
         this.user = user;
+        this.port = port;
         this.challenge = challenge;
     }
 
@@ -27,6 +29,8 @@ public class CommandLogin extends Command {
 
         this.user = st.nextToken();
         this.challenge = SecurityUtils.getSecureRandom(SecurityUtils.CHALLENGE_BYTES);
+
+        /* Unfortunately, we can't set the port here. */
     }
 
     public byte[] getChallenge() {
@@ -37,12 +41,21 @@ public class CommandLogin extends Command {
         return user;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     @Override
     public String toString() {
         byte[] base64Challenge = SecurityUtils.toBase64(challenge);
-        return String.format("%s %s %s",
+        return String.format("%s %s %d %s",
                 super.toString(),
                 user,
+                port,
                 new String(base64Challenge));
     }
 }
