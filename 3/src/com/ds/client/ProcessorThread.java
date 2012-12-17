@@ -161,115 +161,115 @@ public class ProcessorThread implements Runnable {
                 return super.processCommand(cmd);
             }
         }
-
-        private PrivateKey readPrivateKey(String user) throws IOException {
-            /* TODO: We are currently running into issues here, because another
-             * thread is listening to stdin while we are attempting to read the passphrase
-             * in readPrivateKey().
-             * Work around that for now.
-             */
-
-            File dir = new File(data.getClientKeyDir());
-            File file = new File(dir, String.format("%s.pem",  user));
-
-            if (!file.exists() || !file.isFile()) {
-                throw new IllegalArgumentException("Could not read private key");
-            }
-
-            PrivateKey key = SecurityUtils.readPrivateKey(file.getAbsolutePath(),
-                    new PasswordFinder() {
-                @Override
-                public char[] getPassword() {
-                    Log.w("Using key entry workaround");
-                    return "12345".toCharArray();
-                }
-            });
-            return key;
-        }
-
-        private SecretKey readSecretKey(String user) throws IOException {
-            File dir = new File(data.getClientKeyDir());
-            File file = new File(dir, String.format("%s.key",  user));
-
-            if (!file.exists() || !file.isFile()) {
-                throw new IllegalArgumentException("Could not read secret key");
-            }
-
-            return SecurityUtils.readSecretKey(file.getAbsolutePath(), SecurityUtils.AES);
-        }
-
-        private class StateChallenge extends State {
-
-            private final byte[] challenge;
-            private final String user;
-
-            public StateChallenge(String user, byte[] challenge) {
-                this.user = user;
-                this.challenge = challenge;
-            }
-
-            @Override
-            public State processResponse(Response response) {
-                switch (response.getResponse()) {
-                case OK:
-                    ResponseOk r = (ResponseOk)response;
-
-                    if (!Arrays.equals(challenge, r.getClientChallenge())) {
-                        /* TODO: Notify server of failure. */
-                        Log.e("Challenge mismatch");
-                        return new StateLoggedOut();
-                    }
-
-                    try {
-                        /* Set up the AES channel. */
-
-                        SecretKey key = readSecretKey(user);
-
-                        Channel hmac = new Sha256InChannel(new NopChannel(), key);
-                        Channel b64c = new Base64Channel(hmac);
-                        Channel aesc = new AesChannel(b64c, r.getSecretKey(),
-                                new IvParameterSpec(r.getIv()));
-
-                        CommandChallenge c = new CommandChallenge(r.getServerChallenge());
-
-                        channel = aesc;
-
-                        send(c.toString());
-                        return new StateLoggedIn();
-                    } catch (Throwable t) {
-                        Log.e(t.getMessage());
-                        return new StateLoggedOut();
-                    }
-                case NAK:
-                    Log.w("Login refused by server");
-                    channel = new NopChannel();
-                    return new StateLoggedOut();
-                default:
-                    return super.processResponse(response);
-                }
-            }
-
-            @Override
-            public State processCommand(Command cmd) {
-                Log.w("Cannot process user input during handshake");
-                return this;
-            }
-        }
-
-        private class StateLoggedIn extends State {
-
-            @Override
-            public State processCommand(Command cmd) {
-                switch (cmd.getType()) {
-                case LOGOUT:
-                    send(cmd.toString());
-                    channel = new NopChannel();
-                    return new StateLoggedOut();
-                default:
-                    return super.processCommand(cmd);
-                }
-            }
-        }
-
     }
+
+    private PrivateKey readPrivateKey(String user) throws IOException {
+        /* TODO: We are currently running into issues here, because another
+         * thread is listening to stdin while we are attempting to read the passphrase
+         * in readPrivateKey().
+         * Work around that for now.
+         */
+
+        File dir = new File(data.getClientKeyDir());
+        File file = new File(dir, String.format("%s.pem",  user));
+
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("Could not read private key");
+        }
+
+        PrivateKey key = SecurityUtils.readPrivateKey(file.getAbsolutePath(),
+                new PasswordFinder() {
+            @Override
+            public char[] getPassword() {
+                Log.w("Using key entry workaround");
+                return "12345".toCharArray();
+            }
+        });
+        return key;
+    }
+
+    private SecretKey readSecretKey(String user) throws IOException {
+        File dir = new File(data.getClientKeyDir());
+        File file = new File(dir, String.format("%s.key",  user));
+
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("Could not read secret key");
+        }
+
+        return SecurityUtils.readSecretKey(file.getAbsolutePath(), SecurityUtils.AES);
+    }
+
+    private class StateChallenge extends State {
+
+        private final byte[] challenge;
+        private final String user;
+
+        public StateChallenge(String user, byte[] challenge) {
+            this.user = user;
+            this.challenge = challenge;
+        }
+
+        @Override
+        public State processResponse(Response response) {
+            switch (response.getResponse()) {
+            case OK:
+                ResponseOk r = (ResponseOk)response;
+
+                if (!Arrays.equals(challenge, r.getClientChallenge())) {
+                    /* TODO: Notify server of failure. */
+                    Log.e("Challenge mismatch");
+                    return new StateLoggedOut();
+                }
+
+                try {
+                    /* Set up the AES channel. */
+
+                    SecretKey key = readSecretKey(user);
+
+                    Channel hmac = new Sha256InChannel(new NopChannel(), key);
+                    Channel b64c = new Base64Channel(hmac);
+                    Channel aesc = new AesChannel(b64c, r.getSecretKey(),
+                            new IvParameterSpec(r.getIv()));
+
+                    CommandChallenge c = new CommandChallenge(r.getServerChallenge());
+
+                    channel = aesc;
+
+                    send(c.toString());
+                    return new StateLoggedIn();
+                } catch (Throwable t) {
+                    Log.e(t.getMessage());
+                    return new StateLoggedOut();
+                }
+            case NAK:
+                Log.w("Login refused by server");
+                channel = new NopChannel();
+                return new StateLoggedOut();
+            default:
+                return super.processResponse(response);
+            }
+        }
+
+        @Override
+        public State processCommand(Command cmd) {
+            Log.w("Cannot process user input during handshake");
+            return this;
+        }
+    }
+
+    private class StateLoggedIn extends State {
+
+        @Override
+        public State processCommand(Command cmd) {
+            switch (cmd.getType()) {
+            case LOGOUT:
+                send(cmd.toString());
+                channel = new NopChannel();
+                return new StateLoggedOut();
+            default:
+                return super.processCommand(cmd);
+            }
+        }
+    }
+
 }
