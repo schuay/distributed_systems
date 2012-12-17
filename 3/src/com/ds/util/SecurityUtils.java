@@ -36,6 +36,7 @@ public class SecurityUtils {
 
     public static final String RSA = "RSA/NONE/OAEPWithSHA256AndMGF1Padding";
     public static final String AES = "AES/CTR/NoPadding";
+    public static final String SHA256 = "HmacSHA256";
 
     public static final int CHALLENGE_BYTES = 32;
     public static final int IV_BYTES = 16;
@@ -125,7 +126,7 @@ public class SecurityUtils {
         return new SecretKeySpec(bytes, algorithm);
     }
 
-    public static Key readSecretKey(String path, String algorithm) throws IOException {
+    public static SecretKey readSecretKey(String path, String algorithm) throws IOException {
         byte[] keyBytes = new byte[1024];
         FileInputStream fis = null;
 
