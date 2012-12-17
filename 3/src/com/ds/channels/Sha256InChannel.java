@@ -37,9 +37,7 @@ public class Sha256InChannel extends Channel {
 
             boolean isEqual = SecurityUtils.verifyHMAC(key, SecurityUtils.SHA256, hmac, msg);
             if (!isEqual) {
-                /* TODO: Do this in such a way that can be easily recognized by the catcher. */
                 setFlags(channel.getFlags() | FLAG_MANGLED);
-                throw new IOException("Hmac Mismatch");
             }
 
             return msg;
