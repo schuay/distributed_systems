@@ -116,7 +116,7 @@ public class ProcessorThread implements Runnable {
     private abstract class State {
 
         public State processResponse(Response response) {
-            System.out.println(response.toNetString());
+            System.out.println(response.toString());
             System.out.flush();
             return this;
         }
