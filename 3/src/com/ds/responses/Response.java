@@ -15,7 +15,15 @@ public class Response implements Serializable {
     }
 
     public enum Rsp {
-        ACK, NAK, AUCTION_LIST, AUCTION_CREATED, BID, OK, CONFIRMED, REJECTED
+        ACK,
+        AUCTION_CREATED,
+        AUCTION_LIST,
+        BID,
+        CLIENT_LIST,
+        CONFIRMED,
+        NAK,
+        OK,
+        REJECTED
     }
 
     public static Response parse(String line) {
@@ -42,6 +50,8 @@ public class Response implements Serializable {
                 return new Response(Rsp.REJECTED);
             } else if (token.equals("!ok")) {
                 return new ResponseOk(st);
+            } else if (token.equals("!client_list")) {
+                return new ResponseClientList(line.substring(token.length()).trim());
             }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(e);

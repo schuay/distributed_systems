@@ -35,6 +35,7 @@ import com.ds.responses.Response;
 import com.ds.responses.Response.Rsp;
 import com.ds.responses.ResponseAuctionCreated;
 import com.ds.responses.ResponseAuctionList;
+import com.ds.responses.ResponseClientList;
 import com.ds.responses.ResponseOk;
 import com.ds.server.UserList.User;
 import com.ds.util.CommandMatcher;
@@ -201,6 +202,8 @@ public class ServerThread implements Runnable {
             return new Command(cmd, Command.Cmd.END);
         case CHALLENGE:
             return new CommandChallenge(SecurityUtils.fromBase64(args.get(0).getBytes()));
+        case GETCLIENTLIST:
+            return new Command(cmd, Command.Cmd.GETCLIENTLIST);
         default:
             throw new IllegalArgumentException("Could not parse command");
         }
@@ -269,6 +272,9 @@ public class ServerThread implements Runnable {
                     Log.e(t.getMessage());
                     return;
                 }
+                break;
+            case GETCLIENTLIST:
+                serverThread.sendResponse(new ResponseClientList(serverThread.getUserList()));
                 break;
             case LIST:
                 serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
@@ -356,6 +362,9 @@ public class ServerThread implements Runnable {
         @Override
         public void processCommand(Command command) {
             switch (command.getType()) {
+            case GETCLIENTLIST:
+                serverThread.sendResponse(new ResponseClientList(serverThread.getUserList()));
+                break;
             case LIST:
                 serverThread.sendResponse(new ResponseAuctionList(serverThread.getAuctionList()));
                 break;

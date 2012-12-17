@@ -54,6 +54,21 @@ public class UserList {
         return true;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (User user : users.values()) {
+            if (!user.isLoggedIn()) {
+                continue;
+            }
+
+            /* TODO: Include IP and port information. */
+
+            sb.append(String.format("%s%n", user.toString()));
+        }
+        return sb.toString();
+    }
+
     public void addOnEventListener(EventListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -102,6 +117,11 @@ public class UserList {
 
         private void logout() {
             this.loggedIn = false;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }
