@@ -51,16 +51,8 @@ public class ProcessorThread implements Runnable {
                 case PARCEL_TERMINAL:
                     Command cmd = null;
                     try {
-                        byte[] bytes = parcel.getMessage().getBytes(Channel.CHARSET);
-                        String in = new String(channel.decode(bytes), Channel.CHARSET);
-                        cmd = Command.parse(in);
+                        cmd = Command.parse(parcel.getMessage());
                     } catch (IllegalArgumentException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
-                        continue;
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
-                        continue;
-                    } catch (IOException e) {
                         Log.e("Invalid command: %s", parcel.getMessage());
                         continue;
                     }
