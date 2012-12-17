@@ -23,6 +23,7 @@ import com.ds.channels.Sha256InChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
+import com.ds.commands.CommandPassphrase;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
 import com.ds.responses.ResponseOk;
@@ -141,24 +142,53 @@ public class ProcessorThread implements Runnable {
             case LOGIN:
                 try {
                     CommandLogin c = (CommandLogin)cmd;
-
-                    /* Encrypt the login command with the server's public key. */
-
-                    PrivateKey key = readPrivateKey(c.getUser(), "12345"); /* TODO */
-
-                    Channel b64c = new Base64Channel(new NopChannel());
-                    Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
-
-                    channel = rsac;
-
-                    send(c.toString());
-                    return new StateChallenge(c.getUser(), c.getChallenge());
+                    System.out.println("Please enter your passphrase using the '!pass <passphrase>' command");
+                    return new StatePassphrase(c);
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return this;
                 }
             default:
                 return super.processCommand(cmd);
+            }
+        }
+    }
+
+    private class StatePassphrase extends State {
+
+        private final CommandLogin commandLogin;
+
+        public StatePassphrase(CommandLogin commandLogin) {
+            this.commandLogin = commandLogin;
+        }
+
+        @Override
+        public State processCommand(Command cmd) {
+            switch (cmd.getType()) {
+            case PASSPHRASE:
+                try {
+                    CommandPassphrase c = (CommandPassphrase)cmd;
+
+                    /* Encrypt the login command with the server's public key. */
+
+                    PrivateKey key = readPrivateKey(commandLogin.getUser(), c.getPassphrase());
+
+                    Channel b64c = new Base64Channel(new NopChannel());
+                    Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
+
+                    channel = rsac;
+
+                    send(commandLogin.toString());
+                    return new StateChallenge(commandLogin.getUser(), commandLogin.getChallenge());
+                } catch (Throwable t) {
+                    Log.e(t.getMessage());
+                    return this;
+                }
+            case END:
+                return super.processCommand(cmd);
+            default:
+                Log.w("Passphrase expected but other command received");
+                return this;
             }
         }
     }
