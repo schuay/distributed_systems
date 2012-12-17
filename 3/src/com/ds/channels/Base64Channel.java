@@ -8,7 +8,7 @@ public class Base64Channel implements Channel {
 
     private final Channel channel;
 
-    public Base64Channel(Channel channel) throws IOException {
+    public Base64Channel(Channel channel) {
         this.channel = channel;
     }
 

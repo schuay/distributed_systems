@@ -10,6 +10,7 @@ import com.ds.util.SecurityUtils;
 
 public class Sha256InChannel implements Channel {
 
+    private final Channel b64c = new Base64Channel(new NopChannel());
     private final Channel channel;
     private final SecretKey key;
 
@@ -31,7 +32,8 @@ public class Sha256InChannel implements Channel {
             String msgAndHmac = new String(b, Channel.CHARSET);
             int indexOfLastSpace = msgAndHmac.lastIndexOf(' ');
             byte[] msg = msgAndHmac.substring(0, indexOfLastSpace).getBytes(Channel.CHARSET);
-            byte[] hmac = msgAndHmac.substring(indexOfLastSpace + 1).getBytes(Channel.CHARSET);
+            byte[] b64hmac = msgAndHmac.substring(indexOfLastSpace + 1).getBytes(Channel.CHARSET);
+            byte[] hmac = b64c.decode(b64hmac);
 
             boolean isEqual = SecurityUtils.verifyHMAC(key, SecurityUtils.SHA256, hmac, in);
             if (!isEqual) {
