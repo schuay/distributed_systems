@@ -37,7 +37,7 @@ public class Sha256InChannel extends Channel {
 
             boolean isEqual = SecurityUtils.verifyHMAC(key, SecurityUtils.SHA256, hmac, msg);
             if (!isEqual) {
-                setFlags(channel.getFlags() | FLAG_MANGLED);
+                flags = channel.getFlags() | FLAG_MANGLED;
             }
 
             return msg;

@@ -43,7 +43,7 @@ public class AesChannel extends Channel {
     public byte[] decode(byte[] in) throws IOException {
         try {
             byte[] b = channel.decode(in);
-            setFlags(channel.getFlags() | FLAG_ENCRYPTED);
+            flags = channel.getFlags() | FLAG_ENCRYPTED;
             return dcrypt.doFinal(b);
         } catch (IOException e) {
             throw e;

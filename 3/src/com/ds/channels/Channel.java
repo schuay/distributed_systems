@@ -10,14 +10,11 @@ public abstract class Channel {
     /** Set if the message is encrypted. */
     public static final int FLAG_ENCRYPTED = 1 >> 0;
 
-    /** Set if the message is a retry transmission. */
-    public static final int FLAG_RETRY = 1 >> 1;
-
     /** Set if the message has been mangled (for example, if the HMAC doesn't match). */
     public static final int FLAG_MANGLED = 1 >> 2;
 
 
-    private int flags = 0;
+    protected int flags = 0;
 
 
     public abstract byte[] encode(byte[] in) throws IOException;
@@ -30,14 +27,6 @@ public abstract class Channel {
      */
     public final int getFlags() {
         return flags;
-    }
-
-    /**
-     * Sets flags for the next operation.
-     * Flags are set by decode() and cleared by encode().
-     */
-    public final void setFlags(int flags) {
-        this.flags = flags;
     }
 
 }
