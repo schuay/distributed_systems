@@ -29,60 +29,6 @@ public class NetworkListenerThread implements Runnable {
         } catch (Exception e) {
             Log.w("ResponseThread terminating");
         }
-
-        //            while (true) {
-        //
-        //                /* This complicated construct is required to handle the case in which we must make
-        //                 * sure that the next incoming message is received using a specific channel.
-        //                 *
-        //                 * While we are listening, we lock a semaphore. When the socket timeout occurs,
-        //                 * we give the other thread a chance to switch the channel.
-        //                 */
-        //
-        //                Response response = null;
-        //                boolean timeout;
-        //                do {
-        //                    try {
-        //                        timeout = false;
-        //                        data.getSemaphore().acquire();
-        //                        response = Response.parse(data.getChannel().readLine());
-        //                    } catch (SocketTimeoutException e) {
-        //                        timeout = true;
-        //                    } finally {
-        //                        data.getSemaphore().release();
-        //                    }
-        //                } while (timeout);
-        //
-        //                if (response == null) {
-        //                    break;
-        //                }
-        //
-        //                switch (response.getResponse()) {
-        //                case OK:
-        //
-        //                    ResponseOk r = (ResponseOk)response;
-        //                    CommandChallenge c = new CommandChallenge(r.getServerChallenge());
-        //
-        //                    /* TODO: Check if received client challenge equals sent challenge. */
-        //
-        //                    /* Set up the AES channel. */
-        //
-        //                    data.resetChannel();
-        //
-        //                    Channel b64c = new Base64Channel(data.getChannel());
-        //                    Channel aesc = new AesChannel(b64c, r.getSecretKey(),
-        //                            new IvParameterSpec(r.getIv()));
-        //
-        //                    data.setChannel(aesc);
-        //                    aesc.write(c.toString().getBytes());
-        //
-        //                    break;
-        //
-        //                default:
-        //                    System.out.println(response);
-        //                    break;
-        //                }
-        //            }
     }
 
 }

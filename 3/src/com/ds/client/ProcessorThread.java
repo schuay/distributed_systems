@@ -6,16 +6,24 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 
+import javax.crypto.spec.IvParameterSpec;
+
+import org.bouncycastle.openssl.PasswordFinder;
+
+import com.ds.channels.AesChannel;
 import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
 import com.ds.channels.NopChannel;
 import com.ds.channels.RsaChannel;
 import com.ds.commands.Command;
+import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
+import com.ds.responses.ResponseOk;
 import com.ds.util.SecurityUtils;
 
 public class ProcessorThread implements Runnable {
@@ -97,17 +105,6 @@ public class ProcessorThread implements Runnable {
         }
     }
 
-    private static PrivateKey readPrivateKey(String clientKeyDir, String user) throws IOException {
-        File dir = new File(clientKeyDir);
-        File file = new File(dir, String.format("%s.pem", user));
-
-        if (!file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("Could not read private key");
-        }
-
-        return SecurityUtils.readPrivateKey(file.getAbsolutePath());
-    }
-
     /* The default state, which is responsible for parcels that should
      * be handled the same way in every state.
      */
@@ -145,7 +142,28 @@ public class ProcessorThread implements Runnable {
 
                     /* Encrypt the login command with the server's public key. */
 
-                    PrivateKey key = readPrivateKey(data.getClientKeyDir(), c.getUser());
+                    /* TODO: We are currently running into issues here, because another
+                     * thread is listening to stdin while we are attempting to read the passphrase
+                     * in readPrivateKey().
+                     * Work around that for now.
+                     */
+
+                    File dir = new File(data.getClientKeyDir());
+                    File file = new File(dir, String.format("%s.pem",  c.getUser()));
+
+                    if (!file.exists() || !file.isFile()) {
+                        throw new IllegalArgumentException("Could not read private key");
+                    }
+
+                    PrivateKey key = SecurityUtils.readPrivateKey(file.getAbsolutePath(),
+                            new PasswordFinder() {
+                        @Override
+                        public char[] getPassword() {
+                            Log.w("Using key entry workaround");
+                            return "12345".toCharArray();
+                        }
+                    });
+
                     Channel b64c = new Base64Channel(new NopChannel());
                     Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
 
@@ -174,8 +192,40 @@ public class ProcessorThread implements Runnable {
 
             @Override
             public State processResponse(Response response) {
-                //              Response response = Response.parse(data.getChannel().readLine());
-                return null;
+                switch (response.getResponse()) {
+                case OK:
+                    ResponseOk r = (ResponseOk)response;
+
+                    if (!Arrays.equals(challenge, r.getClientChallenge())) {
+                        /* TODO: Notify server of failure. */
+                        Log.e("Challenge mismatch");
+                        return new StateLoggedOut();
+                    }
+
+                    try {
+                        /* Set up the AES channel. */
+
+                        Channel b64c = new Base64Channel(new NopChannel());
+                        Channel aesc = new AesChannel(b64c, r.getSecretKey(),
+                                new IvParameterSpec(r.getIv()));
+
+                        CommandChallenge c = new CommandChallenge(r.getServerChallenge());
+
+                        channel = aesc;
+
+                        send(c.toString());
+                        return new StateLoggedIn();
+                    } catch (Throwable t) {
+                        Log.e(t.getMessage());
+                        return new StateLoggedOut();
+                    }
+                case NAK:
+                    Log.w("Login refused by server");
+                    channel = new NopChannel();
+                    return new StateLoggedOut();
+                default:
+                    return super.processResponse(response);
+                }
             }
 
             @Override
