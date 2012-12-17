@@ -108,7 +108,8 @@ public class ProcessorThread implements Runnable {
         }
     }
 
-    /* The default state, which is responsible for parcels that should
+    /**
+     * The default state, which is responsible for parcels that should
      * be handled the same way in every state.
      */
     private abstract class State {
@@ -134,6 +135,9 @@ public class ProcessorThread implements Runnable {
         }
     }
 
+    /**
+     * In this state, the user is logged out, and is not in the middle of a handshake.
+     */
     private class StateLoggedOut extends State {
 
         @Override
@@ -154,6 +158,10 @@ public class ProcessorThread implements Runnable {
         }
     }
 
+    /**
+     * The user has begun the login procedure, and we are now waiting for the passphrase.
+     * The only way to exit this state is to either enter a passphrase or end the application.
+     */
     private class StatePassphrase extends State {
 
         private final CommandLogin commandLogin;
@@ -223,6 +231,11 @@ public class ProcessorThread implements Runnable {
         return SecurityUtils.readSecretKey(file.getAbsolutePath(), SecurityUtils.AES);
     }
 
+    /**
+     * The login message has been sent. We are waiting for the server response,
+     * which includes the client challenge and the server challenge.
+     * All user input is ignored until we move into another state.
+     */
     private class StateChallenge extends State {
 
         private final byte[] challenge;
@@ -281,6 +294,9 @@ public class ProcessorThread implements Runnable {
         }
     }
 
+    /**
+     * We are logged in.
+     */
     private class StateLoggedIn extends State {
 
         @Override
