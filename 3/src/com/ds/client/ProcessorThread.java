@@ -9,6 +9,7 @@ import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.bouncycastle.openssl.PasswordFinder;
@@ -18,6 +19,7 @@ import com.ds.channels.Base64Channel;
 import com.ds.channels.Channel;
 import com.ds.channels.NopChannel;
 import com.ds.channels.RsaChannel;
+import com.ds.channels.Sha256InChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
@@ -142,27 +144,7 @@ public class ProcessorThread implements Runnable {
 
                     /* Encrypt the login command with the server's public key. */
 
-                    /* TODO: We are currently running into issues here, because another
-                     * thread is listening to stdin while we are attempting to read the passphrase
-                     * in readPrivateKey().
-                     * Work around that for now.
-                     */
-
-                    File dir = new File(data.getClientKeyDir());
-                    File file = new File(dir, String.format("%s.pem",  c.getUser()));
-
-                    if (!file.exists() || !file.isFile()) {
-                        throw new IllegalArgumentException("Could not read private key");
-                    }
-
-                    PrivateKey key = SecurityUtils.readPrivateKey(file.getAbsolutePath(),
-                            new PasswordFinder() {
-                        @Override
-                        public char[] getPassword() {
-                            Log.w("Using key entry workaround");
-                            return "12345".toCharArray();
-                        }
-                    });
+                    PrivateKey key = readPrivateKey(c.getUser());
 
                     Channel b64c = new Base64Channel(new NopChannel());
                     Channel rsac = new RsaChannel(b64c, data.getServerKey(), key);
@@ -178,6 +160,42 @@ public class ProcessorThread implements Runnable {
             default:
                 return super.processCommand(cmd);
             }
+        }
+
+        private PrivateKey readPrivateKey(String user) throws IOException {
+            /* TODO: We are currently running into issues here, because another
+             * thread is listening to stdin while we are attempting to read the passphrase
+             * in readPrivateKey().
+             * Work around that for now.
+             */
+
+            File dir = new File(data.getClientKeyDir());
+            File file = new File(dir, String.format("%s.pem",  user));
+
+            if (!file.exists() || !file.isFile()) {
+                throw new IllegalArgumentException("Could not read private key");
+            }
+
+            PrivateKey key = SecurityUtils.readPrivateKey(file.getAbsolutePath(),
+                    new PasswordFinder() {
+                @Override
+                public char[] getPassword() {
+                    Log.w("Using key entry workaround");
+                    return "12345".toCharArray();
+                }
+            });
+            return key;
+        }
+
+        private SecretKey readSecretKey(String user) throws IOException {
+            File dir = new File(data.getClientKeyDir());
+            File file = new File(dir, String.format("%s.key",  user));
+
+            if (!file.exists() || !file.isFile()) {
+                throw new IllegalArgumentException("Could not read secret key");
+            }
+
+            return SecurityUtils.readSecretKey(file.getAbsolutePath(), SecurityUtils.AES);
         }
 
         private class StateChallenge extends State {
@@ -205,7 +223,10 @@ public class ProcessorThread implements Runnable {
                     try {
                         /* Set up the AES channel. */
 
-                        Channel b64c = new Base64Channel(new NopChannel());
+                        SecretKey key = readSecretKey(user);
+
+                        Channel hmac = new Sha256InChannel(new NopChannel(), key);
+                        Channel b64c = new Base64Channel(hmac);
                         Channel aesc = new AesChannel(b64c, r.getSecretKey(),
                                 new IvParameterSpec(r.getIv()));
 
