@@ -24,6 +24,7 @@ import com.ds.commands.Command;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
 import com.ds.commands.CommandPassphrase;
+import com.ds.commands.CommandRetry;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
 import com.ds.responses.ResponseOk;
@@ -310,6 +311,23 @@ public class ProcessorThread implements Runnable {
                 return super.processCommand(cmd);
             }
         }
-    }
 
+        @Override
+        public State processResponse(Response response) {
+
+            boolean isMangled = ((channel.getFlags() & Channel.FLAG_MANGLED) != 0);
+            if (isMangled) {
+                System.out.printf("Mangled server response:%n%s", response.toNetString());
+
+                boolean isRetry = ((channel.getFlags() & Channel.FLAG_RETRY) != 0);
+                if (!isRetry) {
+                    send(new CommandRetry().toString());
+                }
+
+                return this;
+            }
+
+            return super.processResponse(response);
+        }
+    }
 }
