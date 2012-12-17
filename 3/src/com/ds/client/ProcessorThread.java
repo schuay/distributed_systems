@@ -301,10 +301,20 @@ public class ProcessorThread implements Runnable {
     private class StateLoggedIn extends State {
 
         private boolean pendingRetry = false;
+        private boolean blocked = false;
 
         @Override
         public State processCommand(Command cmd) {
+            if (blocked) {
+                Log.w("Waiting for group bid confirmation or rejection, command ignored");
+                return this;
+            }
+
             switch (cmd.getType()) {
+            case CONFIRM:
+                blocked  = true;
+                send(cmd.toString());
+                return this;
             case LOGOUT:
                 send(cmd.toString());
                 channel = new NopChannel();
@@ -335,10 +345,20 @@ public class ProcessorThread implements Runnable {
 
                 return this;
             }
-
             pendingRetry = false;
 
-            return super.processResponse(response);
+            switch (response.getResponse()) {
+            case CONFIRMED:
+                Log.i("Group bid confirmed");
+                blocked = false;
+                return this;
+            case REJECTED:
+                Log.i("Group bid rejected");
+                blocked = false;
+                return this;
+            default:
+                return super.processResponse(response);
+            }
         }
     }
 }
