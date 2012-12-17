@@ -12,23 +12,15 @@ import java.util.regex.Pattern;
 public class CommandMatcher {
 
     public enum Type {
-        LOGIN,
-        LOGOUT,
-        SUBSCRIBE,
-        UNSUBSCRIBE,
-        AUTO,
-        HIDE,
-        PRINT,
-        STEPS,
-        ADD_STEP,
-        REM_STEP,
-        BILL,
-        EXIT,
-        LIST,
-        CREATE,
         BID,
+        CHALLENGE,
+        CREATE,
         END,
-        CHALLENGE
+        EXIT,
+        GETCLIENTLIST,
+        LIST,
+        LOGIN,
+        LOGOUT
     }
 
     private final Type type;
