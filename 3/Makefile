@@ -1,4 +1,4 @@
-ARCHIVE=ds2.zip
+ARCHIVE=ds3.zip
 
 package:
 	find \( ! -regex '^./build/.*' -a ! -regex '^./lib/.*' \) | zip $(ARCHIVE) -@
