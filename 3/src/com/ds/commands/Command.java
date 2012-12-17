@@ -9,7 +9,7 @@ public class Command implements Serializable {
     private static final long serialVersionUID = 4698051331006702570L;
 
     public enum Cmd {
-        LOGIN, LOGOUT, LIST, CREATE, BID, GROUPBID, END, CHALLENGE, PASSPHRASE, RETRY
+        LOGIN, LOGOUT, LIST, CREATE, BID, GROUPBID, END, CHALLENGE, PASSPHRASE, RETRY, CONFIRM
     }
 
     private final Cmd type;
@@ -42,6 +42,8 @@ public class Command implements Serializable {
                 return new CommandBid(token, st);
             } else if (token.equals("!groupbid")) {
                 return new CommandGroupBid(token, st);
+            } else if (token.equals("!confirm")) {
+                return new CommandConfirm(token, st);
             } else if (token.equals("!pass")) {
                 return new CommandPassphrase(token, st);
             }
