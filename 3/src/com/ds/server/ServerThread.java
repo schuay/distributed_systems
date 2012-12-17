@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import com.ds.channels.AesChannel;
@@ -22,6 +23,7 @@ import com.ds.channels.Channel;
 import com.ds.channels.MaybeRsaChannel;
 import com.ds.channels.NopChannel;
 import com.ds.channels.RsaChannel;
+import com.ds.channels.Sha256OutChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
@@ -142,8 +144,12 @@ public class ServerThread implements Runnable {
         return serverData.getAuctionList();
     }
 
-    private PublicKey getClientKey(String client) {
-        return serverData.getClientKey(client);
+    private PublicKey getClientPublicKey(String client) {
+        return serverData.getClientPublicKey(client);
+    }
+
+    private SecretKey getClientSecretKey(String client) {
+        return serverData.getClientSecretKey(client);
     }
 
     public PrivateKey getServerKey() {
@@ -230,7 +236,7 @@ public class ServerThread implements Runnable {
 
                     Channel b64c = new Base64Channel(serverThread.getChannel());
                     Channel rsac = new RsaChannel(b64c,
-                            serverThread.getClientKey(commandLogin.getUser()),
+                            serverThread.getClientPublicKey(commandLogin.getUser()),
                             serverThread.getServerKey());
                     serverThread.setChannel(rsac);
 
@@ -240,7 +246,9 @@ public class ServerThread implements Runnable {
                     /* Then, immediately switch to an AES channel to prepare for
                      * the incoming response. */
 
-                    b64c = new Base64Channel(new NopChannel());
+                    Channel hmac = new Sha256OutChannel(new NopChannel(),
+                            serverThread.getClientSecretKey(commandLogin.getUser()));
+                    b64c = new Base64Channel(hmac);
                     Channel aesc = new AesChannel(b64c, r.getSecretKey(), new IvParameterSpec(r.getIv()));
                     serverThread.setChannel(aesc);
 

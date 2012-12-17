@@ -17,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.SecretKey;
+
 import org.bouncycastle.openssl.PasswordFinder;
 
 import com.ds.loggers.EventLogger;
@@ -207,16 +209,19 @@ public class Server implements Runnable {
      */
     public static class Data {
 
-        private static final String KEY_EXTENSION = ".pub.pem";
+        private static final String PUBLIC_KEY_EXTENSION = ".pub.pem";
+        private static final String SECRET_KEY_EXTENSION = ".key";
 
         private final UserList userList = new UserList();
         private final AuctionList auctionList;
         private final PrivateKey serverKey;
-        private final Map<String, PublicKey> clientKeys;
+        private final Map<String, PublicKey> clientPublicKeys;
+        private final Map<String, SecretKey> clientSecretKeys;
 
         public Data(String serverKey, String clientKeyDir) throws IOException {
             this.serverKey = readPrivateKey(serverKey);
-            this.clientKeys = Collections.unmodifiableMap(readClientKeys(clientKeyDir));
+            this.clientPublicKeys = Collections.unmodifiableMap(readClientPublicKeys(clientKeyDir));
+            this.clientSecretKeys = Collections.unmodifiableMap(readClientSecretKeys(clientKeyDir));
             auctionList = new AuctionList();
         }
 
@@ -238,7 +243,7 @@ public class Server implements Runnable {
             return SecurityUtils.readPrivateKey(path, finder);
         }
 
-        private static Map<String, PublicKey> readClientKeys(String path) {
+        private static Map<String, PublicKey> readClientPublicKeys(String path) {
             Map<String, PublicKey> map = new HashMap<String, PublicKey>();
 
             File directory = new File(path);
@@ -251,13 +256,13 @@ public class Server implements Runnable {
             FilenameFilter filter = new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.endsWith(KEY_EXTENSION);
+                    return (name.endsWith(PUBLIC_KEY_EXTENSION));
                 }
             };
 
             for (File file : directory.listFiles(filter)) {
                 try {
-                    String client = clientName(file.getName());
+                    String client = clientName(file.getName(), PUBLIC_KEY_EXTENSION);
                     PublicKey pub = SecurityUtils.readPublicKey(file.getAbsolutePath());
                     map.put(client, pub);
                     Log.d("Found keyfile: %s for client %s", file.getName(), client);
@@ -266,13 +271,43 @@ public class Server implements Runnable {
                 }
             }
 
+            return map;
+        }
+
+        private static Map<String, SecretKey> readClientSecretKeys(String path) {
+            Map<String, SecretKey> map = new HashMap<String, SecretKey>();
+
+            File directory = new File(path);
+            if (!directory.isDirectory()) {
+                throw new IllegalArgumentException("Invalid client key directory");
+            }
+
+            /* A filter for keys. */
+
+            FilenameFilter filter = new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return (name.endsWith(SECRET_KEY_EXTENSION));
+                }
+            };
+
+            for (File file : directory.listFiles(filter)) {
+                try {
+                    String client = clientName(file.getName(), SECRET_KEY_EXTENSION);
+                    SecretKey pub = SecurityUtils.readSecretKey(file.getAbsolutePath(),
+                            SecurityUtils.AES);
+                    map.put(client, pub);
+                    Log.d("Found keyfile: %s for client %s", file.getName(), client);
+                } catch (Throwable t) {
+                    Log.e("Error reading client keys: %s", t.getMessage());
+                }
+            }
 
             return map;
         }
 
-        private static String clientName(String name) {
-            int len = name.length();
-            return name.substring(0, len - KEY_EXTENSION.length());
+        private static String clientName(String name, String extension) {
+            return name.substring(0, name.length() - extension.length());
         }
 
         public UserList getUserList() {
@@ -287,8 +322,12 @@ public class Server implements Runnable {
             return serverKey;
         }
 
-        public PublicKey getClientKey(String client) {
-            return clientKeys.get(client);
+        public PublicKey getClientPublicKey(String client) {
+            return clientPublicKeys.get(client);
+        }
+
+        public SecretKey getClientSecretKey(String client) {
+            return clientSecretKeys.get(client);
         }
     }
 }
