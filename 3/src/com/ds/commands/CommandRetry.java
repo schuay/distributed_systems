@@ -1,9 +1,10 @@
 package com.ds.commands;
 
-import java.io.Serializable;
-import java.util.StringTokenizer;
 
 public class CommandRetry extends Command {
+
+    private static final long serialVersionUID = 1L;
+
     public CommandRetry() {
         super("!retry", Cmd.RETRY);
     }
