@@ -9,7 +9,7 @@ public class Command implements Serializable {
     private static final long serialVersionUID = 4698051331006702570L;
 
     public enum Cmd {
-        LOGIN, LOGOUT, LIST, CREATE, BID, END, CHALLENGE, PASSPHRASE
+        LOGIN, LOGOUT, LIST, CREATE, BID, END, CHALLENGE, PASSPHRASE, RETRY
     }
 
     private final Cmd type;
