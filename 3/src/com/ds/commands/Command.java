@@ -15,6 +15,11 @@ public class Command implements Serializable {
     private final Cmd type;
     private final String cmdStr;
 
+    /**
+     * Called by the client to parse user input into commands.
+     * The server does *not* use this method, and constructs commands
+     * manually.
+     */
     public static Command parse(String line) {
         StringTokenizer st = new StringTokenizer(line);
         if (!st.hasMoreTokens()) {
