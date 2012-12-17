@@ -229,6 +229,14 @@ public class ServerThread implements Runnable {
             case LOGIN:
                 CommandLogin commandLogin = (CommandLogin)command;
 
+                /* Ensure that the incoming login command was encrypted. */
+
+                int isEncrypted = serverThread.getChannel().getFlags() & Channel.FLAG_ENCRYPTED;
+                if (isEncrypted == 0) {
+                    Log.w("Unencrypted login request ignored.");
+                    return;
+                }
+
                 try {
                     /* First, send the server challenge over an RSA channel. */
 
