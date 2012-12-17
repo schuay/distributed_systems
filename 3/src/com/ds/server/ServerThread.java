@@ -61,7 +61,7 @@ public class ServerThread implements Runnable {
         l.add(new CommandMatcher(CommandMatcher.Type.BID, "^!bid\\s+([0-9]+)\\s+([0-9.]+)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
         l.add(new CommandMatcher(CommandMatcher.Type.CHALLENGE, "^([a-zA-Z0-9/+]{43}=)$"));
-        l.add(new CommandMatcher(CommandMatcher.Type.GETCLIENTLIST, "^!getClientList\\s*$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.GETCLIENTLIST, "^!getclientlist\\s*$"));
         matchers = Collections.unmodifiableList(l);
     }
 

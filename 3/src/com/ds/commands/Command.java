@@ -57,7 +57,7 @@ public class Command implements Serializable {
                 return new CommandConfirm(token, st);
             } else if (token.equals("!pass")) {
                 return new CommandPassphrase(token, st);
-            } else if (token.equals("!getClientList")) {
+            } else if (token.equals("!getclientlist")) {
                 return new Command(token, Cmd.GETCLIENTLIST);
             }
         } catch (NumberFormatException e) {
