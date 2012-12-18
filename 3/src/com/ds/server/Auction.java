@@ -173,6 +173,12 @@ public class Auction {
     }
 
     public void end() {
+        for (Map<Integer, GroupBid> m : groupBids.values()) {
+            for (GroupBid b : m.values()) {
+                b.reject();
+            }
+        }
+
         if (highestBidder != User.NONE) {
             notifyListeners(new BidEvent(BidEvent.BID_WON, highestBidder.getName(), id, highestBid));
         }
