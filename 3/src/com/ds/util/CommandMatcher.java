@@ -14,6 +14,7 @@ public class CommandMatcher {
     public enum Type {
         BID,
         CHALLENGE,
+        CONFIRM,
         CREATE,
         END,
         EXIT,

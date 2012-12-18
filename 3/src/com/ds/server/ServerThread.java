@@ -67,6 +67,8 @@ public class ServerThread implements Runnable {
         l.add(new CommandMatcher(CommandMatcher.Type.END, "^!end\\s*$"));
         l.add(new CommandMatcher(CommandMatcher.Type.CHALLENGE, "^([a-zA-Z0-9/+]{43}=)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.GETCLIENTLIST, "^!getclientlist\\s*$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.GROUPBID, "^!groupbid\\s+([0-9]+)\\s+([0-9.]+)$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.CONFIRM, "^!confirm\\s+([0-9]+)\\s+([0-9.]+)\\s+([a-zA-Z0-9_\\-]+)$"));
         matchers = Collections.unmodifiableList(l);
     }
 
@@ -218,6 +220,9 @@ public class ServerThread implements Runnable {
         case GROUPBID:
             return new CommandGroupBid(cmd, Integer.parseInt(args.get(0)),
                     (int)Double.parseDouble(args.get(1)));
+        case CONFIRM:
+            return new CommandConfirm(cmd, Integer.parseInt(args.get(0)),
+                    (int)Double.parseDouble(args.get(1)), args.get(2));
         default:
             throw new IllegalArgumentException("Could not parse command");
         }
