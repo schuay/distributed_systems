@@ -20,7 +20,8 @@ public class Command implements Serializable {
         LOGIN,
         LOGOUT,
         PASSPHRASE,
-        RETRY
+        RETRY,
+        SIGNEDBID
     }
 
     private final Cmd type;
