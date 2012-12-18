@@ -144,8 +144,11 @@ public class ProcessorThread implements Runnable {
                 keepGoing = false;
                 send(cmd.toString());
                 break;
-            default:
+            case LIST:
                 send(cmd.toString());
+                break;
+            default:
+                Log.w("Command invalid in current state");
                 break;
             }
 
