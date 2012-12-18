@@ -402,6 +402,12 @@ public class ServerThread implements Runnable {
                 auctionList.bid(commandBid.getAuctionId(), user, commandBid.getAmount());
                 serverThread.sendResponse(new Response(Rsp.ACK));
                 break;
+            case GROUPBID:
+                CommandGroupBid c = (CommandGroupBid)command;
+
+                auctionList = serverThread.getAuctionList();
+                auctionList.createGroupBid(c.getAuctionId(), user, c.getAmount());
+                break;
             case END:
                 logout();
                 serverThread.setQuit();
