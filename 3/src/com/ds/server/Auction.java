@@ -38,6 +38,7 @@ public class Auction {
         private final String initBidder;
         private final int amount;
         private int numBidders;
+        private boolean rejected = false;
 
         public GroupBid(String initBidder, int amount) {
             this.initBidder = initBidder;
@@ -50,8 +51,12 @@ public class Auction {
             numBidders++;
         }
 
+        public void reject() {
+            rejected  = true;
+        }
+
         public boolean confirmed() {
-            return numBidders >= GROUP_SIZE;
+            return (!rejected && numBidders >= GROUP_SIZE);
         }
 
         public void notifyListenersConfirmed() {
