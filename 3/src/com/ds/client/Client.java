@@ -17,6 +17,7 @@ public class Client {
     private static Thread networkListenerThread;
     private static Thread processorThread;
     private static Thread timeProviderThread;
+    private static Thread timeRetrieverThread;
 
     public static void main(String[] args) throws IOException {
 
@@ -53,10 +54,12 @@ public class Client {
             networkListenerThread = new Thread(new NetworkListenerThread(socket, data));
             processorThread = new Thread(new ProcessorThread(socket, data));
             timeProviderThread = new Thread(new TimeProviderThread(serverSocket));
+            timeRetrieverThread = new Thread(new TimeRetrieverThread(data));
 
             networkListenerThread.start();
             processorThread.start();
             timeProviderThread.start();
+            timeRetrieverThread.start();
 
             inputLoop(data);
 
@@ -66,9 +69,12 @@ public class Client {
             serverSocket.close();
             serverSocket = null;
 
+            timeRetrieverThread.interrupt();
+
             networkListenerThread.join();
             processorThread.join();
             timeProviderThread.join();
+            timeRetrieverThread.join();
 
         } catch (Exception e) {
             Log.e(e.getMessage());
