@@ -31,6 +31,6 @@ public class ResponseClientList extends Response {
 
     @Override
     public String toString() {
-        return clientList;
+        return String.format("Active Clients:%n%s", clientList);
     }
 }
