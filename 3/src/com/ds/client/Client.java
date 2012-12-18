@@ -47,7 +47,9 @@ public class Client {
         try {
             serverSocket = new ServerSocket(parsedArgs.getUdpPort());
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
+
             data  = new Data(parsedArgs);
+            data.addSocket(socket);
 
             Log.i("Connection successful.");
 
@@ -63,29 +65,43 @@ public class Client {
 
             inputLoop(data);
 
-            socket.close();
-            socket = null;
-
-            serverSocket.close();
-            serverSocket = null;
-
-            timeRetrieverThread.interrupt();
-
-            networkListenerThread.join();
-            processorThread.join();
-            timeProviderThread.join();
-            timeRetrieverThread.join();
+            /* Main execution ends here. */
 
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
+
+            /* Trigger thread termination by either interrupting it (if possible)
+             * or shutting down its sockets. */
+
+            if (timeRetrieverThread != null) {
+                timeRetrieverThread.interrupt();
+            }
+
             if (serverSocket != null) {
                 serverSocket.close();
             }
-            if (socket != null) {
-                socket.close();
+
+            if (data != null) {
+                for (Socket s : data.getSockets()) {
+                    try { s.close(); } catch (Throwable t) { Log.e(t.getMessage()); }
+                }
             }
         }
+
+        boolean interrupted;
+        do {
+            try {
+                interrupted = false;
+                if (networkListenerThread != null) { networkListenerThread.join(); networkListenerThread = null; }
+                if (processorThread != null) { processorThread.join(); processorThread = null; }
+                if (timeProviderThread != null) { timeProviderThread.join(); timeProviderThread = null; }
+                if (timeRetrieverThread != null) { timeRetrieverThread.join(); timeRetrieverThread = null; }
+            } catch (InterruptedException e) {
+                interrupted = true;
+            }
+        } while (interrupted);
+
     }
 
     private static void inputLoop(Data data) throws IOException {

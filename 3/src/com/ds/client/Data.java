@@ -1,7 +1,11 @@
 package com.ds.client;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,9 +15,10 @@ class Data {
 
     private final PublicKey serverKey;
     private final String clientKeyDir;
+    private final int port;
     private final BlockingQueue<Parcel> processorQueue;
     private final BlockingQueue<TimeRequest> timeRetrieverQueue;
-    private final int port;
+    private final List<Socket> sockets = new ArrayList<Socket>();
 
     public Data(ParsedArgs args) throws IOException {
         this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
@@ -41,6 +46,27 @@ class Data {
 
     public int getPort() {
         return port;
+    }
+
+    public void addSocket(Socket socket) {
+        synchronized(sockets) {
+            if (sockets.contains(socket)) {
+                return;
+            }
+            sockets.add(socket);
+        }
+    }
+
+    public void removeSocket(Socket socket) {
+        synchronized(sockets) {
+            sockets.remove(socket);
+        }
+    }
+
+    public List<Socket> getSockets() {
+        synchronized (sockets) {
+            return Collections.unmodifiableList(sockets);
+        }
     }
 
 }
