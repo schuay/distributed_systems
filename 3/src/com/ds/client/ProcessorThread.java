@@ -6,7 +6,9 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import javax.crypto.SecretKey;
@@ -27,6 +29,7 @@ import com.ds.commands.CommandPassphrase;
 import com.ds.commands.CommandRetry;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
+import com.ds.responses.ResponseClientList;
 import com.ds.responses.ResponseOk;
 import com.ds.util.SecurityUtils;
 
@@ -37,6 +40,7 @@ public class ProcessorThread implements Runnable {
     private boolean keepGoing = true;
     private final PrintWriter out;
     private Channel channel = new NopChannel();
+    private final List<User> users = new ArrayList<User>();
 
     public ProcessorThread(Socket socket, Data data) throws IOException {
         this.out = new PrintWriter(socket.getOutputStream());
@@ -116,9 +120,21 @@ public class ProcessorThread implements Runnable {
     private abstract class State {
 
         public State processResponse(Response response) {
-            System.out.println(response.toString());
-            System.out.flush();
-            return this;
+            switch (response.getResponse()) {
+            case CLIENT_LIST:
+                System.out.println(response.toString());
+                System.out.flush();
+
+                ResponseClientList r = (ResponseClientList)response;
+                updateUserList(r);
+
+                return this;
+
+            default:
+                System.out.println(response.toString());
+                System.out.flush();
+                return this;
+            }
         }
 
         public State processCommand(Command cmd) {
@@ -133,6 +149,21 @@ public class ProcessorThread implements Runnable {
             }
 
             return this;
+        }
+
+        private void updateUserList(ResponseClientList r) {
+            users.clear();
+            for (String line : r.getClientList().split("\\n")) {
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                try {
+                    users.add(User.fromString(line));
+                } catch (IllegalArgumentException e) {
+                    Log.w("Received invalid user string: %s", line);
+                }
+            }
         }
     }
 

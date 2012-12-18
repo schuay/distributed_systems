@@ -20,6 +20,10 @@ public class ResponseClientList extends Response {
         this.clientList = Multiline.decode(list);
     }
 
+    public String getClientList() {
+        return clientList;
+    }
+
     @Override
     public String toNetString() {
         return String.format("%s %s", super.toNetString(), Multiline.encode(clientList));
