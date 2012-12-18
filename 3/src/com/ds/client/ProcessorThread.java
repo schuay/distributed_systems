@@ -46,7 +46,7 @@ public class ProcessorThread implements Runnable {
     public ProcessorThread(Socket socket, Data data) throws IOException {
         this.out = new PrintWriter(socket.getOutputStream());
         this.data = data;
-        this.q = data.getQueue();
+        this.q = data.getProcessorQueue();
     }
 
     @Override

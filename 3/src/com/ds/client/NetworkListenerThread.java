@@ -24,7 +24,7 @@ public class NetworkListenerThread implements Runnable {
         try {
             String msg;
             while ((msg = in.readLine()) != null) {
-                data.getQueue().add(new Parcel(Type.PARCEL_NETWORK, msg));
+                data.getProcessorQueue().add(new Parcel(Type.PARCEL_NETWORK, msg));
             }
         } catch (Exception e) {
             Log.w("ResponseThread terminating");

@@ -97,7 +97,7 @@ public class Client {
 
                 /* Parse and send the command. */
 
-                data.getQueue().add(new Parcel(Type.PARCEL_TERMINAL, msg));
+                data.getProcessorQueue().add(new Parcel(Type.PARCEL_TERMINAL, msg));
 
                 if (msg.trim().equals("!end")) {
                     break;

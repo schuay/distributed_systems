@@ -11,12 +11,13 @@ class Data {
 
     private final PublicKey serverKey;
     private final String clientKeyDir;
-    private final BlockingQueue<Parcel> queue = new LinkedBlockingQueue<Parcel>();
+    private final BlockingQueue<Parcel> processorQueue;
     private final int port;
 
     public Data(ParsedArgs args) throws IOException {
         this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
         this.clientKeyDir = args.getClientKeyDir();
+        this.processorQueue = new LinkedBlockingQueue<Parcel>();
         this.port = args.getUdpPort();
     }
 
@@ -28,8 +29,8 @@ class Data {
         return clientKeyDir;
     }
 
-    public BlockingQueue<Parcel> getQueue() {
-        return queue;
+    public BlockingQueue<Parcel> getProcessorQueue() {
+        return processorQueue;
     }
 
     public int getPort() {
