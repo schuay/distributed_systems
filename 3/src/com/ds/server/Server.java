@@ -214,6 +214,7 @@ public class Server implements Runnable {
 
         private final UserList userList = new UserList();
         private final AuctionList auctionList;
+        private final GroupBidMonitor groupBidMonitor;
         private final PrivateKey serverKey;
         private final Map<String, PublicKey> clientPublicKeys;
         private final Map<String, SecretKey> clientSecretKeys;
@@ -222,7 +223,8 @@ public class Server implements Runnable {
             this.serverKey = readPrivateKey(serverKey);
             this.clientPublicKeys = Collections.unmodifiableMap(readClientPublicKeys(clientKeyDir));
             this.clientSecretKeys = Collections.unmodifiableMap(readClientSecretKeys(clientKeyDir));
-            auctionList = new AuctionList();
+            this.auctionList = new AuctionList();
+            this.groupBidMonitor = new GroupBidMonitor(auctionList);
         }
 
         private static PrivateKey readPrivateKey(String path) throws IOException {
@@ -316,6 +318,10 @@ public class Server implements Runnable {
 
         public AuctionList getAuctionList() {
             return auctionList;
+        }
+
+        public GroupBidMonitor getGroupBidMonitor() {
+            return groupBidMonitor;
         }
 
         public PrivateKey getServerKey() {
