@@ -83,7 +83,7 @@ public class Auction {
         }
     }
 
-    public boolean groupBid(User initBidder, int amount) {
+    public boolean createGroupBid(User initBidder, int amount) {
         String bidderName = initBidder.getName();
 
         Map<Integer, GroupBid> bMap = groupBids.get(bidderName);
