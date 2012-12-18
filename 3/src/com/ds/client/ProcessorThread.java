@@ -360,6 +360,13 @@ public class ProcessorThread implements Runnable {
                 send(cmd.toString());
                 channel = new NopChannel();
                 return new StateLoggedOut();
+            case BID:
+            case CREATE:
+            case GETCLIENTLIST:
+            case GROUPBID:
+            case SIGNEDBID:
+                send(cmd.toString());
+                return this;
             default:
                 return super.processCommand(cmd);
             }
