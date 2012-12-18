@@ -49,23 +49,27 @@ public class Auction {
         public void confirm(GroupBidListener listener) {
             listeners.add(listener);
             numBidders++;
+            if (confirmed()) {
+                notifyListenersConfirmed();
+            }
         }
 
         public void reject() {
-            rejected  = true;
+            rejected = true;
+            notifyListenersRejected();
         }
 
         public boolean confirmed() {
             return (!rejected && numBidders >= GROUP_SIZE);
         }
 
-        public void notifyListenersConfirmed() {
+        private void notifyListenersConfirmed() {
             for (GroupBidListener listener : listeners) {
                 listener.onConfirmed();
             }
         }
 
-        public void notifyListenersRejected() {
+        private void notifyListenersRejected() {
             for (GroupBidListener listener : listeners) {
                 listener.onRejected();
             }
@@ -120,7 +124,6 @@ public class Auction {
         groupBid.confirm(listener);
 
         if (groupBid.confirmed()) {
-            groupBid.notifyListenersConfirmed();
             bid(initBidder, amount);
 
             bMap.remove(amount);
@@ -146,7 +149,6 @@ public class Auction {
         }
 
         groupBid.reject();
-        groupBid.notifyListenersRejected();
 
         bMap.remove(amount);
         if (bMap.isEmpty()) {
