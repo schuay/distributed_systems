@@ -29,6 +29,7 @@ import com.ds.channels.Sha256OutChannel;
 import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
+import com.ds.commands.CommandConfirm;
 import com.ds.commands.CommandCreate;
 import com.ds.commands.CommandGroupBid;
 import com.ds.commands.CommandLogin;
@@ -152,6 +153,10 @@ public class ServerThread implements Runnable {
         return serverData.getAuctionList();
     }
 
+    private GroupBidMonitor getGroupBidMonitor() {
+        return serverData.getGroupBidMonitor();
+    }
+
     private PublicKey getClientPublicKey(String client) {
         return serverData.getClientPublicKey(client);
     }
@@ -168,7 +173,7 @@ public class ServerThread implements Runnable {
         this.state = state;
     }
 
-    private void sendResponse(Response response) {
+    private synchronized void sendResponse(Response response) {
         try {
             byte[] bytes = channel.encode(response.toNetString().getBytes());
             String str = new String(bytes, Channel.CHARSET);
@@ -407,6 +412,24 @@ public class ServerThread implements Runnable {
 
                 auctionList = serverThread.getAuctionList();
                 auctionList.createGroupBid(c.getAuctionId(), user, c.getAmount());
+                break;
+            case CONFIRM:
+                CommandConfirm commandConfirm = (CommandConfirm)command;
+
+                serverThread.getGroupBidMonitor().requestConfirmation(
+                        commandConfirm,
+                        new GroupBidListener() {
+
+                            @Override
+                            public void onRejected() {
+                                serverThread.sendResponse(new Response(Rsp.REJECTED));
+                            }
+
+                            @Override
+                            public void onConfirmed() {
+                                serverThread.sendResponse(new Response(Rsp.CONFIRMED));
+                            }
+                        });
                 break;
             case END:
                 logout();
