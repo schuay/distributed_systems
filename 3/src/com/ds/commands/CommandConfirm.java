@@ -34,7 +34,7 @@ public class CommandConfirm extends Command {
     protected CommandConfirm(String cmdStr, StringTokenizer st) {
         super(cmdStr, Cmd.CONFIRM);
 
-        if (st.countTokens() < 3) {
+        if (st.countTokens() != 3) {
             throw new IllegalArgumentException();
         }
 
