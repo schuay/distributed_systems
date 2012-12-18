@@ -35,13 +35,13 @@ public class Auction {
 
         private final List<GroupBidListener> listeners =
                 new ArrayList<GroupBidListener>(GROUP_SIZE);
-        private final String initBidder;
+        private final User bidder;
         private final int amount;
         private int numBidders;
         private boolean rejected = false;
 
-        public GroupBid(String initBidder, int amount) {
-            this.initBidder = initBidder;
+        public GroupBid(User bidder, int amount) {
+            this.bidder = bidder;
             this.amount = amount;
             this.numBidders = 1;
         }
@@ -61,6 +61,10 @@ public class Auction {
 
         public boolean confirmed() {
             return (!rejected && numBidders >= GROUP_SIZE);
+        }
+
+        public User getBidder() {
+            return bidder;
         }
 
         private void notifyListenersConfirmed() {
@@ -83,12 +87,12 @@ public class Auction {
 
             GroupBid groupBid = (GroupBid) o;
 
-            return groupBid.initBidder == initBidder && groupBid.amount == amount;
+            return groupBid.bidder == bidder && groupBid.amount == amount;
         }
     }
 
-    public boolean createGroupBid(User initBidder, int amount) {
-        String bidderName = initBidder.getName();
+    public boolean createGroupBid(User bidder, int amount) {
+        String bidderName = bidder.getName();
 
         Map<Integer, GroupBid> bMap = groupBids.get(bidderName);
         if (bMap == null) {
@@ -96,7 +100,7 @@ public class Auction {
             groupBids.put(bidderName, bMap);
         }
 
-        GroupBid groupBid = new GroupBid(bidderName, amount);
+        GroupBid groupBid = new GroupBid(bidder, amount);
 
         if (bMap.containsValue(groupBid)) {
             return false;
@@ -107,10 +111,9 @@ public class Auction {
         return true;
     }
 
-    public boolean confirmGroupBid(User initBidder, int amount, GroupBidListener listener) {
-        String bidderName = initBidder.getName();
+    public boolean confirmGroupBid(String bidder, int amount, GroupBidListener listener) {
 
-        Map<Integer, GroupBid> bMap = groupBids.get(bidderName);
+        Map<Integer, GroupBid> bMap = groupBids.get(bidder);
         if (bMap == null) {
             return false;
         }
@@ -124,21 +127,19 @@ public class Auction {
         groupBid.confirm(listener);
 
         if (groupBid.confirmed()) {
-            bid(initBidder, amount);
+            bid(groupBid.getBidder(), amount);
 
             bMap.remove(amount);
             if (bMap.isEmpty()) {
-                groupBids.remove(bidderName);
+                groupBids.remove(bidder);
             }
         }
 
         return true;
     }
 
-    public boolean rejectGroupBid(User initBidder, int amount) {
-        String bidderName = initBidder.getName();
-
-        Map<Integer, GroupBid> bMap = groupBids.get(bidderName);
+    public boolean rejectGroupBid(String bidder, int amount) {
+        Map<Integer, GroupBid> bMap = groupBids.get(bidder);
         if (bMap == null) {
             return false;
         }
@@ -152,7 +153,7 @@ public class Auction {
 
         bMap.remove(amount);
         if (bMap.isEmpty()) {
-            groupBids.remove(bidderName);
+            groupBids.remove(bidder);
         }
 
         return true;

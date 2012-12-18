@@ -49,7 +49,7 @@ public class AuctionList implements EventListener {
         auctions.get(auctionId).createGroupBid(bidder, amount);
     }
 
-    public synchronized void confirmGroupBid(int auctionId, User bidder, int amount,
+    public synchronized void confirmGroupBid(int auctionId, String bidder, int amount,
             GroupBidListener listener) {
         if (!auctions.containsKey(auctionId)) {
             Log.e("No such auction");
@@ -58,7 +58,7 @@ public class AuctionList implements EventListener {
         auctions.get(auctionId).confirmGroupBid(bidder, amount, listener);
     }
 
-    public synchronized void rejectGroupBid(int auctionId, User bidder, int amount) {
+    public synchronized void rejectGroupBid(int auctionId, String bidder, int amount) {
         if (!auctions.containsKey(auctionId)) {
             Log.e("No such auction");
             return;
