@@ -132,6 +132,30 @@ public class Auction {
         return true;
     }
 
+    public boolean rejectGroupBid(User initBidder, int amount) {
+        String bidderName = initBidder.getName();
+
+        Map<Integer, GroupBid> bMap = groupBids.get(bidderName);
+        if (bMap == null) {
+            return false;
+        }
+
+        GroupBid groupBid = bMap.get(amount);
+        if (groupBid == null) {
+            return false;
+        }
+
+        groupBid.reject();
+        groupBid.notifyListenersRejected();
+
+        bMap.remove(amount);
+        if (bMap.isEmpty()) {
+            groupBids.remove(bidderName);
+        }
+
+        return true;
+    }
+
     public void bid(User bidder, int amount) {
         if (amount <= highestBid) {
             return;

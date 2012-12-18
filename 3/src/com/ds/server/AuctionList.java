@@ -58,6 +58,14 @@ public class AuctionList implements EventListener {
         auctions.get(auctionId).confirmGroupBid(bidder, amount, listener);
     }
 
+    public synchronized void rejectGroupBid(int auctionId, User bidder, int amount) {
+        if (!auctions.containsKey(auctionId)) {
+            Log.e("No such auction");
+            return;
+        }
+        auctions.get(auctionId).rejectGroupBid(bidder, amount);
+    }
+
     private synchronized void expire(int auctionId) {
         notifyListeners(new AuctionEvent(AuctionEvent.AUCTION_ENDED, auctionId));
         auctions.get(auctionId).end();
