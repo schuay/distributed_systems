@@ -4,7 +4,6 @@ package com.ds.server;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ public class Auction {
     private User highestBidder = User.NONE;
     private final List<EventListener> listeners = new ArrayList<EventListener>();
     private final Map<String, Map<Integer, GroupBid> > groupBids =
-        new HashMap<String, Map<Integer, GroupBid> >();
+            new HashMap<String, Map<Integer, GroupBid> >();
 
     public Auction(int id, String description, User owner, Date end) {
         this.id = id;
@@ -35,7 +34,7 @@ public class Auction {
         private static final int GROUP_SIZE = 3;
 
         private final List<GroupBidListener> listeners =
-            new ArrayList<GroupBidListener>(GROUP_SIZE);
+                new ArrayList<GroupBidListener>(GROUP_SIZE);
         private final String initBidder;
         private final int amount;
         private int numBidders;
