@@ -30,6 +30,7 @@ import com.ds.commands.Command;
 import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandCreate;
+import com.ds.commands.CommandGroupBid;
 import com.ds.commands.CommandLogin;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
@@ -199,7 +200,8 @@ public class ServerThread implements Runnable {
         case LOGOUT:
             return new Command(cmd, Command.Cmd.LOGOUT);
         case BID:
-            return new CommandBid(cmd, Integer.parseInt(args.get(0)), (int)Double.parseDouble(args.get(1)));
+            return new CommandBid(cmd, Integer.parseInt(args.get(0)),
+                    (int)Double.parseDouble(args.get(1)));
         case CREATE:
             return new CommandCreate(cmd, Integer.parseInt(args.get(0)), args.get(1));
         case END:
@@ -208,6 +210,9 @@ public class ServerThread implements Runnable {
             return new CommandChallenge(SecurityUtils.fromBase64(args.get(0).getBytes()));
         case GETCLIENTLIST:
             return new Command(cmd, Command.Cmd.GETCLIENTLIST);
+        case GROUPBID:
+            return new CommandGroupBid(cmd, Integer.parseInt(args.get(0)),
+                    (int)Double.parseDouble(args.get(1)));
         default:
             throw new IllegalArgumentException("Could not parse command");
         }

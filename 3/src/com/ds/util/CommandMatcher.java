@@ -18,6 +18,7 @@ public class CommandMatcher {
         END,
         EXIT,
         GETCLIENTLIST,
+        GROUPBID,
         LIST,
         LOGIN,
         LOGOUT
