@@ -23,6 +23,7 @@ import com.ds.channels.NopChannel;
 import com.ds.channels.RsaChannel;
 import com.ds.channels.Sha256InChannel;
 import com.ds.commands.Command;
+import com.ds.commands.Command.Cmd;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
 import com.ds.commands.CommandPassphrase;
@@ -306,6 +307,11 @@ public class ProcessorThread implements Runnable {
                     channel = aesc;
 
                     send(c.toString());
+
+                    /* Request the current user list. */
+
+                    send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
+
                     return new StateLoggedIn();
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
