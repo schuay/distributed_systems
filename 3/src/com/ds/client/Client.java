@@ -4,6 +4,7 @@ package com.ds.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.ds.client.Parcel.Type;
@@ -15,6 +16,7 @@ public class Client {
 
     private static Thread networkListenerThread;
     private static Thread processorThread;
+    private static Thread timeProviderThread;
 
     public static void main(String[] args) throws IOException {
 
@@ -38,9 +40,11 @@ public class Client {
          * Finally, clean up after ourself once the main loop has terminated or an error occurs.
          */
 
+        ServerSocket serverSocket = null;
         Socket socket = null;
         Data data = null;
         try {
+            serverSocket = new ServerSocket(parsedArgs.getUdpPort());
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
             data  = new Data(parsedArgs);
 
@@ -48,21 +52,30 @@ public class Client {
 
             networkListenerThread = new Thread(new NetworkListenerThread(socket, data));
             processorThread = new Thread(new ProcessorThread(socket, data));
+            timeProviderThread = new Thread(new TimeProviderThread(serverSocket));
 
             networkListenerThread.start();
             processorThread.start();
+            timeProviderThread.start();
 
             inputLoop(data);
 
             socket.close();
             socket = null;
 
+            serverSocket.close();
+            serverSocket = null;
+
             networkListenerThread.join();
             processorThread.join();
+            timeProviderThread.join();
 
         } catch (Exception e) {
             Log.e(e.getMessage());
         } finally {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
             if (socket != null) {
                 socket.close();
             }
