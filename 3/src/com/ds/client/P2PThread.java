@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,17 +68,50 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private InputPipe service_pipe;
 
     private final List<String> peers = new ArrayList<String>();
+    private final BlockingQueue<TimeRequest> q;
+
+    /**
+     * Encapsulates the user, timestamp, and signature.
+     */
+    private static class TimeReply {
+
+    }
 
     @Override
     public void run() {
+        Thread advertisementThread = null;
         try {
             start();
-            fetch_advertisements();
+
+            advertisementThread = createAdvertisementThread();
+            advertisementThread.start();
+
+            while (true) {
+                TimeRequest request = q.take();
+                processTimeRequest(request);
+            }
+
         } catch (IOException e) {
             Log.e(e.getMessage());
         } catch (PeerGroupException e) {
             Log.e(e.getMessage());
+        } catch (InterruptedException e) {
+            Log.e(e.getMessage());
         } finally {
+            if (advertisementThread != null) {
+                advertisementThread.interrupt();
+
+                boolean interrupted;
+                do {
+                    try {
+                        interrupted = false;
+                        advertisementThread.join();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                    }
+                } while (interrupted);
+            }
+
             unicast_pipe.close();
             service_pipe.close();
 
@@ -90,7 +124,48 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         }
     }
 
+    /**
+     * Processes a time request sent by the currently logged in local user.
+     * Chooses two random known peers and requests a signed timestamp.
+     * Once it has been received, the signed bids are forwarded to the
+     * processing thread.
+     *
+     * @param request
+     */
+    private void processTimeRequest(TimeRequest request) {
+        Log.i("Received local time request");
+
+        String msg = String.format("!getTimestamp %d %d",
+                request.getCommand().getAuctionId(),
+                request.getCommand().getAmount());
+
+        TimeReply reply1 = retrieveTimeFrom(request.getUser1(), msg);
+        TimeReply reply2 = retrieveTimeFrom(request.getUser2(), msg);
+
+        /* TODO: From my current understanding, it looks like we will
+         * send two getTimestamp messages and return. The answers are
+         * received in the pipeMsgEvent method. */
+    }
+
+    private Thread createAdvertisementThread() {
+        return new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        discovery.getRemoteAdvertisements(null, DiscoveryService.ADV, "Name", "TimeProvider", 1, null);
+                        Thread.sleep(1000);
+                    }
+                } catch(InterruptedException e) {
+                    Log.w("Interrupted while fetching advertisements");
+                }
+            }
+        });
+    }
+
     public P2PThread(Data data) throws IOException {
+        this.q = data.getTimeRetrieverQueue();
+
         // Add a random number to make it easier to identify by name, will also make sure the ID is unique
         peer_name = "Peer " + new Random().nextInt(1000000);
 
@@ -296,20 +371,6 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         } catch (Exception e) {
             // You will notice that JXTA is not very specific with exceptions...
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * We will not find anyone if we are not regularly looking
-     */
-    private void fetch_advertisements() {
-        try {
-            while(true) {
-                discovery.getRemoteAdvertisements(null, DiscoveryService.ADV, "Name", "TimeProvider", 1, null);
-                Thread.sleep(1000);
-            }
-        } catch(InterruptedException e) {
-            Log.w("Interrupted while fetching advertisements");
         }
     }
 }
