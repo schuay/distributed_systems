@@ -421,6 +421,8 @@ public class ServerThread implements Runnable {
             case CONFIRM:
                 CommandConfirm commandConfirm = (CommandConfirm)command;
 
+                serverThread.getUserList().blockUser(user);
+
                 serverThread.getGroupBidMonitor().requestConfirmation(
                         commandConfirm,
                         new GroupBidListener() {

@@ -38,8 +38,8 @@ class GroupBidMonitor {
             return;
         }
         
-        /* If there is just one free user remaining... */
-        if ((users.numLoggedInUsers() - users.numBlockedUsers()) <= (GROUP_SIZE - 2)) {
+        /* If there is just one free user remaining (the current one is marked blocked too)... */
+        if ((users.numLoggedInUsers() - users.numBlockedUsers()) == 0) {
             /* ... only allow confirming bids we can finish. */
             if (auctions.getGroupBidNumBidders(auctionId, bidder, amount) < GROUP_SIZE - 1) {
                 listener.onRejected();
@@ -57,7 +57,5 @@ class GroupBidMonitor {
             listener.onRejected();
             return;
         }
-
-        users.blockUser(user);
     }
 }
