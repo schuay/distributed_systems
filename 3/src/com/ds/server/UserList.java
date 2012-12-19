@@ -3,7 +3,12 @@ package com.ds.server;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ds.event.Event;
@@ -18,6 +23,9 @@ public class UserList {
 
     private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String, User>();
     private final List<EventListener> listeners = new ArrayList<EventListener>();
+
+    private final Set<User> blockedUsers = new HashSet<User>();
+    private final Set<User> loggedInUsers = new HashSet<User>();
 
     /**
      * Logs in the specified user.
@@ -38,6 +46,7 @@ public class UserList {
 
         notifyListeners(new UserEvent(UserEvent.USER_LOGIN, user.getName()));
         user.login(address, port);
+        loggedInUsers.add(user);
         return user;
     }
 
@@ -54,6 +63,8 @@ public class UserList {
         notifyListeners(new UserEvent(UserEvent.USER_LOGOUT, user.getName()));
         notifyListeners(new UserEvent(UserEvent.USER_DISCONNECTED, user.getName()));
         user.logout();
+        loggedInUsers.remove(user);
+        unblockUser(user);
         return true;
     }
 
@@ -90,12 +101,51 @@ public class UserList {
         }
     }
 
+    public synchronized int numLoggedInUsers() {
+        return users.size();
+    }
+
+    public synchronized int numBlockedUsers() {
+        return blockedUsers.size();
+    }
+
+    public synchronized void blockUser(User user) {
+        blockedUsers.add(user);
+    }
+
+    public synchronized void unblockUser(User user) {
+        blockedUsers.remove(user);
+    }
+
     /**
      * Represents a system user.
      */
     public static class User {
 
         public static final User NONE = new User("none");
+
+        private final List<Long> acceptedConfirms = new LinkedList<Long>();
+
+        public int recomputeAcceptedConfirms(long current) {
+            Iterator<Long> i = acceptedConfirms.iterator();
+            while (i.hasNext()) {
+                if (i.next() >= (current - GroupBidMonitor.FAIRNESS_TIME)) {
+                    break;
+                }
+
+                i.remove();
+            }
+
+            return acceptedConfirms.size();
+        }
+
+        public void confirmAccepted(long current) {
+            acceptedConfirms.add(current);
+        }
+
+        public int getAcceptedConfirms() {
+            return acceptedConfirms.size();
+        }
 
         private final String name;
         public String getName() {

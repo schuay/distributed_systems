@@ -427,14 +427,17 @@ public class ServerThread implements Runnable {
 
                             @Override
                             public void onRejected() {
+                                serverThread.getUserList().unblockUser(user);
                                 serverThread.sendResponse(new Response(Rsp.REJECTED));
                             }
 
                             @Override
                             public void onConfirmed() {
+                                serverThread.getUserList().unblockUser(user);
+                                user.confirmAccepted(new Date().getTime());
                                 serverThread.sendResponse(new Response(Rsp.CONFIRMED));
                             }
-                        });
+                        }, user);
                 break;
             case END:
                 logout();

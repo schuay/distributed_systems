@@ -31,10 +31,8 @@ public class Auction {
     }
 
     private class GroupBid {
-        private static final int GROUP_SIZE = 3;
-
         private final List<GroupBidListener> listeners =
-                new ArrayList<GroupBidListener>(GROUP_SIZE);
+                new ArrayList<GroupBidListener>(GroupBidMonitor.GROUP_SIZE);
         private final User bidder;
         private final int amount;
         private int numBidders;
@@ -44,6 +42,10 @@ public class Auction {
             this.bidder = bidder;
             this.amount = amount;
             this.numBidders = 1;
+        }
+
+        public int getNumBidders() {
+            return numBidders;
         }
 
         public void confirm(GroupBidListener listener) {
@@ -60,7 +62,7 @@ public class Auction {
         }
 
         public boolean confirmed() {
-            return (!rejected && numBidders >= GROUP_SIZE);
+            return (!rejected && numBidders >= GroupBidMonitor.GROUP_SIZE);
         }
 
         public User getBidder() {
@@ -111,14 +113,28 @@ public class Auction {
         return true;
     }
 
-    public boolean confirmGroupBid(String bidder, int amount, GroupBidListener listener) {
+    public int getGroupBidNumBidders(String bidder, int amount) {
+        GroupBid groupBid = getGroupBid(bidder, amount);
 
-        Map<Integer, GroupBid> bMap = groupBids.get(bidder);
-        if (bMap == null) {
-            return false;
+        if (groupBid == null) {
+            return 0;
         }
 
-        GroupBid groupBid = bMap.get(amount);
+        return groupBid.getNumBidders();
+    }
+
+    private GroupBid getGroupBid(String bidder, int amount) {
+        Map<Integer, GroupBid> bMap = groupBids.get(bidder);
+        if (bMap == null) {
+            return null;
+        }
+
+        return bMap.get(amount);
+    }
+
+    public boolean confirmGroupBid(String bidder, int amount, GroupBidListener listener) {
+
+        GroupBid groupBid = getGroupBid(bidder, amount);
 
         if (groupBid == null) {
             return false;
@@ -128,6 +144,8 @@ public class Auction {
 
         if (groupBid.confirmed()) {
             bid(groupBid.getBidder(), amount);
+
+            Map<Integer, GroupBid> bMap = groupBids.get(bidder);
 
             bMap.remove(amount);
             if (bMap.isEmpty()) {

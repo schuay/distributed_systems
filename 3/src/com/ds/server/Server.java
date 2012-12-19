@@ -224,7 +224,7 @@ public class Server implements Runnable {
             this.clientPublicKeys = Collections.unmodifiableMap(readClientPublicKeys(clientKeyDir));
             this.clientSecretKeys = Collections.unmodifiableMap(readClientSecretKeys(clientKeyDir));
             this.auctionList = new AuctionList();
-            this.groupBidMonitor = new GroupBidMonitor(auctionList);
+            this.groupBidMonitor = new GroupBidMonitor(auctionList, userList);
         }
 
         private static PrivateKey readPrivateKey(String path) throws IOException {
