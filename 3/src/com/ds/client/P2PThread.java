@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,6 +65,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private final NetworkManager manager;
     private InputPipe unicast_pipe;
     private InputPipe service_pipe;
+
+    private final List<String> peers = new ArrayList<String>();
 
     @Override
     public void run() {
@@ -199,11 +203,35 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         // Found another peer! Let's say hello shall we!
         // Reformatting to create a real peer id string
         String found_peer_id = "urn:jxta:" + event.getSource().toString().substring(7);
-        send_to_peer("Hello", found_peer_id);
-
-        /* TODO: Add peer to list. */
+        addPeer(found_peer_id);
     }
 
+    /**
+     * Adds a peer to our internal peer list.
+     * @param peer
+     */
+    private void addPeer(String peer) {
+        synchronized(peers) {
+            if (!peers.contains(peer)) {
+                Log.i("Found new peer: %s", peer);
+                peers.add(peer);
+            }
+        }
+    }
+
+    /**
+     * Returns a random peer from our internal peer list,
+     * or null if none exist.
+     */
+    private String getPeer() {
+        synchronized (peers) {
+            if (peers.isEmpty()) {
+                return null;
+            }
+
+            return peers.get(new Random().nextInt(peers.size()));
+        }
+    }
 
     private void send_to_peer(String message, String found_peer_id) {
         // This is where having the same ID is important or else we wont be
@@ -261,11 +289,11 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             byte[] fromBytes = msg.getMessageElement("From").getBytes(true);
             String from = new String(fromBytes);
             String message = new String(msgBytes);
-            System.out.println(message + " says " + from);
+
+            Log.i("Received message '%s' from %s", message, from);
 
             /* TODO: Validate, process, and reply to request. */
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // You will notice that JXTA is not very specific with exceptions...
             e.printStackTrace();
         }
