@@ -4,7 +4,6 @@ package com.ds.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.ds.client.Parcel.Type;
@@ -16,8 +15,7 @@ public class Client {
 
     private static Thread networkListenerThread;
     private static Thread processorThread;
-    private static Thread timeProviderThread;
-    private static Thread timeRetrieverThread;
+    private static Thread p2pThread;
 
     public static void main(String[] args) throws IOException {
 
@@ -41,11 +39,9 @@ public class Client {
          * Finally, clean up after ourself once the main loop has terminated or an error occurs.
          */
 
-        ServerSocket serverSocket = null;
         Socket socket = null;
         Data data = null;
         try {
-            serverSocket = new ServerSocket(parsedArgs.getUdpPort());
             socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
 
             data  = new Data(parsedArgs);
@@ -55,13 +51,11 @@ public class Client {
 
             networkListenerThread = new Thread(new NetworkListenerThread(socket, data));
             processorThread = new Thread(new ProcessorThread(socket, data));
-            timeProviderThread = new Thread(new TimeProviderThread(serverSocket));
-            timeRetrieverThread = new Thread(new TimeRetrieverThread(data));
+            p2pThread = new Thread(new P2PThread(data));
 
             networkListenerThread.start();
             processorThread.start();
-            timeProviderThread.start();
-            timeRetrieverThread.start();
+            p2pThread.start();
 
             inputLoop(data);
 
@@ -74,12 +68,8 @@ public class Client {
             /* Trigger thread termination by either interrupting it (if possible)
              * or shutting down its sockets. */
 
-            if (timeRetrieverThread != null) {
-                timeRetrieverThread.interrupt();
-            }
-
-            if (serverSocket != null) {
-                serverSocket.close();
+            if (p2pThread != null) {
+                p2pThread.interrupt();
             }
 
             if (data != null) {
@@ -95,13 +85,15 @@ public class Client {
                 interrupted = false;
                 if (networkListenerThread != null) { networkListenerThread.join(); networkListenerThread = null; }
                 if (processorThread != null) { processorThread.join(); processorThread = null; }
-                if (timeProviderThread != null) { timeProviderThread.join(); timeProviderThread = null; }
-                if (timeRetrieverThread != null) { timeRetrieverThread.join(); timeRetrieverThread = null; }
+                /* The JXSE thread is unable to shut itself down correctly. */
             } catch (InterruptedException e) {
                 interrupted = true;
             }
         } while (interrupted);
 
+        /* JXSE 2.6 does not manage to shut itself down correctly
+         * (see http://www.java.net/node/706775). */
+        System.exit(0);
     }
 
     private static void inputLoop(Data data) throws IOException {
