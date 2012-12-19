@@ -139,12 +139,22 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
                 request.getCommand().getAuctionId(),
                 request.getCommand().getAmount());
 
-        TimeReply reply1 = retrieveTimeFrom(request.getUser1(), msg);
-        TimeReply reply2 = retrieveTimeFrom(request.getUser2(), msg);
+        /* Get two random peers or exit if less than 2 exist. */
 
-        /* TODO: From my current understanding, it looks like we will
-         * send two getTimestamp messages and return. The answers are
-         * received in the pipeMsgEvent method. */
+        String p1, p2;
+        synchronized (peers) {
+            if (peers.size() < 2) {
+                Log.w("Less than two known peers, cannot retrieve signed timestamp");
+                return;
+            }
+
+            int i = new Random().nextInt(peers.size());
+            p1 = peers.get(i);
+            p2 = peers.get((i + 1) % peers.size());
+        }
+
+        send_to_peer(msg, p1);
+        send_to_peer(msg, p2);
     }
 
     private Thread createAdvertisementThread() {
@@ -291,20 +301,6 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
                 Log.i("Found new peer: %s", peer);
                 peers.add(peer);
             }
-        }
-    }
-
-    /**
-     * Returns a random peer from our internal peer list,
-     * or null if none exist.
-     */
-    private String getPeer() {
-        synchronized (peers) {
-            if (peers.isEmpty()) {
-                return null;
-            }
-
-            return peers.get(new Random().nextInt(peers.size()));
         }
     }
 
