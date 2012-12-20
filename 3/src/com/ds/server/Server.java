@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -38,87 +39,102 @@ public class Server implements Runnable {
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
     private static List<Socket> sockets = new ArrayList<Socket>();
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private static ExecutorService executorService = null;
     private static Data serverData = null;
 
     public static void main(String[] args) throws IOException {
 
-        /* Handle command-line arguments. */
-
-        ParsedArgs parsedArgs = null;
         try {
-            parsedArgs = new ParsedArgs(args);
-            Log.i("TCP Port: %d", parsedArgs.getTcpPort());
-            Log.i("Analytics Binding Name: %s", parsedArgs.getAnalyticsBindingName());
-            Log.i("Billing Binding Name: %s", parsedArgs.getBillingBindingName());
-            Log.i("Server Key: %s", parsedArgs.getServerKey());
-            Log.i("Client Key Directory: %s", parsedArgs.getClientKeyDir());
-        } catch (IllegalArgumentException e) {
-            System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name> <Server Key> <Client Key Directory>%n",
-                    Server.class.getName());
-            shutdown();
-            return;
-        }
+            /* Handle command-line arguments. */
 
-        try {
-            serverData = new Data(parsedArgs.getServerKey(), parsedArgs.getClientKeyDir());
-
-            /* Connect event listeners. */
-
-            Initialization.setSystemProperties();
-
-            EventLogger eventLogger = new EventLogger();
-            serverData.getAuctionList().addOnEventListener(eventLogger);
-            serverData.getUserList().addOnEventListener(eventLogger);
-        } catch (Throwable t) {
-            Log.e(t.getMessage());
-            shutdown();
-            return;
-        }
-
-        /* Open the server socket. */
-
-        try {
-            serverSocket = new ServerSocket(parsedArgs.getTcpPort());
-        } catch (IOException e) {
-            Log.e(e.getMessage());
-            shutdown();
-            return;
-        }
-
-        /* Begin listening for the user to trigger shutdown (by entering '!exit'). */
-
-        Thread thread = new Thread(new Server());
-        thread.start();
-
-        System.out.printf("Auction server started%n" +
-                "%s: initiate shutdown%n" +
-                "%s: close all sockets%n" +
-                "%s: start listening on the server socket%n",
-                CMD_EXIT, CMD_STOP, CMD_START);
-
-        /*
-         * Initialization is done. We will now accept new connections until
-         * server shutdown is triggered.
-         */
-
-        int id = 0;
-        while (listening) {
+            ParsedArgs parsedArgs = null;
             try {
-                Socket socket = serverSocket.accept();
-                sockets.add(socket);
-                executorService.submit(new ServerThread(id++, socket, serverData));
-            } catch (Throwable e) {
-                Log.e(e.getMessage());
+                parsedArgs = new ParsedArgs(args);
+                Log.i("TCP Port: %d", parsedArgs.getTcpPort());
+                Log.i("Analytics Binding Name: %s", parsedArgs.getAnalyticsBindingName());
+                Log.i("Billing Binding Name: %s", parsedArgs.getBillingBindingName());
+                Log.i("Server Key: %s", parsedArgs.getServerKey());
+                Log.i("Client Key Directory: %s", parsedArgs.getClientKeyDir());
+            } catch (IllegalArgumentException e) {
+                System.err.printf("Usage: java %s <TCP Port> <Analytics Binding Name> <Billing Binding Name> <Server Key> <Client Key Directory>%n",
+                        Server.class.getName());
+                shutdown();
+                return;
+            }
+
+            try {
+                serverData = new Data(parsedArgs.getServerKey(), parsedArgs.getClientKeyDir());
+
+                /* Connect event listeners. */
+
+                Initialization.setSystemProperties();
+
+                EventLogger eventLogger = new EventLogger();
+                serverData.getAuctionList().addOnEventListener(eventLogger);
+                serverData.getUserList().addOnEventListener(eventLogger);
+            } catch (Throwable t) {
+                Log.e(t.getMessage());
+                shutdown();
+                return;
+            }
+
+            /* Open the server socket. */
+
+            do {
+                try {
+                    serverSocket = new ServerSocket(parsedArgs.getTcpPort());
+                    executorService = Executors.newCachedThreadPool();
+                } catch (IOException e) {
+                    Log.e(e.getMessage());
+                    shutdown();
+                    return;
+                }
+
+                /* Begin listening for the user to trigger shutdown (by entering '!exit'). */
+
+                Thread thread = new Thread(new Server());
+                thread.start();
+
+                System.out.printf("Auction server started%n" +
+                        "%s: initiate shutdown%n" +
+                        "%s: close all sockets%n" +
+                        "%s: start listening on the server socket%n",
+                        CMD_EXIT, CMD_STOP, CMD_START);
+
+                /*
+                 * Initialization is done. We will now accept new connections until
+                 * server shutdown is triggered.
+                 */
+
+                int id = 0;
+                while (listening) {
+                    try {
+                        Socket socket = serverSocket.accept();
+                        sockets.add(socket);
+                        executorService.submit(new ServerThread(id++, socket, serverData));
+                    } catch (SocketException e) {
+                        /* Closed server socket, probably by CMD_STOP. */
+                        Log.i(e.getMessage());
+                        break;
+                    } catch (Throwable t) {
+                        Log.e(t.getMessage());
+                    }
+                }
+
+                shutdown();
+            } while (listening);
+        } finally {
+            /* Cancel timers to stop the timer thread. */
+
+            if (serverData != null) {
+                serverData.getAuctionList().cancelTimers();
             }
         }
-
-        shutdown();
     }
 
     /*
      * Shutdown gracefully. Stop accepting new client communications;
-     * Cancel timers to stop the timer thread; Close all open client
+     * Close all open client
      * sockets to terminate their tasks; and wait for all tasks to
      * complete.
      */
@@ -127,23 +143,22 @@ public class Server implements Runnable {
             serverSocket.close();
         }
 
-        executorService.shutdownNow();
-
         for (Socket socket : sockets) {
             if (socket.isClosed()) {
                 continue;
             }
             socket.close();
         }
+        sockets.clear();
 
-        if (serverData != null) {
-            serverData.getAuctionList().cancelTimers();
-        }
-
-        try {
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Log.e(e.getMessage());
+        if (executorService != null) {
+            try {
+                executorService.shutdownNow();
+                executorService.awaitTermination(5, TimeUnit.SECONDS);
+                executorService = null;
+            } catch (InterruptedException e) {
+                Log.e(e.getMessage());
+            }
         }
     }
 
@@ -166,7 +181,7 @@ public class Server implements Runnable {
                 if (CMD_START.equals(line)) {
                     /* TODO: Start server socket. */
                 } else if (CMD_STOP.equals(line)) {
-                    /* TODO: Shutdown server socket and all running server threads. */
+                    serverSocket.close();
                 }
             } catch (IOException e) {}
         } while (!CMD_EXIT.equals(line));
