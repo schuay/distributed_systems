@@ -32,6 +32,8 @@ import com.ds.util.ServerProperties;
 public class Server implements Runnable {
 
     private static final String CMD_EXIT = "!exit";
+    private static final String CMD_STOP = "!stop";
+    private static final String CMD_START = "!start";
 
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
@@ -89,8 +91,11 @@ public class Server implements Runnable {
         Thread thread = new Thread(new Server());
         thread.start();
 
-        System.out.println(String.format("Auction server started, enter '%s' to initiate shutdown.",
-                CMD_EXIT));
+        System.out.printf("Auction server started%n" +
+                "%s: initiate shutdown%n" +
+                "%s: close all sockets%n" +
+                "%s: start listening on the server socket%n",
+                CMD_EXIT, CMD_STOP, CMD_START);
 
         /*
          * Initialization is done. We will now accept new connections until
@@ -157,6 +162,12 @@ public class Server implements Runnable {
         do {
             try {
                 line = in.readLine();
+
+                if (CMD_START.equals(line)) {
+                    /* TODO: Start server socket. */
+                } else if (CMD_STOP.equals(line)) {
+                    /* TODO: Shutdown server socket and all running server threads. */
+                }
             } catch (IOException e) {}
         } while (!CMD_EXIT.equals(line));
 
