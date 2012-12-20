@@ -27,25 +27,29 @@ public class NetworkListenerThread implements Runnable {
 
     @Override
     public void run() {
-        BufferedReader in;
-        try {
-            in = establishConnection();
-        } catch (InterruptedException e) {
-            Log.i("NetworkListenerThread interrupted");
-            return;
+        while (!data.isDone()) {
+            BufferedReader in;
+            try {
+                in = establishConnection();
+            } catch (InterruptedException e) {
+                Log.i("NetworkListenerThread interrupted");
+                return;
+            }
+
+            try {
+                String msg;
+                while ((msg = in.readLine()) != null) {
+                    q.add(new StringParcel(Type.PARCEL_NETWORK, msg));
+                }
+            } catch (Throwable t) {
+                Log.e(t.getMessage());
+            } finally {
+                if (in != null) { try { in.close(); in = null; } catch (IOException e) { } }
+                q.add(new Parcel(Type.PARCEL_CONNECTION_LOST));
+            }
         }
 
-        try {
-            String msg;
-            while ((msg = in.readLine()) != null) {
-                q.add(new StringParcel(Type.PARCEL_NETWORK, msg));
-            }
-        } catch (Throwable t) {
-            Log.e(t.getMessage());
-        } finally {
-            q.add(new Parcel(Type.PARCEL_CONNECTION_LOST));
-            Log.i("NetworkListenerThread terminating");
-        }
+        Log.i("NetworkListenerThread terminating");
     }
 
     /**
