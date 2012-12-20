@@ -33,7 +33,7 @@ public class TerminalListenerThread implements Runnable {
 
                 /* Parse and send the command. */
 
-                data.getProcessorQueue().add(new Parcel(Type.PARCEL_TERMINAL, msg));
+                data.getProcessorQueue().add(new StringParcel(Type.PARCEL_TERMINAL, msg));
 
                 if (msg.trim().equals("!end")) {
                     break;

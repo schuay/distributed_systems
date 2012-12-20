@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,12 +38,12 @@ public class ProcessorThread implements Runnable {
     private final Data data;
     private final BlockingQueue<Parcel> q; /* For convenience. */
     private boolean keepGoing = true;
-    private final PrintWriter out;
+    private PrintWriter out;
     private Channel channel = new NopChannel();
     private final List<User> users = new ArrayList<User>();
 
-    public ProcessorThread(Socket socket, Data data) throws IOException {
-        this.out = new PrintWriter(socket.getOutputStream());
+    public ProcessorThread(Data data) throws IOException {
+        //this.out = new PrintWriter(socket.getOutputStream());
         this.data = data;
         this.q = data.getProcessorQueue();
     }
@@ -66,30 +65,32 @@ public class ProcessorThread implements Runnable {
 
                 switch (parcel.getType()) {
                 case PARCEL_TERMINAL:
+                    StringParcel stringParcel = (StringParcel)parcel;
                     Command cmd = null;
                     try {
-                        cmd = Command.parse(parcel.getMessage());
+                        cmd = Command.parse(stringParcel.getMessage());
                     } catch (IllegalArgumentException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
+                        Log.e("Invalid command: %s", stringParcel.getMessage());
                         continue;
                     }
 
                     state = state.processCommand(cmd);
                     break;
                 case PARCEL_NETWORK:
+                    stringParcel = (StringParcel)parcel;
                     Response rsp = null;
                     try {
-                        byte[] bytes = parcel.getMessage().getBytes(Channel.CHARSET);
+                        byte[] bytes = stringParcel.getMessage().getBytes(Channel.CHARSET);
                         String in = new String(channel.decode(bytes), Channel.CHARSET);
                         rsp = Response.parse(in);
                     } catch (IllegalArgumentException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
+                        Log.e("Invalid command: %s", stringParcel.getMessage());
                         continue;
                     } catch (UnsupportedEncodingException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
+                        Log.e("Invalid command: %s", stringParcel.getMessage());
                         continue;
                     } catch (IOException e) {
-                        Log.e("Invalid command: %s", parcel.getMessage());
+                        Log.e("Invalid command: %s", stringParcel.getMessage());
                         continue;
                     }
                     state = state.processResponse(rsp);

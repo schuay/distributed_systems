@@ -35,18 +35,12 @@ public class Client {
          * Finally, clean up after ourself once the main loop has terminated or an error occurs.
          */
 
-        Socket socket = null;
         Data data = null;
         try {
-            socket = new Socket(parsedArgs.getHost(), parsedArgs.getTcpPort());
-
             data  = new Data(parsedArgs);
-            data.addSocket(socket);
 
-            Log.i("Connection successful.");
-
-            networkListenerThread = new Thread(new NetworkListenerThread(socket, data));
-            processorThread = new Thread(new ProcessorThread(socket, data));
+            networkListenerThread = new Thread(new NetworkListenerThread(parsedArgs, data));
+            processorThread = new Thread(new ProcessorThread(data));
             p2pThread = new Thread(new P2PThread(data));
             terminalListenerThread = new Thread(new TerminalListenerThread(data));
 
@@ -68,6 +62,10 @@ public class Client {
 
             if (p2pThread != null) {
                 p2pThread.interrupt();
+            }
+
+            if (networkListenerThread != null) {
+                networkListenerThread.interrupt();
             }
 
             if (data != null) {
