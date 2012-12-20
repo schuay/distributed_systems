@@ -1,21 +1,17 @@
 
 package com.ds.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 
-import com.ds.client.Parcel.Type;
 import com.ds.loggers.Log;
 
 public class Client {
 
-    private static final String INDENT = "> ";
-
     private static Thread networkListenerThread;
     private static Thread processorThread;
     private static Thread p2pThread;
+    private static Thread terminalListenerThread;
 
     public static void main(String[] args) throws IOException {
 
@@ -52,12 +48,14 @@ public class Client {
             networkListenerThread = new Thread(new NetworkListenerThread(socket, data));
             processorThread = new Thread(new ProcessorThread(socket, data));
             p2pThread = new Thread(new P2PThread(data));
+            terminalListenerThread = new Thread(new TerminalListenerThread(data));
 
             networkListenerThread.start();
             processorThread.start();
             p2pThread.start();
+            terminalListenerThread.start();
 
-            inputLoop(data);
+            terminalListenerThread.join();
 
             /* Main execution ends here. */
 
@@ -85,6 +83,7 @@ public class Client {
                 interrupted = false;
                 if (networkListenerThread != null) { networkListenerThread.join(); networkListenerThread = null; }
                 if (processorThread != null) { processorThread.join(); processorThread = null; }
+                if (terminalListenerThread != null) { terminalListenerThread.join(); terminalListenerThread = null; }
                 /* The JXSE thread is unable to shut itself down correctly. */
             } catch (InterruptedException e) {
                 interrupted = true;
@@ -94,35 +93,5 @@ public class Client {
         /* JXSE 2.6 does not manage to shut itself down correctly
          * (see http://www.java.net/node/706775). */
         System.exit(0);
-    }
-
-    private static void inputLoop(Data data) throws IOException {
-        BufferedReader stdin = null;
-
-        try {
-            stdin = new BufferedReader(new InputStreamReader(System.in));
-
-            /* Initial indentation. */
-
-            System.out.print(INDENT);
-
-            String msg;
-            while ((msg = stdin.readLine()) != null) {
-
-                /* Parse and send the command. */
-
-                data.getProcessorQueue().add(new Parcel(Type.PARCEL_TERMINAL, msg));
-
-                if (msg.trim().equals("!end")) {
-                    break;
-                }
-
-                System.out.print(INDENT);
-            }
-        } finally {
-            if (stdin != null) {
-                stdin.close();
-            }
-        }
     }
 }
