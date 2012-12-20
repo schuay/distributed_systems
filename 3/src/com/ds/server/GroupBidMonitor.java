@@ -3,6 +3,7 @@ package com.ds.server;
 import com.ds.commands.CommandConfirm;
 import com.ds.server.UserList.User;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +15,8 @@ import java.util.Set;
 class GroupBidMonitor {
     /* Currently only 3 is supported. */
     public static final int GROUP_SIZE = 3;
-    public static final long FAIRNESS_TIME = 300000;
+    //public static final long FAIRNESS_TIME = 300000;
+    public static final long FAIRNESS_TIME = 999999999;
 
     private final AuctionList auctions;
     private final UserList users;
@@ -42,12 +44,15 @@ class GroupBidMonitor {
         if ((users.numLoggedInUsers() - users.numBlockedUsers()) == 0) {
             /* ... only allow confirming bids we can finish. */
             if (auctions.getGroupBidNumBidders(auctionId, bidder, amount) < GROUP_SIZE - 1) {
-                listener.onRejected();
-                return;
+                long current = new Date().getTime();
+                int maxConfirms = users.getMaxAcceptedConfirms(current);
+                if (user.getAcceptedConfirms(current) == maxConfirms ||
+                    !auctions.rejectGroupBidForConfirm(auctionId, bidder, amount, current, maxConfirms)) {
+                    listener.onRejected();
+                    return;
+                }
             }
         }
-
-        /* TODO: Ensure fairness somehow. */
 
         if (!auctions.confirmGroupBid(
                 command.getAuctionId(),

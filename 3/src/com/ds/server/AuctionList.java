@@ -3,7 +3,9 @@ package com.ds.server;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +15,7 @@ import com.ds.event.Event;
 import com.ds.loggers.EventListener;
 import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
+import com.ds.server.Auction.GroupBid;
 
 public class AuctionList implements EventListener {
 
@@ -20,6 +23,7 @@ public class AuctionList implements EventListener {
     private final Timer timer = new Timer();
     private int id = 0;
     private final List<EventListener> listeners = new ArrayList<EventListener>();
+    private final Set<GroupBid> blockingGroupBids = new LinkedHashSet<GroupBid>();
 
     public synchronized int add(String description, User owner, Date end) {
         int auctionId = id++;
@@ -47,7 +51,39 @@ public class AuctionList implements EventListener {
             return 0;
         }
 
-        return auctions.get(auctionId).getGroupBidNumBidders(bidder, amount);
+        GroupBid groupBid = auctions.get(auctionId).getGroupBid(bidder, amount);
+
+        if (groupBid == null) {
+            return 0;
+        }
+
+        return groupBid.getNumBidders();
+    }
+
+    public synchronized boolean rejectGroupBidForConfirm(int auctionId, String bidder, int amount, long current,
+            int maxConfirms) {
+        if (!auctions.containsKey(auctionId)) {
+            Log.e("No such auction");
+            return false;
+        }
+
+        GroupBid groupBid = auctions.get(auctionId).getGroupBid(bidder, amount);
+
+        if (groupBid == null) {
+            return false;
+        }
+
+        for (GroupBid g : blockingGroupBids) {
+            if (g != groupBid && g.getBidder().getAcceptedConfirms(current) == maxConfirms) {
+                g.reject();
+
+                blockingGroupBids.remove(g);
+                g.getAuction().removeGroupBid(g.getBidder().getName(), g.getAmount());
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public synchronized void createGroupBid(int auctionId, User bidder, int amount) {
@@ -55,6 +91,7 @@ public class AuctionList implements EventListener {
             Log.e("No such auction");
             return;
         }
+
         auctions.get(auctionId).createGroupBid(bidder, amount);
     }
 
@@ -64,7 +101,28 @@ public class AuctionList implements EventListener {
             Log.e("No such auction");
             return false;
         }
-        return auctions.get(auctionId).confirmGroupBid(bidder, amount, listener);
+
+        Auction auction = auctions.get(auctionId);
+
+        GroupBid groupBid = auction.getGroupBid(bidder, amount);
+
+        if (groupBid == null) {
+            return false;
+        }
+
+        groupBid.confirm(listener);
+
+        if (groupBid.confirmed()) {
+            auction.bid(groupBid.getBidder(), amount);
+
+            blockingGroupBids.remove(groupBid);
+            auction.removeGroupBid(bidder, amount);
+        } else {
+            /* The user who just confirmed will be blocked for a while. */
+            blockingGroupBids.add(groupBid);
+        }
+
+        return true;
     }
 
     public synchronized void rejectGroupBid(int auctionId, String bidder, int amount) {
@@ -72,7 +130,17 @@ public class AuctionList implements EventListener {
             Log.e("No such auction");
             return;
         }
-        auctions.get(auctionId).rejectGroupBid(bidder, amount);
+        
+        Auction auction = auctions.get(auctionId);
+
+        GroupBid groupBid = auction.getGroupBid(bidder, amount);
+
+        if (groupBid != null) {
+            groupBid.reject();
+
+            blockingGroupBids.remove(groupBid);
+            auction.removeGroupBid(bidder, amount);
+        }
     }
 
     private synchronized void expire(int auctionId) {

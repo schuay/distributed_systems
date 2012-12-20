@@ -3,7 +3,6 @@ package com.ds.server;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,7 +101,7 @@ public class UserList {
     }
 
     public synchronized int numLoggedInUsers() {
-        return users.size();
+        return loggedInUsers.size();
     }
 
     public synchronized int numBlockedUsers() {
@@ -117,6 +116,19 @@ public class UserList {
         blockedUsers.remove(user);
     }
 
+    public synchronized int getMaxAcceptedConfirms(long current) {
+        int max = 0;
+
+        for (User u : users.values()) {
+            int maybeMax = u.getAcceptedConfirms(current);
+            if (maybeMax > max) {
+                max = maybeMax;
+            }
+        }
+
+        return max;
+    }
+
     /**
      * Represents a system user.
      */
@@ -126,7 +138,7 @@ public class UserList {
 
         private final List<Long> acceptedConfirms = new LinkedList<Long>();
 
-        public int recomputeAcceptedConfirms(long current) {
+        private int recomputeAcceptedConfirms(long current) {
             Iterator<Long> i = acceptedConfirms.iterator();
             while (i.hasNext()) {
                 if (i.next() >= (current - GroupBidMonitor.FAIRNESS_TIME)) {
@@ -139,11 +151,12 @@ public class UserList {
             return acceptedConfirms.size();
         }
 
-        public void confirmAccepted(long current) {
+        public synchronized void confirmAccepted(long current) {
             acceptedConfirms.add(current);
         }
 
-        public int getAcceptedConfirms() {
+        public synchronized int getAcceptedConfirms(long current) {
+            recomputeAcceptedConfirms(current);
             return acceptedConfirms.size();
         }
 
