@@ -113,7 +113,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         configurator.setPeerID(peer_id);
 
         // JXTA logs a lot, you can configure it setting level here
-        Logger.getLogger("net.jxta").setLevel(Level.WARNING);
+        Logger.getLogger("net.jxta").setLevel(Level.OFF);
     }
 
     public void start() throws PeerGroupException, IOException {
