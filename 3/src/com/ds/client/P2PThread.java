@@ -8,8 +8,10 @@ import java.net.URISyntaxException;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -73,7 +75,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private InputPipe service_pipe;
 
     private final List<String> peers = new ArrayList<String>();
-    private final List<String> activePeers = new ArrayList<String>();
+    private final Map<String, String> activePeers = new HashMap<String, String>();
     private final BlockingQueue<P2PTask> q;
 
     private String currentUser = null;
@@ -90,7 +92,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         List<CommandMatcher> l = new ArrayList<CommandMatcher>();
         l.add(new CommandMatcher(CommandMatcher.Type.GETTIMESTAMP, "^!getTimestamp ([0-9]+) ([0-9]+)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.TIMESTAMP, "^!timestamp ([0-9]+) ([0-9]+) ([0-9]+) ([a-zA-Z0-9/+]+=)$"));
-        l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login ([a-zA-Z0-9]+)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout$"));
         matchers = Collections.unmodifiableList(l);
     }
@@ -171,8 +173,10 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
                 }
 
                 int i = new Random().nextInt(activePeers.size());
-                p1 = activePeers.get(i);
-                p2 = activePeers.get((i + 1) % activePeers.size());
+                String[] ps = new String[activePeers.size()];
+                ps = activePeers.keySet().toArray(ps);
+                p1 = ps[i];
+                p2 = ps[(i + 1) % activePeers.size()];
             }
 
             send_to_peer(msg, p1);
@@ -186,7 +190,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             currentUser = t.getUser();
             currentKey = t.getKey();
 
-            broadcast("!login");
+            broadcast(String.format("!login %s", t.getUser()));
             break;
         }
         case LOG_OUT: {
@@ -240,7 +244,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             break;
         case LOGIN:
             synchronized(activePeers) {
-                activePeers.add(from);
+                activePeers.put(from, matches.get(0));
             }
             break;
         case LOGOUT:
@@ -277,7 +281,9 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             peers.removeAll(unreachable);
         }
         synchronized (activePeers) {
-            activePeers.removeAll(unreachable);
+            for (String peer : unreachable) {
+                activePeers.remove(peer);
+            }
         }
     }
 
