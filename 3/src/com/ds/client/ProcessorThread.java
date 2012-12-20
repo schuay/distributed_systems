@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +50,7 @@ public class ProcessorThread implements Runnable {
     @Override
     public void run() {
         try {
-            State state = new StateLoggedOut();
+            State state = new StateDisconnected();
 
             while (!data.isDone()) {
                 Parcel parcel = null;
@@ -63,15 +64,11 @@ public class ProcessorThread implements Runnable {
 
                 switch (parcel.getType()) {
                 case PARCEL_CONNECTION_ESTABLISHED:
-                    try {
-                        SocketParcel socketParcel = (SocketParcel)parcel;
-                        processParcelConnectionEstablished(socketParcel);
-                    } catch (IOException e) {
-                        Log.e(e.getMessage());
-                    }
+                    SocketParcel socketParcel = (SocketParcel)parcel;
+                    state = processParcelConnectionEstablished(socketParcel, state);
                     break;
                 case PARCEL_CONNECTION_LOST:
-                    processParcelConnectionLost();
+                    state = processParcelConnectionLost(state);
                     break;
                 case PARCEL_TERMINAL:
                     try {
@@ -101,21 +98,12 @@ public class ProcessorThread implements Runnable {
         }
     }
 
-    private void processParcelConnectionEstablished(SocketParcel socketParcel) throws IOException {
-        if (out != null) {
-            out.close();
-            out = null;
-        }
-        out = new PrintWriter(socketParcel.getSocket().getOutputStream());
-        Log.i("Connection established");
+    private State processParcelConnectionEstablished(SocketParcel socketParcel, State state) {
+        return state.processConnectionEstablished(socketParcel.getSocket());
     }
 
-    private void processParcelConnectionLost() {
-        if (out != null) {
-            out.close();
-            out = null;
-        }
-        Log.i("Connection lost");
+    private State processParcelConnectionLost(State state) {
+        return state.processConnectionLost();
     }
 
     private State processParcelTerminal(StringParcel stringParcel, State state) {
@@ -183,6 +171,35 @@ public class ProcessorThread implements Runnable {
             return this;
         }
 
+        public State processConnectionEstablished(Socket s) {
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+
+            try {
+                out = new PrintWriter(s.getOutputStream());
+                Log.i("Connection established");
+
+                return new StateLoggedOut();
+            } catch (IOException e) {
+                Log.e(e.getMessage());
+            }
+
+            return this;
+        }
+
+        public State processConnectionLost() {
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+
+            Log.i("Connection lost");
+
+            return new StateDisconnected();
+        }
+
         private void updateUserList(ResponseClientList r) {
             users.clear();
             for (String line : r.getClientList().split("\\n")) {
@@ -196,6 +213,58 @@ public class ProcessorThread implements Runnable {
                     Log.w("Received invalid user string: %s", line);
                 }
             }
+        }
+    }
+
+    /**
+     * In this state, the user is logged out, and no connection is established.
+     * The only possible transition is to StateLoggedOut.
+     */
+    private class StateDisconnected extends State {
+
+        @Override
+        public State processCommand(Command cmd) {
+            switch (cmd.getType()) {
+            case END:
+                data.setDone();
+                break;
+            default:
+                Log.w("Command invalid in current state");
+                break;
+            }
+
+            return this;
+        }
+    }
+
+    /**
+     * Similar to {@link StateDisconnected}, except that a specific user is logged in and
+     * may place offline bids which are verified by peers and forwarded to the server after the
+     * next successful login.
+     */
+    private class StateDisconnectedButLoggedIn extends State {
+
+        private final String user;
+
+        public StateDisconnectedButLoggedIn(String user) {
+            this.user = user;
+        }
+
+        @Override
+        public State processCommand(Command cmd) {
+            switch (cmd.getType()) {
+            case BID:
+                /* TODO */
+                break;
+            case END:
+                data.setDone();
+                break;
+            default:
+                Log.w("Command invalid in current state");
+                break;
+            }
+
+            return this;
         }
     }
 
@@ -343,7 +412,7 @@ public class ProcessorThread implements Runnable {
 
                     send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
 
-                    return new StateLoggedIn();
+                    return new StateLoggedIn(user);
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return new StateLoggedOut();
@@ -371,6 +440,11 @@ public class ProcessorThread implements Runnable {
 
         private boolean pendingRetry = false;
         private boolean blocked = false;
+        private final String user;
+
+        public StateLoggedIn(String user) {
+            this.user = user;
+        }
 
         @Override
         public State processCommand(Command cmd) {
@@ -435,6 +509,12 @@ public class ProcessorThread implements Runnable {
             default:
                 return super.processResponse(response);
             }
+        }
+
+        @Override
+        public State processConnectionLost() {
+            super.processConnectionLost();
+            return new StateDisconnectedButLoggedIn(user);
         }
     }
 }
