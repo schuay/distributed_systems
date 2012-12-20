@@ -223,6 +223,10 @@ public class ProcessorThread implements Runnable {
      */
     private class StateDisconnected extends State {
 
+        public StateDisconnected() {
+            data.getTimeRetrieverQueue().add(new P2PLogoutTask());
+        }
+
         @Override
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
@@ -275,6 +279,10 @@ public class ProcessorThread implements Runnable {
      */
     private class StateLoggedOut extends State {
 
+        public StateLoggedOut() {
+            data.getTimeRetrieverQueue().add(new P2PLogoutTask());
+        }
+
         @Override
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
@@ -323,7 +331,8 @@ public class ProcessorThread implements Runnable {
                     channel = rsac;
 
                     send(commandLogin.toString());
-                    return new StateChallenge(commandLogin.getUser(), commandLogin.getChallenge());
+                    return new StateChallenge(commandLogin.getUser(),
+                            commandLogin.getChallenge(), key);
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return this;
@@ -376,9 +385,11 @@ public class ProcessorThread implements Runnable {
 
         private final byte[] challenge;
         private final String user;
+        private final PrivateKey key;
 
-        public StateChallenge(String user, byte[] challenge) {
+        public StateChallenge(String user, byte[] challenge, PrivateKey key) {
             this.user = user;
+            this.key = key;
             this.challenge = challenge;
         }
 
@@ -397,9 +408,9 @@ public class ProcessorThread implements Runnable {
                 try {
                     /* Set up the AES channel. */
 
-                    SecretKey key = readSecretKey(user);
+                    SecretKey k = readSecretKey(user);
 
-                    Channel hmac = new Sha256InChannel(new NopChannel(), key);
+                    Channel hmac = new Sha256InChannel(new NopChannel(), k);
                     Channel b64c = new Base64Channel(hmac);
                     Channel aesc = new AesChannel(b64c, r.getSecretKey(),
                             new IvParameterSpec(r.getIv()));
@@ -410,13 +421,7 @@ public class ProcessorThread implements Runnable {
 
                     send(c.toString());
 
-                    /* Request the current user list. */
-
-                    send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
-
-                    /* TODO: Send all signed bids. */
-
-                    return new StateLoggedIn(user);
+                    return new StateLoggedIn(user, key);
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
                     return new StateLoggedOut();
@@ -446,8 +451,13 @@ public class ProcessorThread implements Runnable {
         private boolean blocked = false;
         private final String user;
 
-        public StateLoggedIn(String user) {
+        public StateLoggedIn(String user, PrivateKey key) {
             this.user = user;
+
+            data.getTimeRetrieverQueue().add(new P2PLoginTask(user, key));
+            send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
+
+            /* TODO: Send all signed bids. */
         }
 
         @Override

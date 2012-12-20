@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,6 +75,9 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private final List<String> peers = new ArrayList<String>();
     private final BlockingQueue<P2PTask> q;
 
+    private String currentUser = null;
+    private PrivateKey currentKey = null;
+
     /**
      * Encapsulates the user, timestamp, and signature.
      */
@@ -85,6 +89,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         List<CommandMatcher> l = new ArrayList<CommandMatcher>();
         l.add(new CommandMatcher(CommandMatcher.Type.GETTIMESTAMP, "^!getTimestamp ([0-9]+) ([0-9]+)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.TIMESTAMP, "^!timestamp ([0-9]+) ([0-9]+) ([0-9]+) ([a-zA-Z0-9/+]+=)$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout$"));
         matchers = Collections.unmodifiableList(l);
     }
 
@@ -174,11 +180,19 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             break;
         }
         case LOG_IN: {
-            /* TODO: Broadcast to peers. */
+            P2PLoginTask t = (P2PLoginTask)request;
+
+            currentUser = t.getUser();
+            currentKey = t.getKey();
+
+            broadcast("!login");
             break;
         }
         case LOG_OUT: {
-            /* TODO: Broadcast to peers. */
+            currentUser = null;
+            currentKey = null;
+
+            broadcast("!logout");
             break;
         }
         default:
@@ -218,8 +232,37 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             break;
         case TIMESTAMP:
             break;
+        case LOGIN:
+            break;
+        case LOGOUT:
+            break;
         default:
             Log.w("Unexpected P2P command");
+        }
+    }
+
+    /**
+     * Sends a message to all known peers. If a peer turns out to be unreachable,
+     * remove it from our known list.
+     */
+    private void broadcast(String message) {
+        List<String> ps;
+        synchronized (peers) {
+            ps = Collections.unmodifiableList(peers);
+        }
+
+        List<String> unreachable = new ArrayList<String>();
+        for (String peer : ps) {
+            try {
+                send_to_peer(message, peer);
+            } catch (Throwable t) {
+                Log.e(t.getMessage());
+                unreachable.add(peer);
+            }
+        }
+
+        synchronized (peers) {
+            peers.removeAll(unreachable);
         }
     }
 
