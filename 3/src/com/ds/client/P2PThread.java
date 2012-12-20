@@ -189,12 +189,13 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         switch (matcher.getType()) {
         case GETTIMESTAMP:
             long time = System.currentTimeMillis();
-            String response = String.format("!timestamp %s %s %d", matches.get(1), matches.get(2), time);
+            String response = String.format("!timestamp %s %s %d %s",
+                    matches.get(0),
+                    matches.get(1),
+                    time,
+                    "DEADBEEF=" /* TODO: Signature */);
 
-            /*
-            response = new String(channel.encode(response.getBytes(Channel.CHARSET)), Channel.CHARSET);
-            out.println(response);
-             */
+            send_to_peer(response, from);
             break;
         case TIMESTAMP:
             break;
