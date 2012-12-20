@@ -17,18 +17,22 @@ public class Log {
     }
 
     public static void d(String format, Object... args) {
+        if (format == null) return;
         logger.debug(String.format(format, args));
     }
 
     public static void i(String format, Object... args) {
+        if (format == null) return;
         logger.info(String.format(format, args));
     }
 
     public static void w(String format, Object... args) {
+        if (format == null) return;
         logger.warn(String.format(format, args));
     }
 
     public static void e(String format, Object... args) {
+        if (format == null) return;
         logger.error(String.format(format, args));
     }
 
