@@ -1,9 +1,11 @@
 
 package com.ds.server;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
@@ -26,9 +28,10 @@ import com.ds.loggers.Log;
 import com.ds.util.Initialization;
 import com.ds.util.SecurityUtils;
 import com.ds.util.ServerProperties;
-import com.ds.util.Utils;
 
 public class Server implements Runnable {
+
+    private static final String CMD_EXIT = "!exit";
 
     private static volatile boolean listening = true;
     private static ServerSocket serverSocket = null;
@@ -86,7 +89,8 @@ public class Server implements Runnable {
         Thread thread = new Thread(new Server());
         thread.start();
 
-        Utils.printRunningMsg("Auction server");
+        System.out.println(String.format("Auction server started, enter '%s' to initiate shutdown.",
+                CMD_EXIT));
 
         /*
          * Initialization is done. We will now accept new connections until
@@ -146,7 +150,18 @@ public class Server implements Runnable {
      */
     @Override
     public void run() {
-        Utils.waitForExit();
+        InputStreamReader isr = new InputStreamReader(System.in);
+        BufferedReader in = new BufferedReader(isr);
+
+        String line = null;
+        do {
+            try {
+                line = in.readLine();
+            } catch (IOException e) {}
+        } while (!CMD_EXIT.equals(line));
+
+        try { in.close(); } catch (IOException e) {}
+        try { isr.close(); } catch (IOException e) {}
 
         listening = false;
         try {
