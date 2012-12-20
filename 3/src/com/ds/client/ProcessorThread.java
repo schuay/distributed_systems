@@ -37,7 +37,6 @@ public class ProcessorThread implements Runnable {
 
     private final Data data;
     private final BlockingQueue<Parcel> q; /* For convenience. */
-    private boolean keepGoing = true;
     private PrintWriter out = null;
     private Channel channel = new NopChannel();
     private final List<User> users = new ArrayList<User>();
@@ -52,7 +51,7 @@ public class ProcessorThread implements Runnable {
         try {
             State state = new StateLoggedOut();
 
-            while (keepGoing) {
+            while (!data.isDone()) {
                 Parcel parcel = null;
                 do {
                     try {
@@ -170,7 +169,7 @@ public class ProcessorThread implements Runnable {
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
             case END:
-                keepGoing = false;
+                data.setDone();
                 send(cmd.toString());
                 break;
             case LIST:

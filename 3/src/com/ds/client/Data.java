@@ -19,6 +19,7 @@ class Data {
     private final BlockingQueue<Parcel> processorQueue;
     private final BlockingQueue<TimeRequest> timeRetrieverQueue;
     private final List<Socket> sockets = new ArrayList<Socket>();
+    private boolean done = false;
 
     public Data(ParsedArgs args) throws IOException {
         this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
@@ -67,6 +68,14 @@ class Data {
         synchronized (sockets) {
             return Collections.unmodifiableList(sockets);
         }
+    }
+
+    public synchronized boolean isDone() {
+        return done;
+    }
+
+    public synchronized void setDone() {
+        this.done = true;
     }
 
 }
