@@ -256,7 +256,7 @@ public class ProcessorThread implements Runnable {
             switch (cmd.getType()) {
             case BID:
                 Log.i("Processing offline bid");
-                data.getTimeRetrieverQueue().add(new TimeRequest((CommandBid)cmd));
+                data.getTimeRetrieverQueue().add(new P2PGetTimestampTask((CommandBid)cmd));
                 break;
             case END:
                 data.setDone();

@@ -17,7 +17,7 @@ class Data {
     private final String clientKeyDir;
     private final int port;
     private final BlockingQueue<Parcel> processorQueue;
-    private final BlockingQueue<TimeRequest> timeRetrieverQueue;
+    private final BlockingQueue<P2PTask> timeRetrieverQueue;
     private final List<Socket> sockets = new ArrayList<Socket>();
     private boolean done = false;
 
@@ -25,7 +25,7 @@ class Data {
         this.serverKey = SecurityUtils.readPublicKey(args.getServerPublicKey());
         this.clientKeyDir = args.getClientKeyDir();
         this.processorQueue = new LinkedBlockingQueue<Parcel>();
-        this.timeRetrieverQueue = new LinkedBlockingQueue<TimeRequest>();
+        this.timeRetrieverQueue = new LinkedBlockingQueue<P2PTask>();
         this.port = args.getUdpPort();
     }
 
@@ -41,7 +41,7 @@ class Data {
         return processorQueue;
     }
 
-    public BlockingQueue<TimeRequest> getTimeRetrieverQueue() {
+    public BlockingQueue<P2PTask> getTimeRetrieverQueue() {
         return timeRetrieverQueue;
     }
 

@@ -72,7 +72,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private InputPipe service_pipe;
 
     private final List<String> peers = new ArrayList<String>();
-    private final BlockingQueue<TimeRequest> q;
+    private final BlockingQueue<P2PTask> q;
 
     /**
      * Encapsulates the user, timestamp, and signature.
@@ -98,7 +98,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             advertisementThread.start();
 
             while (true) {
-                TimeRequest request = q.take();
+                P2PTask request = q.take();
                 processTimeRequest(request);
             }
 
@@ -143,29 +143,48 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
      *
      * @param request
      */
-    private void processTimeRequest(TimeRequest request) {
-        Log.i("Received local time request");
+    private void processTimeRequest(P2PTask request) {
+        switch (request.getType()) {
+        case GET_TIMESTAMP: {
+            P2PGetTimestampTask t = (P2PGetTimestampTask)request;
 
-        String msg = String.format("!getTimestamp %d %d",
-                request.getCommand().getAuctionId(),
-                request.getCommand().getAmount());
+            Log.i("Received local time request");
 
-        /* Get two random peers or exit if less than 2 exist. */
+            String msg = String.format("!getTimestamp %d %d",
+                    t.getCommand().getAuctionId(),
+                    t.getCommand().getAmount());
 
-        String p1, p2;
-        synchronized (peers) {
-            if (peers.size() < 2) {
-                Log.w("Less than two known peers, cannot retrieve signed timestamp");
-                return;
+            /* Get two random peers or exit if less than 2 exist. */
+
+            String p1, p2;
+            synchronized (peers) {
+                if (peers.size() < 2) {
+                    Log.w("Less than two known peers, cannot retrieve signed timestamp");
+                    return;
+                }
+
+                int i = new Random().nextInt(peers.size());
+                p1 = peers.get(i);
+                p2 = peers.get((i + 1) % peers.size());
             }
 
-            int i = new Random().nextInt(peers.size());
-            p1 = peers.get(i);
-            p2 = peers.get((i + 1) % peers.size());
-        }
+            send_to_peer(msg, p1);
+            send_to_peer(msg, p2);
 
-        send_to_peer(msg, p1);
-        send_to_peer(msg, p2);
+            break;
+        }
+        case LOG_IN: {
+            /* TODO: Broadcast to peers. */
+            break;
+        }
+        case LOG_OUT: {
+            /* TODO: Broadcast to peers. */
+            break;
+        }
+        default:
+            Log.w("Received unknown task");
+            break;
+        }
     }
 
     private void onMessageFrom(String message, String from) {
@@ -336,6 +355,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         // Reformatting to create a real peer id string
         String found_peer_id = "urn:jxta:" + event.getSource().toString().substring(7);
         addPeer(found_peer_id);
+
+        /* TODO: Request state from peer. */
     }
 
     /**
