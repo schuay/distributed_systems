@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
@@ -41,6 +42,7 @@ public class Server implements Runnable {
     private static List<Socket> sockets = new ArrayList<Socket>();
     private static ExecutorService executorService = null;
     private static Data serverData = null;
+    private static Semaphore semaphore = new Semaphore(0);
 
     public static void main(String[] args) throws IOException {
 
@@ -78,9 +80,20 @@ public class Server implements Runnable {
                 return;
             }
 
-            /* Open the server socket. */
+            /* Begin listening for the user to trigger shutdown (by entering '!exit'). */
+
+            Thread thread = new Thread(new Server());
+            thread.start();
+
+            System.out.printf("Auction server started%n" +
+                    "%s: initiate shutdown%n" +
+                    "%s: close all sockets%n" +
+                    "%s: start listening on the server socket%n",
+                    CMD_EXIT, CMD_STOP, CMD_START);
 
             do {
+                /* Open the server socket. */
+
                 try {
                     serverSocket = new ServerSocket(parsedArgs.getTcpPort());
                     executorService = Executors.newCachedThreadPool();
@@ -89,17 +102,6 @@ public class Server implements Runnable {
                     shutdown();
                     return;
                 }
-
-                /* Begin listening for the user to trigger shutdown (by entering '!exit'). */
-
-                Thread thread = new Thread(new Server());
-                thread.start();
-
-                System.out.printf("Auction server started%n" +
-                        "%s: initiate shutdown%n" +
-                        "%s: close all sockets%n" +
-                        "%s: start listening on the server socket%n",
-                        CMD_EXIT, CMD_STOP, CMD_START);
 
                 /*
                  * Initialization is done. We will now accept new connections until
@@ -122,6 +124,19 @@ public class Server implements Runnable {
                 }
 
                 shutdown();
+
+                /* To prevent immediate reinitialization after a stop command,
+                 * wait until acquiring the semaphore before going on. */
+                boolean interrupted;
+                do {
+                    try {
+                        interrupted = false;
+                        semaphore.acquire();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                    }
+                } while (interrupted);
+
             } while (listening);
         } finally {
             /* Cancel timers to stop the timer thread. */
@@ -179,17 +194,23 @@ public class Server implements Runnable {
                 line = in.readLine();
 
                 if (CMD_START.equals(line)) {
-                    /* TODO: Start server socket. */
+                    semaphore.release();
+                    Log.i("Server started");
                 } else if (CMD_STOP.equals(line)) {
                     serverSocket.close();
+                    Log.i("Server stopped");
                 }
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                Log.e(e.getMessage());
+            }
         } while (!CMD_EXIT.equals(line));
 
         try { in.close(); } catch (IOException e) {}
         try { isr.close(); } catch (IOException e) {}
 
         listening = false;
+        semaphore.release();
+
         try {
             serverSocket.close();
         } catch (IOException e) {
