@@ -412,6 +412,8 @@ public class ProcessorThread implements Runnable {
 
                     send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
 
+                    /* TODO: Send all signed bids. */
+
                     return new StateLoggedIn(user);
                 } catch (Throwable t) {
                     Log.e(t.getMessage());
