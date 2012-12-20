@@ -24,6 +24,7 @@ import com.ds.channels.RsaChannel;
 import com.ds.channels.Sha256InChannel;
 import com.ds.commands.Command;
 import com.ds.commands.Command.Cmd;
+import com.ds.commands.CommandBid;
 import com.ds.commands.CommandChallenge;
 import com.ds.commands.CommandLogin;
 import com.ds.commands.CommandPassphrase;
@@ -254,7 +255,8 @@ public class ProcessorThread implements Runnable {
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
             case BID:
-                /* TODO */
+                Log.i("Processing offline bid");
+                data.getTimeRetrieverQueue().add(new TimeRequest((CommandBid)cmd));
                 break;
             case END:
                 data.setDone();
