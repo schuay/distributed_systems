@@ -271,7 +271,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         discovery.addDiscoveryListener(this);
 
         ModuleClassAdvertisement mcadv = (ModuleClassAdvertisement)
-        AdvertisementFactory.newAdvertisement(ModuleClassAdvertisement.getAdvertisementType());
+                AdvertisementFactory.newAdvertisement(ModuleClassAdvertisement.getAdvertisementType());
 
         mcadv.setName("TimeProvider");
         mcadv.setDescription("A service that provides signed timestamps to peers");
@@ -306,7 +306,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
     private static PipeAdvertisement get_advertisement(PipeID id) {
         PipeAdvertisement adv = (PipeAdvertisement )AdvertisementFactory.
-        newAdvertisement(PipeAdvertisement.getAdvertisementType());
+                newAdvertisement(PipeAdvertisement.getAdvertisementType());
         adv.setPipeID(id);
         adv.setType(PipeService.UnicastType);
         adv.setName("TimeProviderX");
@@ -379,6 +379,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         } catch (IOException e) {
             // Check, firewall, settings.
             e.printStackTrace();
+        } finally {
+            sender.close();
         }
     }
 
