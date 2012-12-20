@@ -9,10 +9,10 @@ public class CommandSignedBid extends Command {
     private final int auctionId;
     private final int amount;
     private final String user1;
-    private final String timestamp1;
+    private final long timestamp1;
     private final String signature1;
     private final String user2;
-    private final String timestamp2;
+    private final long timestamp2;
     private final String signature2;
 
     public int getAuctionId() {
@@ -24,8 +24,8 @@ public class CommandSignedBid extends Command {
     }
 
     public CommandSignedBid(String cmdStr, int auctionId, int amount,
-            String user1, String timestamp1, String signature1,
-            String user2, String timestamp2, String signature2) {
+            String user1, long timestamp1, String signature1,
+            String user2, long timestamp2, String signature2) {
         super(cmdStr, Cmd.SIGNEDBID);
         this.auctionId = auctionId;
         this.amount = amount;

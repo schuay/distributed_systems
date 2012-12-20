@@ -7,7 +7,8 @@ public class Parcel {
         PARCEL_CONNECTION_LOST,
         PARCEL_CONNECTION_ESTABLISHED,
         PARCEL_NETWORK,
-        PARCEL_TERMINAL
+        PARCEL_TERMINAL,
+        PARCEL_TIMESTAMP_RESULT
     }
 
     private final Type type;

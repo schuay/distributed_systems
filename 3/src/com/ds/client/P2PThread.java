@@ -46,6 +46,7 @@ import net.jxta.protocol.ModuleSpecAdvertisement;
 import net.jxta.protocol.PipeAdvertisement;
 
 import com.ds.channels.Channel;
+import com.ds.commands.CommandSignedBid;
 import com.ds.loggers.Log;
 import com.ds.util.CommandMatcher;
 
@@ -76,7 +77,9 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
     private final List<String> peers = new ArrayList<String>();
     private final Map<String, String> activePeers = new HashMap<String, String>();
+    private final List<TimeReply> receivedTimestamps = new ArrayList<P2PThread.TimeReply>();
     private final BlockingQueue<P2PTask> q;
+    private final BlockingQueue<Parcel> processorQueue;
 
     private String currentUser = null;
     private PrivateKey currentKey = null;
@@ -85,7 +88,22 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
      * Encapsulates the user, timestamp, and signature.
      */
     private static class TimeReply {
+        public int auctionId;
+        public int price;
 
+        public String user1;
+        public long timestamp1;
+        public String signature1;
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof TimeReply)) {
+                return false;
+            }
+
+            TimeReply tr = (TimeReply)o;
+            return (auctionId == tr.auctionId && price == tr.price);
+        }
     }
 
     static {
@@ -241,6 +259,15 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             send_to_peer(response, from);
             break;
         case TIMESTAMP:
+            String fromUser;
+            synchronized(activePeers) {
+                if (!activePeers.containsKey(from)) {
+                    Log.w("Received timestamp from unknown peer");
+                    return;
+                }
+                fromUser = activePeers.get(from);
+            }
+            addSignedTimestamp(fromUser, matches.get(0), matches.get(1), matches.get(2), matches.get(3));
             break;
         case LOGIN:
             synchronized(activePeers) {
@@ -254,6 +281,40 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             break;
         default:
             Log.w("Unexpected P2P command");
+        }
+    }
+
+    private void addSignedTimestamp(String fromUser, String auctionId,
+            String price, String timestamp, String signature) {
+        TimeReply tr = new TimeReply();
+        tr.auctionId = Integer.parseInt(auctionId);
+        tr.price = Integer.parseInt(price);
+        tr.user1 = fromUser;
+        tr.timestamp1 = Long.parseLong(timestamp);
+        tr.signature1 = signature;
+
+        synchronized (receivedTimestamps) {
+            int i = receivedTimestamps.indexOf(tr);
+            if (i != -1) {
+                /* We're done, return for handling to processing thread. */
+
+                TimeReply other = receivedTimestamps.get(i);
+                receivedTimestamps.remove(i);
+
+                CommandSignedBid c = new CommandSignedBid(
+                        "!signedbid",
+                        tr.auctionId,
+                        tr.price,
+                        tr.user1,
+                        tr.timestamp1,
+                        tr.signature1,
+                        other.user1,
+                        other.timestamp1,
+                        other.signature1);
+                processorQueue.add(new TimestampResultParcel(c));
+            } else {
+                receivedTimestamps.add(tr);
+            }
         }
     }
 
@@ -305,6 +366,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
     public P2PThread(Data data) throws IOException {
         this.q = data.getTimeRetrieverQueue();
+        this.processorQueue = data.getProcessorQueue();
 
         // Add a random number to make it easier to identify by name, will also make sure the ID is unique
         peer_name = "Peer " + new Random().nextInt(1000000);
