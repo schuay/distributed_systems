@@ -73,6 +73,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private InputPipe service_pipe;
 
     private final List<String> peers = new ArrayList<String>();
+    private final List<String> activePeers = new ArrayList<String>();
     private final BlockingQueue<P2PTask> q;
 
     private String currentUser = null;
@@ -163,15 +164,15 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             /* Get two random peers or exit if less than 2 exist. */
 
             String p1, p2;
-            synchronized (peers) {
-                if (peers.size() < 2) {
+            synchronized (activePeers) {
+                if (activePeers.size() < 2) {
                     Log.w("Less than two known peers, cannot retrieve signed timestamp");
                     return;
                 }
 
-                int i = new Random().nextInt(peers.size());
-                p1 = peers.get(i);
-                p2 = peers.get((i + 1) % peers.size());
+                int i = new Random().nextInt(activePeers.size());
+                p1 = activePeers.get(i);
+                p2 = activePeers.get((i + 1) % activePeers.size());
             }
 
             send_to_peer(msg, p1);
@@ -233,8 +234,14 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         case TIMESTAMP:
             break;
         case LOGIN:
+            synchronized(activePeers) {
+                activePeers.add(from);
+            }
             break;
         case LOGOUT:
+            synchronized(activePeers) {
+                activePeers.remove(from);
+            }
             break;
         default:
             Log.w("Unexpected P2P command");
@@ -263,6 +270,9 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
         synchronized (peers) {
             peers.removeAll(unreachable);
+        }
+        synchronized (activePeers) {
+            activePeers.removeAll(unreachable);
         }
     }
 
