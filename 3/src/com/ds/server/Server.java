@@ -188,16 +188,19 @@ public class Server implements Runnable {
         InputStreamReader isr = new InputStreamReader(System.in);
         BufferedReader in = new BufferedReader(isr);
 
+        String state = CMD_START;
         String line = null;
         do {
             try {
                 line = in.readLine();
 
-                if (CMD_START.equals(line)) {
+                if (CMD_START.equals(line) && !CMD_START.equals(state)) {
                     semaphore.release();
+                    state = line;
                     Log.i("Server started");
-                } else if (CMD_STOP.equals(line)) {
+                } else if (CMD_STOP.equals(line) && !CMD_STOP.equals(state)) {
                     serverSocket.close();
+                    state = line;
                     Log.i("Server stopped");
                 }
             } catch (IOException e) {
