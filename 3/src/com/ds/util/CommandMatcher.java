@@ -19,10 +19,12 @@ public class CommandMatcher {
         END,
         EXIT,
         GETCLIENTLIST,
+        GETTIMESTAMP,
         GROUPBID,
         LIST,
         LOGIN,
-        LOGOUT
+        LOGOUT,
+        TIMESTAMP
     }
 
     private final Type type;

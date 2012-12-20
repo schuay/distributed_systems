@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -43,6 +44,7 @@ import net.jxta.protocol.PipeAdvertisement;
 
 import com.ds.channels.Channel;
 import com.ds.loggers.Log;
+import com.ds.util.CommandMatcher;
 
 public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
@@ -52,6 +54,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
     private static final String unicast_name = "TimeProvider";
     private static final String service_name = "TimeProviderService";
+
+    private static final List<CommandMatcher> matchers;
 
     private PeerGroup subgroup;
     private PipeService pipe_service;
@@ -75,6 +79,13 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
      */
     private static class TimeReply {
 
+    }
+
+    static {
+        List<CommandMatcher> l = new ArrayList<CommandMatcher>();
+        l.add(new CommandMatcher(CommandMatcher.Type.GETTIMESTAMP, "^!getTimestamp ([0-9]+) ([0-9]+)$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.TIMESTAMP, "^!timestamp ([0-9]+) ([0-9]+) ([0-9]+) ([a-zA-Z0-9/+]+=)$"));
+        matchers = Collections.unmodifiableList(l);
     }
 
     @Override
@@ -155,6 +166,26 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
         send_to_peer(msg, p1);
         send_to_peer(msg, p2);
+    }
+
+    private void onMessageFrom(String message, String from) {
+        CommandMatcher matcher = null;
+        List<String> matches = null;
+        for (int i = 0; i < matchers.size(); i++) {
+            matcher = matchers.get(i);
+            matches = matcher.match(message);
+            if (matches != null) {
+                break;
+            }
+        }
+
+        if (matches == null) {
+            Log.w("Invalid command '%s'", message);
+            return;
+        }
+
+        Log.i("Received command: %s", message);
+
     }
 
     private Thread createAdvertisementThread() {
@@ -361,9 +392,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             String from = new String(fromBytes);
             String message = new String(msgBytes);
 
-            Log.i("Received message '%s' from %s", message, from);
-
-            /* TODO: Validate, process, and reply to request. */
+            onMessageFrom(message, from);
         } catch (Exception e) {
             // You will notice that JXTA is not very specific with exceptions...
             e.printStackTrace();
