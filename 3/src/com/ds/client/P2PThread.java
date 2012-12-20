@@ -222,6 +222,11 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
         switch (matcher.getType()) {
         case GETTIMESTAMP:
+            if (currentUser == null) {
+                Log.w("Timestamp request received while logged out");
+                return;
+            }
+
             long time = System.currentTimeMillis();
             String response = String.format("!timestamp %s %s %d %s",
                     matches.get(0),
