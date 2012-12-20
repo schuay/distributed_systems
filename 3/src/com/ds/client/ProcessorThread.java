@@ -527,7 +527,13 @@ public class ProcessorThread implements Runnable {
 
         @Override
         public State processConnectionLost() {
-            super.processConnectionLost();
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+
+            Log.i("Connection lost");
+
             return new StateDisconnectedButLoggedIn(user);
         }
     }
