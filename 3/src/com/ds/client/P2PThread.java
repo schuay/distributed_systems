@@ -186,6 +186,21 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
         Log.i("Received command: %s", message);
 
+        switch (matcher.getType()) {
+        case GETTIMESTAMP:
+            long time = System.currentTimeMillis();
+            String response = String.format("!timestamp %s %s %d", matches.get(1), matches.get(2), time);
+
+            /*
+            response = new String(channel.encode(response.getBytes(Channel.CHARSET)), Channel.CHARSET);
+            out.println(response);
+             */
+            break;
+        case TIMESTAMP:
+            break;
+        default:
+            Log.w("Unexpected P2P command");
+        }
     }
 
     private Thread createAdvertisementThread() {
