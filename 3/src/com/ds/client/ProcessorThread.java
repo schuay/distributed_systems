@@ -38,12 +38,11 @@ public class ProcessorThread implements Runnable {
     private final Data data;
     private final BlockingQueue<Parcel> q; /* For convenience. */
     private boolean keepGoing = true;
-    private PrintWriter out;
+    private PrintWriter out = null;
     private Channel channel = new NopChannel();
     private final List<User> users = new ArrayList<User>();
 
-    public ProcessorThread(Data data) throws IOException {
-        //this.out = new PrintWriter(socket.getOutputStream());
+    public ProcessorThread(Data data) {
         this.data = data;
         this.q = data.getProcessorQueue();
     }
@@ -64,44 +63,73 @@ public class ProcessorThread implements Runnable {
                 } while (parcel == null);
 
                 switch (parcel.getType()) {
-                case PARCEL_TERMINAL:
-                    StringParcel stringParcel = (StringParcel)parcel;
-                    Command cmd = null;
+                case PARCEL_CONNECTION_ESTABLISHED:
                     try {
-                        cmd = Command.parse(stringParcel.getMessage());
-                    } catch (IllegalArgumentException e) {
-                        Log.e("Invalid command: %s", stringParcel.getMessage());
-                        continue;
+                        SocketParcel socketParcel = (SocketParcel)parcel;
+                        processParcelConnectionEstablished(socketParcel);
+                    } catch (IOException e) {
+                        Log.e(e.getMessage());
                     }
-
-                    state = state.processCommand(cmd);
+                    break;
+                case PARCEL_CONNECTION_LOST:
+                    processParcelConnectionLost();
+                    break;
+                case PARCEL_TERMINAL:
+                    try {
+                        StringParcel stringParcel = (StringParcel)parcel;
+                        state = processParcelTerminal(stringParcel, state);
+                    } catch (IllegalArgumentException e) {
+                        Log.e(e.getMessage());
+                    }
                     break;
                 case PARCEL_NETWORK:
-                    stringParcel = (StringParcel)parcel;
-                    Response rsp = null;
                     try {
-                        byte[] bytes = stringParcel.getMessage().getBytes(Channel.CHARSET);
-                        String in = new String(channel.decode(bytes), Channel.CHARSET);
-                        rsp = Response.parse(in);
-                    } catch (IllegalArgumentException e) {
-                        Log.e("Invalid command: %s", stringParcel.getMessage());
-                        continue;
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e("Invalid command: %s", stringParcel.getMessage());
-                        continue;
+                        StringParcel stringParcel = (StringParcel)parcel;
+                        state = processParcelNetwork(stringParcel, state);
                     } catch (IOException e) {
-                        Log.e("Invalid command: %s", stringParcel.getMessage());
-                        continue;
+                        Log.e(e.getMessage());
                     }
-                    state = state.processResponse(rsp);
                     break;
                 default:
                     break;
                 }
             }
         } finally {
-            out.close();
+            if (out != null) {
+                out.close();
+                out = null;
+            }
         }
+    }
+
+    private void processParcelConnectionEstablished(SocketParcel socketParcel) throws IOException {
+        if (out != null) {
+            out.close();
+            out = null;
+        }
+        out = new PrintWriter(socketParcel.getSocket().getOutputStream());
+        Log.i("Connection established");
+    }
+
+    private void processParcelConnectionLost() {
+        if (out != null) {
+            out.close();
+            out = null;
+        }
+        Log.i("Connection lost");
+    }
+
+    private State processParcelTerminal(StringParcel stringParcel, State state) {
+        Command cmd = Command.parse(stringParcel.getMessage());
+        return state.processCommand(cmd);
+    }
+
+    private State processParcelNetwork(StringParcel stringParcel, State state) throws IOException {
+        byte[] bytes = stringParcel.getMessage().getBytes(Channel.CHARSET);
+        String in = new String(channel.decode(bytes), Channel.CHARSET);
+        Response rsp = Response.parse(in);
+
+        return state.processResponse(rsp);
     }
 
     private void send(String in) {

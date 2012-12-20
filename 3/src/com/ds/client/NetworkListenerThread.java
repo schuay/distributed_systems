@@ -30,7 +30,6 @@ public class NetworkListenerThread implements Runnable {
         BufferedReader in;
         try {
             in = establishConnection();
-            Log.i("Connection successful.");
         } catch (InterruptedException e) {
             Log.i("NetworkListenerThread interrupted");
             return;
