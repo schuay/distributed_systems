@@ -531,20 +531,20 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         Set<PeerID> ps = new HashSet<PeerID>();
         try {
             ps.add((PeerID)IDFactory.fromURI(new URI(found_peer_id)));
-        }
-        catch (URISyntaxException e) {
+        } catch (URISyntaxException e) {
             // The JXTA peer ids need to be formatted as proper urns
             e.printStackTrace();
+            return;
         }
 
         // A pipe we can use to send messages with
         OutputPipe sender = null;
         try {
             sender = pipe_service.createOutputPipe(adv, ps, 10000);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // Thrown if there was an error opening the connection, check firewall settings
             e.printStackTrace();
+            return;
         }
 
         Message msg = new Message();
@@ -555,6 +555,8 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             msgElem = new ByteArrayMessageElement("Msg", null, message.getBytes(Channel.CHARSET), null);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            sender.close();
+            return;
         }
 
 
