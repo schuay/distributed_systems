@@ -112,6 +112,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         l.add(new CommandMatcher(CommandMatcher.Type.TIMESTAMP, "^!timestamp ([0-9]+) ([0-9]+) ([0-9]+) ([a-zA-Z0-9/+]+=)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.LOGIN, "^!login ([a-zA-Z0-9]+)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.LOGOUT, "^!logout$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.QUERY, "^!query$"));
         matchers = Collections.unmodifiableList(l);
     }
 
@@ -277,6 +278,12 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         case LOGOUT:
             synchronized(activePeers) {
                 activePeers.remove(from);
+            }
+            break;
+        case QUERY:
+            String u = currentUser;
+            if (u != null) {
+                send_to_peer(String.format("!login %s",  u), from);
             }
             break;
         default:
@@ -481,8 +488,6 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         // Reformatting to create a real peer id string
         String found_peer_id = "urn:jxta:" + event.getSource().toString().substring(7);
         addPeer(found_peer_id);
-
-        /* TODO: Request state from peer. */
     }
 
     /**
@@ -490,11 +495,21 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
      * @param peer
      */
     private void addPeer(String peer) {
+        boolean doQuery = false;
+
         synchronized(peers) {
             if (!peers.contains(peer)) {
                 Log.i("Found new peer: %s", peer);
                 peers.add(peer);
+
+                doQuery = true;
             }
+        }
+
+        /* Request state from peer. */
+
+        if (doQuery) {
+            send_to_peer("!query", peer);
         }
     }
 

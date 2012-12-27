@@ -24,6 +24,7 @@ public class CommandMatcher {
         LIST,
         LOGIN,
         LOGOUT,
+        QUERY,
         TIMESTAMP
     }
 
