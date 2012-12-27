@@ -15,6 +15,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
@@ -139,6 +141,14 @@ public class SecurityUtils {
 
         byte[] input = Hex.decode(keyBytes);
         return readSecretKey(input, algorithm);
+    }
+
+    public static byte[] getSignature(byte[] message, PrivateKey key)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature instance = Signature.getInstance("SHA1withRSA");
+        instance.initSign(key);
+        instance.update(message);
+        return instance.sign();
     }
 
     public static byte[] getHMAC(Key key, String algorithm, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
