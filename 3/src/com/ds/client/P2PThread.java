@@ -49,6 +49,7 @@ import com.ds.channels.Channel;
 import com.ds.commands.CommandSignedBid;
 import com.ds.loggers.Log;
 import com.ds.util.CommandMatcher;
+import com.ds.util.SecurityUtils;
 
 public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
@@ -251,13 +252,21 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
             }
 
             long time = System.currentTimeMillis();
-            String response = String.format("!timestamp %s %s %d %s",
+            String responseRaw = String.format("!timestamp %s %s %d",
                     matches.get(0),
                     matches.get(1),
-                    time,
-                    "DEADBEEF=" /* TODO: Signature */);
+                    time);
 
-            send_to_peer(response, from);
+            try {
+                byte[] sig = SecurityUtils.getSignature(responseRaw.getBytes(Channel.CHARSET), currentKey);
+                byte[] b64sig = SecurityUtils.toBase64(sig);
+
+                String response = String.format("%s %s", responseRaw, new String(b64sig, Channel.CHARSET));
+
+                send_to_peer(response, from);
+            } catch (Throwable t) {
+                Log.e(t.getMessage());
+            }
             break;
         case TIMESTAMP:
             String fromUser;
