@@ -542,7 +542,9 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
         try {
             sender = pipe_service.createOutputPipe(adv, ps, 10000);
         } catch (IOException e) {
-            // Thrown if there was an error opening the connection, check firewall settings
+
+            /* TODO: As soon as a known peer quits, pipe construction fails. */
+
             e.printStackTrace();
             return;
         }
