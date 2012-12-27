@@ -33,6 +33,7 @@ import com.ds.commands.CommandConfirm;
 import com.ds.commands.CommandCreate;
 import com.ds.commands.CommandGroupBid;
 import com.ds.commands.CommandLogin;
+import com.ds.commands.CommandSignedBid;
 import com.ds.loggers.Log;
 import com.ds.responses.Response;
 import com.ds.responses.Response.Rsp;
@@ -68,6 +69,7 @@ public class ServerThread implements Runnable {
         l.add(new CommandMatcher(CommandMatcher.Type.CHALLENGE, "^([a-zA-Z0-9/+]{43}=)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.GETCLIENTLIST, "^!getclientlist\\s*$"));
         l.add(new CommandMatcher(CommandMatcher.Type.GROUPBID, "^!groupbid\\s+([0-9]+)\\s+([0-9.]+)$"));
+        l.add(new CommandMatcher(CommandMatcher.Type.SIGNEDBID, "^!signedbid ([0-9]+) ([0-9.]+) ([a-zA-Z0-9_\\-]+):([0-9]+):([a-zA-Z0-9/+]+=) ([a-zA-Z0-9_\\-]+):([0-9]+):([a-zA-Z0-9/+]+=)$"));
         l.add(new CommandMatcher(CommandMatcher.Type.CONFIRM, "^!confirm\\s+([0-9]+)\\s+([0-9.]+)\\s+([a-zA-Z0-9_\\-]+)$"));
         matchers = Collections.unmodifiableList(l);
     }
@@ -220,6 +222,10 @@ public class ServerThread implements Runnable {
         case GROUPBID:
             return new CommandGroupBid(cmd, Integer.parseInt(args.get(0)),
                     (int)Double.parseDouble(args.get(1)));
+        case SIGNEDBID:
+            return new CommandSignedBid(cmd, Integer.parseInt(args.get(0)), Integer.parseInt(args.get(1)),
+                    args.get(2), Long.parseLong(args.get(3)), args.get(4),
+                    args.get(5), Long.parseLong(args.get(6)), args.get(7));
         case CONFIRM:
             return new CommandConfirm(cmd, Integer.parseInt(args.get(0)),
                     (int)Double.parseDouble(args.get(1)), args.get(2));
@@ -417,6 +423,14 @@ public class ServerThread implements Runnable {
 
                 auctionList = serverThread.getAuctionList();
                 auctionList.createGroupBid(c.getAuctionId(), user, c.getAmount());
+                break;
+            case SIGNEDBID:
+                CommandSignedBid commandSignedBid = (CommandSignedBid)command;
+
+                /* TODO */
+
+                Log.i("Received signed bid command: %s", commandSignedBid);
+
                 break;
             case CONFIRM:
                 CommandConfirm commandConfirm = (CommandConfirm)command;

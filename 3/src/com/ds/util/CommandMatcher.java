@@ -25,7 +25,8 @@ public class CommandMatcher {
         LOGIN,
         LOGOUT,
         QUERY,
-        TIMESTAMP
+        SIGNEDBID,
+        TIMESTAMP,
     }
 
     private final Type type;
