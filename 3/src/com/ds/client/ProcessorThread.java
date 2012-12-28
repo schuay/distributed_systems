@@ -465,7 +465,14 @@ public class ProcessorThread implements Runnable {
             data.getTimeRetrieverQueue().add(new P2PLoginTask(user, key));
             send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
 
-            /* TODO: Send all signed bids. */
+            /* Send signed bids. */
+
+            List<Command> l = pendingSignedBids.remove(user);
+            if (l != null) {
+                for (Command c : l) {
+                    send(c.toString());
+                }
+            }
         }
 
         @Override
