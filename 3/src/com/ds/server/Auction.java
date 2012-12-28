@@ -37,7 +37,7 @@ public class Auction {
         private final int amount;
         private int numBidders;
         private boolean rejected = false;
-	private Auction auction;
+        private final Auction auction;
 
         private GroupBid(Auction auction, User bidder, int amount) {
             this.auction = auction;

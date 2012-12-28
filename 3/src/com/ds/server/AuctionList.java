@@ -14,8 +14,8 @@ import com.ds.event.AuctionEvent;
 import com.ds.event.Event;
 import com.ds.loggers.EventListener;
 import com.ds.loggers.Log;
-import com.ds.server.UserList.User;
 import com.ds.server.Auction.GroupBid;
+import com.ds.server.UserList.User;
 
 public class AuctionList implements EventListener {
 
@@ -135,7 +135,7 @@ public class AuctionList implements EventListener {
             Log.e("No such auction");
             return;
         }
-        
+
         Auction auction = auctions.get(auctionId);
 
         GroupBid groupBid = auction.getGroupBid(bidder, amount);
