@@ -425,11 +425,28 @@ public class ServerThread implements Runnable {
                 auctionList.createGroupBid(c.getAuctionId(), user, c.getAmount());
                 break;
             case SIGNEDBID:
-                CommandSignedBid commandSignedBid = (CommandSignedBid)command;
+                CommandSignedBid csb = (CommandSignedBid)command;
+                auctionList = serverThread.getAuctionList();
 
-                /* TODO */
+                /* Verify signatures. */
 
-                Log.i("Received signed bid command: %s", commandSignedBid);
+                boolean verified = verifySignedTimestamp(csb.getAuctionId(), csb.getAmount(),
+                        csb.getUser1(), csb.getTimestamp1(), csb.getSignature1());
+                verified = verified && verifySignedTimestamp(csb.getAuctionId(), csb.getAmount(),
+                        csb.getUser2(), csb.getTimestamp2(), csb.getSignature2());
+                if (!verified) {
+                    Log.w("Could not verify signed bid: %s", csb);
+                    return;
+                }
+
+                /* Get timestamp mean. */
+
+                long meanTimestamp = (csb.getTimestamp1() + csb.getTimestamp2()) / 2;
+
+                /* Process the signed bid. */
+
+                auctionList.signedBid(csb.getAuctionId(), user, csb.getAmount(), meanTimestamp);
+                serverThread.sendResponse(new Response(Rsp.ACK));
 
                 break;
             case CONFIRM:
@@ -461,6 +478,28 @@ public class ServerThread implements Runnable {
                 break;
             default:
                 Log.e("Invalid command %s in registered state", command);
+            }
+        }
+
+        private boolean verifySignedTimestamp(int auctionId, int amount, String user,
+                long timestamp, String signature) {
+            String candidate = String.format("!timestamp %d %d %d", auctionId, amount, timestamp);
+
+            PublicKey key = serverThread.getClientPublicKey(user);
+            if (key == null) {
+                return false;
+            }
+
+            try {
+                byte[] signatureRaw = SecurityUtils.fromBase64(signature.getBytes(Channel.CHARSET));
+
+                return SecurityUtils.verifySignature(
+                        candidate.getBytes(Channel.CHARSET),
+                        signatureRaw,
+                        key);
+            } catch (Throwable t) {
+                Log.w(t.getMessage());
+                return false;
             }
         }
 
