@@ -151,6 +151,14 @@ public class SecurityUtils {
         return instance.sign();
     }
 
+    public static boolean verifySignature(byte[] message, byte[] sig, PublicKey key)
+            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature instance = Signature.getInstance("SHA1withRSA");
+        instance.initVerify(key);
+        instance.update(message);
+        return instance.verify(sig);
+    }
+
     public static byte[] getHMAC(Key key, String algorithm, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac hMac = Mac.getInstance(algorithm);
         hMac.init(key);
