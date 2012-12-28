@@ -88,6 +88,7 @@ public class ProcessorThread implements Runnable {
                     }
                     break;
                 default:
+                    Log.w("Skipping parcel of unhandled type: %s", parcel.getType());
                     break;
                 }
             }
