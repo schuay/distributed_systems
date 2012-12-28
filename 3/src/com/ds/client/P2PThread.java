@@ -302,6 +302,11 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
 
     private void addSignedTimestamp(String fromUser, String auctionId,
             String price, String timestamp, String signature) {
+        String user = currentUser;
+        if (user == null) {
+            return;
+        }
+
         TimeReply tr = new TimeReply();
         tr.auctionId = Integer.parseInt(auctionId);
         tr.price = Integer.parseInt(price);
@@ -327,7 +332,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
                         other.user1,
                         other.timestamp1,
                         other.signature1);
-                processorQueue.add(new TimestampResultParcel(c));
+                processorQueue.add(new TimestampResultParcel(user, c));
             } else {
                 receivedTimestamps.add(tr);
             }
