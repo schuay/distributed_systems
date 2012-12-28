@@ -4,6 +4,7 @@ package com.ds.server;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +18,7 @@ public class Auction {
     private final String description;
     private final User owner;
     private final Date end;
-    private int highestBid = 0;
-    private User highestBidder = User.NONE;
+    private final List<Bid> bids = new LinkedList<Bid>();
     private final List<EventListener> listeners = new ArrayList<EventListener>();
     private final Map<String, Map<Integer, GroupBid> > groupBids =
             new HashMap<String, Map<Integer, GroupBid> >();
@@ -28,6 +28,38 @@ public class Auction {
         this.description = description;
         this.owner = owner;
         this.end = end;
+
+        /* Initial null bid. */
+
+        bids.add(new Bid(0, User.NONE));
+    }
+
+    static class Bid {
+        private final int amount;
+        private final User user;
+        private final long timestamp;
+
+        public Bid(int amount, User user) {
+            this(amount, user, System.currentTimeMillis());
+        }
+
+        public Bid(int amount, User user, long timestamp) {
+            this.amount = amount;
+            this.user = user;
+            this.timestamp = timestamp;
+        }
+
+        public int getAmount() {
+            return amount;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
     }
 
     static class GroupBid {
@@ -103,6 +135,14 @@ public class Auction {
         }
     }
 
+    private Bid highestBid() {
+        if (bids.isEmpty()) {
+            return null;
+        }
+
+        return bids.get(bids.size() - 1);
+    }
+
     public boolean createGroupBid(User bidder, int amount) {
         String bidderName = bidder.getName();
 
@@ -142,17 +182,16 @@ public class Auction {
     }
 
     public void bid(User bidder, int amount) {
-        if (amount <= highestBid) {
+        if (amount <= highestBid().getAmount()) {
             return;
         }
 
         /* I'm assuming that the overbid event should include the previous high bidder
          * and the new price. */
-        notifyListeners(new BidEvent(BidEvent.BID_OVERBID, highestBidder.getName(), id, amount));
+        notifyListeners(new BidEvent(BidEvent.BID_OVERBID, highestBid().getUser().getName(), id, amount));
         notifyListeners(new BidEvent(BidEvent.BID_PLACED, bidder.getName(), id, amount));
 
-        highestBid = amount;
-        highestBidder = bidder;
+        bids.add(new Bid(amount, bidder));
     }
 
     public void end() {
@@ -162,19 +201,16 @@ public class Auction {
             }
         }
 
-        if (highestBidder != User.NONE) {
-            notifyListeners(new BidEvent(BidEvent.BID_WON, highestBidder.getName(), id, highestBid));
+        if (highestBid().getUser() != User.NONE) {
+            notifyListeners(new BidEvent(BidEvent.BID_WON, highestBid().getUser().getName(),
+                    id, highestBid().getAmount()));
         }
     }
 
     @Override
     public String toString() {
         return String.format("%d. '%s' %s %s %d %s", id, description, owner.getName(), end,
-                highestBid, getHighestBidder().getName());
-    }
-
-    public User getHighestBidder() {
-        return highestBidder;
+                highestBid().getAmount(), highestBid().getUser().getName());
     }
 
     public User getOwner() {
