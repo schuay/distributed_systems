@@ -199,6 +199,8 @@ public class ProcessorThread implements Runnable {
                 out = new PrintWriter(s.getOutputStream());
                 Log.i("Connection established");
 
+                channel = new NopChannel();
+
                 return new StateLoggedOut();
             } catch (IOException e) {
                 Log.e(e.getMessage());
