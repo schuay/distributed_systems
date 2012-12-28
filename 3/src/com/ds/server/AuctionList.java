@@ -45,9 +45,13 @@ public class AuctionList implements EventListener {
         auctions.get(auctionId).bid(bidder, amount);
     }
 
-    public void signedBid(int auctionId, User bidder, int amount, long meanTimestamp) {
-        // TODO Auto-generated method stub
+    public synchronized void signedBid(int auctionId, User bidder, int amount, long timestamp) {
+        if (!auctions.containsKey(auctionId)) {
+            Log.e("No such auction");
+            return;
+        }
 
+        auctions.get(auctionId).signedBid(bidder, amount, timestamp);
     }
 
     public synchronized int getGroupBidNumBidders(int auctionId, String bidder, int amount) {

@@ -11,6 +11,7 @@ import java.util.Map;
 import com.ds.event.BidEvent;
 import com.ds.event.Event;
 import com.ds.loggers.EventListener;
+import com.ds.loggers.Log;
 import com.ds.server.UserList.User;
 
 public class Auction {
@@ -192,6 +193,38 @@ public class Auction {
         notifyListeners(new BidEvent(BidEvent.BID_PLACED, bidder.getName(), id, amount));
 
         bids.add(new Bid(amount, bidder));
+    }
+
+    public void signedBid(User bidder, int amount, long timestamp) {
+        /* Retroactively add the bid at the appropriate spot (if possible). */
+
+        int i;
+        for (i = 0; i < bids.size(); i++) {
+            Bid b = bids.get(i);
+            if (b.getTimestamp() > timestamp) {
+                break;
+            }
+        }
+
+        /* i is now the spot at which the bid should be placed. */
+
+        if (amount <= bids.get(i - 1).getAmount()) {
+            Log.i("Signed bid amount exceeded by earlier bid,  ignored.");
+            return;
+        }
+
+        bids.add(i, new Bid(amount, bidder, timestamp));
+
+        /* Now, process all following bids and remove ones with insufficient amount. */
+
+        for (i = i + 1; i < bids.size(); /* No increment. */) {
+            Bid b = bids.get(i);
+            if (b.getAmount() <= amount) {
+                bids.remove(i);
+            } else {
+                break;
+            }
+        }
     }
 
     public void end() {
