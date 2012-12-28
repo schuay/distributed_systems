@@ -346,7 +346,7 @@ public class P2PThread implements DiscoveryListener, PipeMsgListener, Runnable {
     private void broadcast(String message) {
         List<String> ps;
         synchronized (peers) {
-            ps = Collections.unmodifiableList(peers);
+            ps = new ArrayList<String>(peers);
         }
 
         List<String> unreachable = new ArrayList<String>();
