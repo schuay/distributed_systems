@@ -249,12 +249,6 @@ public class ProcessorThread implements Runnable {
      */
     private class StateDisconnectedButLoggedIn extends State {
 
-        private final String user;
-
-        public StateDisconnectedButLoggedIn(String user) {
-            this.user = user;
-        }
-
         @Override
         public State processCommand(Command cmd) {
             switch (cmd.getType()) {
@@ -449,11 +443,8 @@ public class ProcessorThread implements Runnable {
 
         private boolean pendingRetry = false;
         private boolean blocked = false;
-        private final String user;
 
         public StateLoggedIn(String user, PrivateKey key) {
-            this.user = user;
-
             data.getTimeRetrieverQueue().add(new P2PLoginTask(user, key));
             send(new Command("!getclientlist", Cmd.GETCLIENTLIST).toString());
 
@@ -534,7 +525,7 @@ public class ProcessorThread implements Runnable {
 
             Log.i("Connection lost");
 
-            return new StateDisconnectedButLoggedIn(user);
+            return new StateDisconnectedButLoggedIn();
         }
     }
 }
