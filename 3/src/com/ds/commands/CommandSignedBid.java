@@ -23,6 +23,30 @@ public class CommandSignedBid extends Command {
         return amount;
     }
 
+    public String getUser1() {
+        return user1;
+    }
+
+    public long getTimestamp1() {
+        return timestamp1;
+    }
+
+    public String getSignature1() {
+        return signature1;
+    }
+
+    public String getUser2() {
+        return user2;
+    }
+
+    public long getTimestamp2() {
+        return timestamp2;
+    }
+
+    public String getSignature2() {
+        return signature2;
+    }
+
     public CommandSignedBid(String cmdStr, int auctionId, int amount,
             String user1, long timestamp1, String signature1,
             String user2, long timestamp2, String signature2) {
