@@ -8,7 +8,10 @@ import java.net.Socket;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import javax.crypto.SecretKey;
@@ -42,10 +45,12 @@ public class ProcessorThread implements Runnable {
     private PrintWriter out = null;
     private Channel channel = new NopChannel();
     private final List<User> users = new ArrayList<User>();
+    private final Map<String, List<Command> > pendingSignedBids;
 
     public ProcessorThread(Data data) {
         this.data = data;
         this.q = data.getProcessorQueue();
+        this.pendingSignedBids = new HashMap<String, List<Command> >();
     }
 
     @Override
@@ -86,6 +91,17 @@ public class ProcessorThread implements Runnable {
                     } catch (IOException e) {
                         Log.e(e.getMessage());
                     }
+                    break;
+                case PARCEL_TIMESTAMP_RESULT:
+                    TimestampResultParcel timestampParcel = (TimestampResultParcel)parcel;
+
+                    List<Command> l = pendingSignedBids.get(timestampParcel.getUser());
+                    if (l == null) {
+                        l = new LinkedList<Command>();
+                        pendingSignedBids.put(timestampParcel.getUser(), l);
+                    }
+
+                    l.add(timestampParcel.getCommand());
                     break;
                 default:
                     Log.w("Skipping parcel of unhandled type: %s", parcel.getType());
